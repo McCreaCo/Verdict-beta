@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VERDICT — The 32 Greatest 90s Sitcoms</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0a0a0f; color: #f0ece4; font-family: Georgia, 'Times New Roman', serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
+  #app { width: 100%; max-width: 560px; min-height: 100vh; display: flex; flex-direction: column; }
+  header { padding: 16px 20px 12px; border-bottom: 1px solid #2a2a3a; display: flex; align-items: center; justify-content: space-between; background: #16161e; }
+  .title { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; color: #c8a96e; }
+  .subtitle { font-size: 9px; color: #b08850; letter-spacing: 2px; text-transform: uppercase; margin-top: 2px; }
+  .counter { font-size: 10px; color: #3a3a4a; background: #1a1a26; border: 1px solid #2a2a3a; border-radius: 16px; padding: 4px 10px; }
+  .back-btn { background: transparent; border: 1px solid #2a2a3a; border-radius: 8px; padding: 5px 10px; color: #4a4a5a; font-size: 11px; cursor: pointer; font-family: Georgia, serif; }
+  #main { flex: 1; padding: 14px 0; }
+  .core-q { text-align: center; font-size: 12px; color: #c8a96e; font-style: italic; padding: 4px 20px 0; line-height: 1.4; }
+  .div-labels { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px; margin: 10px 10px 8px; }
+  .div-label { font-size: 7px; color: #4a4a5a; text-align: center; padding: 3px 2px; background: #1a1a26; border-radius: 4px; }
+  .bracket-cols { display: flex; gap: 3px; padding: 0 10px; }
+  .bracket-col { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+  .col-label { font-size: 7px; letter-spacing: 1.5px; text-transform: uppercase; text-align: center; margin-bottom: 5px; }
+  .col-matches { display: flex; flex-direction: column; justify-content: space-around; height: 380px; }
+  .match-cell { border-radius: 5px; overflow: hidden; cursor: default; flex: 1; transition: border-color 0.2s; }
+  .match-cell.active { border: 1px solid #c8a96e !important; background: #1a1a26 !important; cursor: pointer; }
+  .match-cell.done { border: 1px solid #2e2a14 !important; background: #16161e !important; cursor: pointer; }
+  .match-cell.empty { border: 1px solid #1a1a26; background: #0a0a0f; }
+  .match-row { display: flex; align-items: center; gap: 2px; padding: 2px 3px; transition: opacity 0.3s; }
+  .match-row.loser { opacity: 0.22; }
+  .match-row.winner { background: rgba(200,169,110,0.12); }
+  .match-row .em { font-size: 8px; }
+  .match-row .nm { font-size: 7px; color: #4a4a5a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 400; }
+  .match-row.winner .nm { color: #c8a96e; font-weight: 700; }
+  .match-divider { border: none; border-top: 1px solid #262630; margin: 0; }
+  .tbd { padding: 2px 3px; font-size: 6px; color: #26262e; }
+  .vote-btn { width: 100%; padding: 14px; background: linear-gradient(135deg, #c8a96e, #a07840); border: none; border-radius: 12px; color: #0a0a0f; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; margin-top: 14px; }
+  .vote-hint { font-size: 10px; color: #3a3a4a; text-align: center; margin-top: 6px; }
+  #vote-screen { padding: 0 16px; animation: fadeUp 0.3s ease; }
+  .vote-header { text-align: center; margin-bottom: 16px; }
+  .round-label { font-size: 10px; letter-spacing: 3px; color: #c8a96e; text-transform: uppercase; margin-bottom: 3px; }
+  .vote-hint-text { font-size: 11px; color: #4a4a5a; letter-spacing: 1px; }
+  .card { display: block; width: 100%; margin-bottom: 10px; border-radius: 14px; padding: 16px 18px; cursor: pointer; text-align: left; transition: all 0.25s; position: relative; overflow: hidden; border: 2px solid #2a2a3a; background: #16161e; }
+  .card.selected { border-color: #c8a96e !important; background: #20202c !important; transform: scale(1.01); }
+  .card-inner { position: relative; z-index: 1; }
+  .card-top { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 8px; }
+  .card-emoji { font-size: 34px; margin-top: 2px; flex-shrink: 0; }
+  .card-meta { font-size: 9px; color: #a07840; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 2px; }
+  .card-name { font-size: 18px; font-weight: 700; color: #4a4a5a; line-height: 1.2; margin-bottom: 2px; transition: color 0.2s; }
+  .card.selected .card-name { color: #f0ece4; }
+  .card-from { font-size: 10px; color: #3a3a4a; font-style: italic; transition: color 0.2s; }
+  .card.selected .card-from { color: #b0a080; }
+  .card-tag { display: inline-block; margin-top: 8px; padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 700; background: #2a2a3a; color: #c8a96e; letter-spacing: 1px; }
+  .card.selected .card-tag { background: #c8a96e; color: #0a0a0f; }
+  .card-stats { margin-top: 8px; font-size: 9px; color: #5a5a4a; letter-spacing: 0.5px; }
+  .card.selected .card-stats { color: #d0b070; }
+  .card-fact { font-size: 12px; color: #3a3a4a; line-height: 1.75; transition: color 0.2s; margin-top: 8px; }
+  .card.selected .card-fact { color: #9a9080; }
+  .card-arrow { font-size: 16px; color: #c8a96e; margin-left: auto; flex-shrink: 0; }
+  .card-pct { font-size: 20px; font-weight: 700; color: #c8a96e; margin-top: 10px; }
+  .card-pct span { font-size: 12px; font-weight: 400; color: #4a4a5a; margin-left: 6px; }
+  .card-pct .check { color: #c8a96e; margin-left: 8px; }
+  .pct-bar { position: absolute; top: 0; left: 0; height: 100%; background: rgba(200,169,110,0.06); transition: width 0.9s cubic-bezier(.4,0,.2,1); z-index: 0; }
+  .commit-box { padding: 14px 18px; background: #16161e; border: 1px solid #2a2a3a; border-radius: 12px; text-align: center; animation: fadeUp 0.3s ease; }
+  .commit-hint { font-size: 11px; color: #4a4a5a; margin-bottom: 10px; font-style: italic; }
+  .commit-btn { padding: 12px 32px; background: linear-gradient(135deg, #c8a96e, #a07840); border: none; border-radius: 10px; color: #0a0a0f; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+  .result-box { padding: 16px 18px; background: #16161e; border: 1px solid #2a2a3a; border-radius: 12px; text-align: center; margin-top: 2px; animation: fadeUp 0.3s ease; }
+  .result-majority { font-size: 13px; color: #7ec8a0; font-weight: 700; letter-spacing: 1px; }
+  .result-minority { font-size: 13px; color: #a07840; font-weight: 700; letter-spacing: 1px; }
+  .next-btn { width: 100%; margin-top: 14px; padding: 14px; background: linear-gradient(135deg, #c8a96e, #a07840); border: none; border-radius: 12px; color: #0a0a0f; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+  #champion-screen { text-align: center; padding: 36px 24px; animation: fadeUp 0.5s ease; }
+  .champ-emoji { font-size: 76px; margin-bottom: 8px; }
+  .champ-trophy { font-size: 11px; letter-spacing: 4px; color: #c8a96e; text-transform: uppercase; margin-bottom: 8px; }
+  .champ-name { font-size: 26px; font-weight: 700; color: #f0ece4; margin-bottom: 4px; }
+  .champ-from { font-size: 13px; color: #a07840; font-style: italic; margin-bottom: 4px; }
+  .champ-fact { font-size: 13px; color: #5a5a4a; font-style: italic; max-width: 310px; margin: 14px auto 28px; line-height: 1.8; }
+  .reset-btn { padding: 14px 32px; background: linear-gradient(135deg, #c8a96e, #a07840); border: none; border-radius: 12px; color: #0a0a0f; font-size: 14px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  button:active { filter: brightness(0.88); }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div>
+      <a href="index.html" class="title" style="text-decoration:none;cursor:pointer" title="All brackets">VERDICT</a>
+      <div class="subtitle">Greatest 90s Sitcom Ever</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="back-btn" id="back-btn" style="display:none" onclick="showBracket()">← Bracket</button>
+      <div class="counter" id="counter">0/31</div>
+    </div>
+  </header>
+  <div id="main"></div>
+</div>
+
+<script>
+const ALL = [
+  // DIVISION 1 — NETWORK TITANS
+  {id:0,  name:"Seinfeld",        from:"NBC · 1989-1998", emoji:"🥨", div:"Network Titans", seed:1, stats:"", fact:"No hugging, no learning. Pure comedic architecture — four awful people and an ever-expanding rulebook of social crimes. The show about nothing became the show about everything, and its DNA is in nearly every sitcom written since. The benchmark the entire genre is still measured against."},
+  {id:1,  name:"Friends",         from:"NBC · 1994-2004", emoji:"☕", div:"Network Titans", seed:2, stats:"", fact:"Six people on a couch rewrote the culture, the haircuts, and the idea of the coffee-shop hangout. Still one of the most-watched shows in streaming history decades later — comfort television so durable that whole new generations keep adopting it as their own."},
+  {id:2,  name:"Frasier",         from:"NBC · 1993-2004", emoji:"🎙", div:"Network Titans", seed:3, stats:"", fact:"A record-setting haul of Emmy wins for Outstanding Comedy. A radio psychiatrist who can fix everyone but himself — the smartest farce on television, built on door-slamming bedroom comedy dressed up in opera and fine wine. The rare spin-off that genuinely rivaled its parent."},
+  {id:3,  name:"Mad About You",   from:"NBC · 1992-1999", emoji:"💑", div:"Network Titans", seed:4, stats:"", fact:"Paul Reiser and Helen Hunt made a whole series out of the small daily friction of a marriage, and made it warm and funny without going soft. A cornerstone of NBC's 90s Thursday dominance that gets quietly forgotten in the Seinfeld-and-Friends shadow it lived in."},
+
+  // DIVISION 2 — FAMILY
+  {id:4,  name:"Roseanne",        from:"ABC · 1988-1997", emoji:"🍴", div:"Family", seed:1, stats:"", fact:"The realest working-class family on television — broke, funny, and honest about it. Groundbreaking before that word got overused. It put a kind of American household on screen that prime time had mostly pretended didn't exist, and refused to make them noble or pitiable about it."},
+  {id:5,  name:"Home Improvement",from:"ABC · 1991-1999", emoji:"🔧", div:"Family", seed:2, stats:"", fact:"Tim Allen grunting his way through fatherhood and power tools. A top-five rated show for most of the decade — the definitive mainstream family sitcom of the early 90s, dad humor elevated into a genuine ratings juggernaut that defined ABC's lineup."},
+  {id:6,  name:"Family Matters",  from:"ABC · 1989-1998", emoji:"🤓", div:"Family", seed:3, stats:"", fact:"Steve Urkel accidentally became the entire show — one of television's greatest character hijackings, where a one-off neighbor swallowed the premise whole. The catchphrases and suspenders became inescapable pop-culture artifacts that outlived the show itself."},
+  {id:7,  name:"Step by Step",    from:"ABC · 1991-1998", emoji:"🏡", div:"Family", seed:4, stats:"", fact:"The Brady Bunch for the 90s — Patrick Duffy and Suzanne Somers blending two families into TGIF comfort food. Never prestige, never trying to be, but a reliable Friday-night staple that an entire generation watched without ever quite admitting to it."},
+
+  // DIVISION 3 — BLACK SITCOM GOLDEN AGE
+  {id:8,  name:"The Fresh Prince",from:"NBC · 1990-1996", emoji:"👑", div:"Black Sitcom", seed:1, stats:"", fact:"Will Smith arrived from Philadelphia and changed television, blending broad comedy with genuine episodes about race, class, and an absent father that still land like a punch. That theme song has lived rent-free in millions of heads for thirty years — and the dramatic turns proved the show had real range."},
+  {id:9,  name:"Martin",          from:"FOX · 1992-1997", emoji:"📣", div:"Black Sitcom", seed:2, stats:"", fact:"Martin Lawrence was a one-man comedic explosion, playing a whole roster of characters and powering one of FOX's defining 90s hits. Loud, fast, and deeply quotable, it captured a specific energy nothing else on TV had and made Lawrence a superstar."},
+  {id:10, name:"Living Single",   from:"FOX · 1993-1998", emoji:"🏙", div:"Black Sitcom", seed:3, stats:"", fact:"Six friends in a Brooklyn brownstone navigating careers and love — and it did the urban-friends-hangout premise a full year before Friends arrived. Queen Latifah anchored an ensemble that influenced far more shows than it ever got credit for. The blueprint that the bigger hit borrowed from."},
+  {id:11, name:"Sister, Sister",  from:"ABC/WB · 1994-1999", emoji:"👯", div:"Black Sitcom", seed:4, stats:"", fact:"Tia and Tamera Mowry as twins separated at birth and reunited — a wholesome, hugely popular teen sitcom that bridged ABC's TGIF and the early WB. Pure 90s comfort viewing that defined after-school television for a whole cohort of kids."},
+
+  // DIVISION 4 — ANIMATED
+  {id:12, name:"The Simpsons",    from:"FOX · 1989-now", emoji:"🍩", div:"Animated", seed:1, stats:"", fact:"The 90s were its untouchable golden era — a stretch of writing so sharp that no animated comedy before or since has come close. Springfield became a complete satirical universe, and those seasons remain the high-water mark for the entire form. Arguably the best-written show of the decade, animated or not."},
+  {id:13, name:"King of the Hill",from:"FOX · 1997-2010", emoji:"🍔", div:"Animated", seed:2, stats:"", fact:"Mike Judge's quiet masterpiece — a grounded, deeply humane animated comedy about a Texas propane salesman and his neighbors. It found enormous heart in the most ordinary suburban life, and aged better than almost anything else on this board. I tell you what."},
+  {id:14, name:"Beavis and Butt-Head",from:"MTV · 1993-1997", emoji:"🤘", div:"Animated", seed:3, stats:"", fact:"Two idiots on a couch became a genuine cultural lightning rod, equal parts moral panic and razor-sharp media satire. Mike Judge weaponized stupidity into commentary, and the show's influence on a decade of slacker comedy is impossible to overstate."},
+  {id:15, name:"Daria",          from:"MTV · 1997-2002", emoji:"🙄", div:"Animated", seed:4, stats:"", fact:"A Beavis and Butt-Head spin-off that became something completely its own — the patron saint of every sardonic, too-smart-for-this teenager of the late 90s. Daria Morgendorffer's deadpan turned high-school misery into deadly precise satire."},
+
+  // DIVISION 5 — TEEN / TGIF
+  {id:16, name:"Boy Meets World",from:"ABC · 1993-2000", emoji:"🎒", div:"Teen/TGIF", seed:1, stats:"", fact:"Cory and Topanga, Shawn, and Mr. Feeny. A whole generation's moral compass disguised as a TGIF teen sitcom — it grew up alongside its audience and quietly taught them how to be decent people between the jokes. The friendships felt real enough to outlast the show by decades."},
+  {id:17, name:"Saved by the Bell",from:"NBC · 1989-1993", emoji:"📞", div:"Teen/TGIF", seed:2, stats:"", fact:"Saturday-morning brain candy for an entire generation. Zack Morris was a menace who broke the fourth wall and schemed his way through Bayside, and somehow everyone loved him for it. Pure, glossy, time-capsule nostalgia that defined what a teen sitcom even was."},
+  {id:18, name:"Sabrina the Teenage Witch",from:"ABC/WB · 1996-2003", emoji:"🐈", div:"Teen/TGIF", seed:3, stats:"", fact:"Melissa Joan Hart, a talking cat, and a magic-meets-high-school premise that anchored ABC's TGIF for years. Light, charming, and endlessly rewatchable — the kind of show that defined a specific Friday-night slot for millions of kids."},
+  {id:19, name:"Clarissa Explains It All",from:"Nickelodeon · 1991-1994", emoji:"💾", div:"Teen/TGIF", seed:4, stats:"", fact:"Melissa Joan Hart talking directly to camera, years before that felt normal, in one of the first Nickelodeon sitcoms built around a girl lead. A quietly influential show that proved a teenage girl could carry a series — and that kids would watch."},
+
+  // DIVISION 6 — WORKPLACE
+  {id:20, name:"Cheers",         from:"NBC · 1982-1993", emoji:"🍺", div:"Workplace", seed:1, stats:"", fact:"Technically an 80s show, but it owned the early 90s and ended in 1993 as a genuine cultural event. The bar where everybody knows your name set the gold standard for the ensemble hangout comedy that half of this bracket is descended from. The finale was appointment television for the whole country."},
+  {id:21, name:"NewsRadio",      from:"NBC · 1995-1999", emoji:"📻", div:"Workplace", seed:2, stats:"", fact:"The most underrated ensemble of the decade — Dave Foley, Phil Hartman, and a writers' room firing on every cylinder. Never a ratings hit, gone too soon, but beloved by everyone who actually found it. A comedian's comedy that punched far above its audience size."},
+  {id:22, name:"Spin City",      from:"ABC · 1996-2002", emoji:"🗽", div:"Workplace", seed:3, stats:"", fact:"Michael J. Fox in his prime running a chaotic New York City mayor's office. Charming, fast, and forgotten a little too quickly — a sharp workplace comedy carried by one of the most likeable leads television ever produced, right up until his exit changed the show."},
+  {id:23, name:"The Drew Carey Show",from:"ABC · 1995-2004", emoji:"🍻", div:"Workplace", seed:4, stats:"", fact:"A working-class Cleveland office comedy with a mean streak and a willingness to get weird — full musical numbers, recurring chaos, and Drew Carey as the everyman getting steamrolled by life. Underrated for how much it experimented inside a traditional sitcom shell."},
+
+  // DIVISION 7 — EDGY / CABLE & FOX
+  {id:24, name:"Married... with Children",from:"FOX · 1987-1997", emoji:"🛋", div:"Edgy/Cable", seed:1, stats:"", fact:"Al Bundy was a revolution — the anti-family sitcom that made dysfunction funny before it was fashionable. It helped put a brand-new network on the map by being everything the warm, hugging sitcoms refused to be. Crude, cynical, and proudly so, years ahead of the curve."},
+  {id:25, name:"3rd Rock from the Sun",from:"NBC · 1996-2001", emoji:"👽", div:"Edgy/Cable", seed:2, stats:"", fact:"Aliens studying humanity by pretending to be a family, with John Lithgow at his most gloriously unhinged. A big, physical, joyfully weird comedy that let great actors go completely over the top — criminally underrated and unlike anything else on network TV at the time."},
+  {id:26, name:"The Larry Sanders Show",from:"HBO · 1992-1998", emoji:"🎬", div:"Edgy/Cable", seed:3, stats:"", fact:"The show that basically invented the modern cringe comedy and the fake-showbiz satire. Garry Shandling's HBO masterpiece traded the laugh track for something queasier and smarter, and you can draw a straight line from it to The Office, 30 Rock, and Curb. The critics' choice that casual fans never found."},
+  {id:27, name:"Dream On",       from:"HBO · 1990-1996", emoji:"🛏", div:"Edgy/Cable", seed:4, stats:"", fact:"One of HBO's first original sitcoms — a divorced book editor whose inner thoughts played out as clips from old black-and-white films. Adult, inventive, and a clear early sign of where premium-cable comedy was about to go. More remembered by historians than by the public, which makes it a perfect dark horse."},
+
+  // DIVISION 8 — LATE-90s BRIDGE
+  {id:28, name:"Everybody Loves Raymond",from:"CBS · 1996-2005", emoji:"🏠", div:"Late-90s", seed:1, stats:"", fact:"Started in 1996 and defined the decade's close. Ray Romano made the ordinary friction of marriage and meddling in-laws into appointment television — a traditional multi-cam done about as well as the form has ever been done, with an all-time supporting cast."},
+  {id:29, name:"Will & Grace",   from:"NBC · 1998-2006", emoji:"🌈", div:"Late-90s", seed:2, stats:"", fact:"A late-90s arrival that became genuinely historic — one of the first network hits built around gay lead characters, credited by name with shifting mainstream American attitudes. Fast, broad, and anchored by Megan Mullally and Sean Hayes stealing every scene they touched."},
+  {id:30, name:"Just Shoot Me!", from:"NBC · 1997-2003", emoji:"📸", div:"Late-90s", seed:3, stats:"", fact:"A glossy magazine-office ensemble that rode NBC's Must-See lineup, powered by David Spade and George Segal's odd-couple chemistry. Never groundbreaking, but a slick, joke-dense workplace comedy that was a fixture of the late-90s schedule."},
+  {id:31, name:"Caroline in the City",from:"NBC · 1995-1999", emoji:"✏", div:"Late-90s", seed:4, stats:"", fact:"Lea Thompson as a Manhattan cartoonist, slotted right into NBC's powerhouse Thursday block. A lighter, sweeter entry that benefited enormously from its scheduling — exactly the kind of solid-but-overshadowed show that makes a brutal round-one four seed."}
+];
+
+const R16=[[0,3],[1,2],[4,7],[5,6],[8,11],[9,10],[12,15],[13,14],[16,19],[17,18],[20,23],[21,22],[24,27],[25,26],[28,31],[29,30]];
+const COUNTS=[16,8,4,2,1];
+const RLABELS=["Round of 32","Round of 16","Quarterfinal","Semifinal","The Final"];
+let results=[Array(16).fill(null),Array(8).fill(null),Array(4).fill(null),Array(2).fill(null),Array(1).fill(null)];
+let currentVote=null,selected=null,locked=false,askPrompt='';
+
+const ASK_ROOM=[
+  "Best show, or just the one you rewatched the most?",
+  "Does it actually hold up, or is it nostalgia talking?",
+  "Which loser of this matchup got robbed?",
+  "Funniest single episode you can name from either show?",
+  "Which one would you put on right now with no plan to do anything else?"
+];
+
+function getC(r,mi,slot){
+  if(r===0){const idx=R16[mi][slot];return ALL[idx];}
+  const prevMi=mi*2+slot,prevW=results[r-1][prevMi];
+  if(prevW===null)return null;
+  return ALL.find(c=>c.id===prevW);
+}
+function getCurrentRound(){for(let r=0;r<5;r++){for(let mi=0;mi<COUNTS[r];mi++){if(results[r][mi]===null){const a=getC(r,mi,0),b=getC(r,mi,1);if(a&&b)return r;}}};return 4;}
+function getNextActive(){const cr=getCurrentRound();for(let mi=0;mi<COUNTS[cr];mi++){if(results[cr][mi]===null){const a=getC(cr,mi,0),b=getC(cr,mi,1);if(a&&b)return{round:cr,mi};}}return null;}
+function totalVotes(){return results.flat().filter(v=>v!==null).length;}
+function fakeA(a,b){return Math.min(86,Math.max(20,50+(b.id-a.id)%17+(a.id%4)*2));}
+
+function render(){
+  const done=results[4][0]!==null;
+  if(done){const w=ALL.find(c=>c.id===results[4][0]);renderChampion(w);return;}
+  if(currentVote!==null){renderVote();return;}
+  renderBracket();
+}
+
+function renderBracket(){
+  document.getElementById('back-btn').style.display='none';
+  const cr=getCurrentRound(),next=getNextActive();
+  const divNames=["Network Titans","Family","Black Sitcom","Animated","Teen/TGIF","Workplace","Edgy/Cable","Late-90s"];
+  let html='<div class="core-q">Which 90s sitcom is the greatest of all time?</div>';
+  html+='<div class="div-labels">';
+  divNames.forEach(d=>{html+=`<div class="div-label">${d}</div>`;});
+  html+='</div><div class="bracket-cols">';
+  for(let r=0;r<5;r++){
+    const count=COUNTS[r],maxH=[22,30,44,70,100][r],gap=[2,5,12,28,0][r];
+    html+=`<div class="bracket-col"><div class="col-label" style="color:${r===cr?'#c8a96e':'#3a3a4a'}">${["R32","R16","QF","SF","Final"][r]}</div><div class="col-matches" style="gap:${gap}px">`;
+    for(let mi=0;mi<count;mi++){
+      const a=getC(r,mi,0),b=getC(r,mi,1),winner=results[r][mi];
+      const active=r===cr&&winner===null&&a&&b,done=winner!==null;
+      const cls=active?'active':done?'done':'empty';
+      const onclick=(active||done)?`onclick="startVote(${r},${mi})"`:'';
+      html+=`<div class="match-cell ${cls}" style="max-height:${maxH}px;${!active&&!done?'border:1px solid #1a1a26':''}" ${onclick}>`;
+      [a,b].forEach((c,si)=>{
+        if(!c){html+=`<div class="tbd">—</div>`;return;}
+        const isW=winner===c.id,isL=done&&!isW;
+        const nm=c.name.split(' ').slice(0,r===0?2:3).join(' ');
+        html+=`${si===1?'<hr class="match-divider">':''}<div class="match-row ${isW?'winner':isL?'loser':''}"><span class="em">${c.emoji}</span><span class="nm">${nm}</span></div>`;
+      });
+      html+='</div>';
+    }
+    html+='</div></div>';
+  }
+  html+='</div>';
+  if(next)html+=`<div style="padding:14px 16px 0"><button class="vote-btn" onclick="startVote(${next.round},${next.mi})">Vote Next Matchup →</button><div class="vote-hint">Tap any gold-bordered match to vote</div></div>`;
+  document.getElementById('main').innerHTML=html;
+}
+
+function startVote(round,mi){currentVote={round,mi};selected=null;locked=false;const w=results[round][mi];if(w!==null){const a=getC(round,mi,0);selected=(a&&a.id===w)?'a':'b';}render();}
+
+function renderVote(){
+  document.getElementById('back-btn').style.display='block';
+  const{round,mi}=currentVote,a=getC(round,mi,0),b=getC(round,mi,1);
+  if(!a||!b){showBracket();return;}
+  const pA=fakeA(a,b),pB=100-pA,majority=selected?(selected==='a'?pA:pB)>=50:false;
+  const hint=!selected?"— Which one is the greatest? —":locked?"— Verdict locked! —":"— Tap to switch. Button to commit. —";
+  let html=`<div id="vote-screen"><div class="vote-header"><div class="round-label">${RLABELS[round]}</div><div class="vote-hint-text">${hint}</div></div>`;
+  [{side:'a',c:a,pct:pA},{side:'b',c:b,pct:pB}].forEach(({side,c,pct})=>{
+    const isSel=selected===side;
+    html+=`<div class="card${isSel?' selected':''}" onclick="selectCard('${side}')">`;
+    if(locked&&isSel)html+=`<div class="pct-bar" style="width:${pct}%"></div>`;
+    html+=`<div class="card-inner">
+      <div class="card-top">
+        <div class="card-emoji">${c.emoji}</div>
+        <div style="flex:1;min-width:0">
+          <div class="card-meta">${c.div} · ${c.from}</div>
+          <div class="card-name">${c.name}</div>
+        </div>
+        ${isSel&&!locked?'<div class="card-arrow">◀</div>':''}
+      </div>
+      <div class="card-tag">${c.seed === 1 ? '#1 SEED' : c.seed === 2 ? '#2 SEED' : c.seed === 3 ? '#3 SEED' : '#4 SEED'}</div>
+      ${c.stats?`<div class="card-stats">📊 ${c.stats}</div>`:""}
+      <div class="card-fact">${c.fact}</div>
+      ${locked&&isSel?`<div class="card-pct">${pct}%<span>voted this show</span><span class="check">✓</span></div>`:''}
+    </div></div>`;
+  });
+  if(selected&&!locked)html+=`<div class="commit-box"><div class="commit-hint">Still deciding? Tap the other card to compare.</div><button class="commit-btn" onclick="commitVote()">Lock In Verdict →</button></div>`;
+  if(locked){
+    html+=`<div class="result-box"><div class="${majority?'result-majority':'result-minority'}">${majority?'✓ With the majority':'🔥 Against the crowd'}</div>
+      <div class="ask-room" style="margin-top:14px;padding-top:14px;border-top:1px dashed #4a4a5a"><div style="font-size:9px;letter-spacing:3px;color:#a07840;text-transform:uppercase;margin-bottom:6px">Ask the Room</div><div style="font-size:15px;color:#f0e8d8;font-style:italic;line-height:1.4">${askPrompt}</div></div>
+    </div>
+    <button class="next-btn" onclick="advance()">Vote Next Matchup →</button>`;
+  }
+  html+='</div>';
+  document.getElementById('main').innerHTML=html;
+}
+
+function selectCard(side){if(locked)return;selected=side;renderVote();}
+function commitVote(){
+  if(!selected||locked)return;
+  locked=true;
+  askPrompt=ASK_ROOM[Math.floor(Math.random()*ASK_ROOM.length)];
+  const{round,mi}=currentVote,a=getC(round,mi,0),b=getC(round,mi,1);
+  results[round][mi]=selected==='a'?a.id:b.id;
+  renderVote();
+  document.getElementById('counter').textContent=totalVotes()+'/31';
+}
+function advance(){currentVote=null;locked=false;selected=null;render();}
+function showBracket(){currentVote=null;selected=null;locked=false;render();}
+function renderChampion(c){
+  document.getElementById('back-btn').style.display='none';
+  document.getElementById('main').innerHTML=`
+    <div id="champion-screen">
+      <div style="font-size:44px;margin-bottom:6px">🏆</div>
+      <div class="champ-emoji">${c.emoji}</div>
+      <div class="champ-trophy">Greatest 90s Sitcom of All Time</div>
+      <div class="champ-name">${c.name}</div>
+      <div class="champ-from">${c.from}</div>
+      <div style="display:inline-block;margin:10px 0 6px;padding:4px 16px;border-radius:20px;background:#c8a96e;color:#0a0a0f;font-size:11px;font-weight:700;letter-spacing:1px">YOUR VERDICT</div>
+      <div class="champ-fact">${c.fact}</div>
+      <button class="reset-btn" onclick="resetGame()">Run It Back</button>
+    </div>`;
+}
+function resetGame(){results=[Array(16).fill(null),Array(8).fill(null),Array(4).fill(null),Array(2).fill(null),Array(1).fill(null)];currentVote=null;selected=null;locked=false;render();}
+render();
+</script>
+</body>
+</html>

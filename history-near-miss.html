@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VERDICT — They Almost Didn't Make It: 32 Greatest Near-Misses</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #080a06; color: #f0f8e8; font-family: Georgia, 'Times New Roman', serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
+  #app { width: 100%; max-width: 560px; min-height: 100vh; display: flex; flex-direction: column; }
+  header { padding: 18px 20px 14px; border-bottom: 1px solid #101408; display: flex; align-items: center; justify-content: space-between; }
+  .title { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; }
+  .subtitle { font-size: 9px; color: #70b040; letter-spacing: 2px; text-transform: uppercase; margin-top: 2px; }
+  .counter { font-size: 10px; color: #141a08; background: #0c1008; border: 1px solid #101408; border-radius: 16px; padding: 4px 10px; }
+  .back-btn { background: transparent; border: 1px solid #101408; border-radius: 8px; padding: 5px 10px; color: #1e2810; font-size: 11px; cursor: pointer; font-family: Georgia, serif; }
+  #main { flex: 1; padding: 14px 0; }
+  .div-labels { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px; margin: 0 10px 8px; }
+  .div-label { font-size: 7px; color: #1e2810; text-align: center; padding: 3px 2px; background: #0c1008; border-radius: 4px; }
+  .bracket-cols { display: flex; gap: 3px; padding: 0 10px; }
+  .bracket-col { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+  .col-label { font-size: 7px; letter-spacing: 1.5px; text-transform: uppercase; text-align: center; margin-bottom: 5px; }
+  .col-matches { display: flex; flex-direction: column; justify-content: space-around; height: 380px; }
+  .match-cell { border-radius: 5px; overflow: hidden; cursor: default; flex: 1; transition: border-color 0.2s; }
+  .match-cell.active { border: 1px solid #70b040 !important; background: #0c1008 !important; cursor: pointer; }
+  .match-cell.done { border: 1px solid #141a08 !important; background: #0a0e06 !important; cursor: pointer; }
+  .match-cell.empty { border: 1px solid #0c1008; background: #080a06; }
+  .match-row { display: flex; align-items: center; gap: 2px; padding: 2px 3px; transition: opacity 0.3s; }
+  .match-row.loser { opacity: 0.22; }
+  .match-row.winner { background: rgba(112,176,64,0.12); }
+  .match-row .em { font-size: 8px; }
+  .match-row .nm { font-size: 7px; color: #1e2810; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 400; }
+  .match-row.winner .nm { color: #70b040; font-weight: 700; }
+  .match-divider { border: none; border-top: 1px solid #0e1208; margin: 0; }
+  .tbd { padding: 2px 3px; font-size: 6px; color: #121608; }
+  .vote-btn { width: 100%; padding: 14px; background: linear-gradient(135deg, #70b040, #406020); border: none; border-radius: 12px; color: #080a06; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; margin-top: 14px; }
+  .vote-hint { font-size: 10px; color: #141a08; text-align: center; margin-top: 6px; }
+  #vote-screen { padding: 0 16px; animation: fadeUp 0.3s ease; }
+  .vote-header { text-align: center; margin-bottom: 16px; }
+  .round-label { font-size: 10px; letter-spacing: 3px; color: #70b040; text-transform: uppercase; margin-bottom: 3px; }
+  .vote-hint-text { font-size: 11px; color: #1e2810; letter-spacing: 1px; }
+  .card { display: block; width: 100%; margin-bottom: 10px; border-radius: 14px; padding: 16px 18px; cursor: pointer; text-align: left; transition: all 0.25s; position: relative; overflow: hidden; border: 2px solid #101408; background: #0a0e06; }
+  .card.selected { border-color: #70b040 !important; background: #101808 !important; transform: scale(1.01); }
+  .card-inner { position: relative; z-index: 1; }
+  .card-top { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 8px; }
+  .card-emoji { font-size: 28px; margin-top: 2px; flex-shrink: 0; }
+  .card-meta { font-size: 9px; color: #70b040; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 2px; }
+  .card-name { font-size: 15px; font-weight: 700; color: #283818; line-height: 1.2; margin-bottom: 2px; transition: color 0.2s; }
+  .card.selected .card-name { color: #f0f8e8; }
+  .card-from { font-size: 10px; color: #161e08; font-style: italic; transition: color 0.2s; }
+  .card.selected .card-from { color: #507030; }
+  .card-fact { font-size: 12px; color: #161e08; line-height: 1.75; transition: color 0.2s; }
+  .card.selected .card-fact { color: #608040; }
+  .card-arrow { font-size: 16px; color: #70b040; margin-left: auto; flex-shrink: 0; }
+  .card-pct { font-size: 18px; font-weight: 700; color: #70b040; margin-top: 10px; }
+  .card-pct span { font-size: 12px; font-weight: 400; color: #283818; margin-left: 6px; }
+  .card-pct .check { color: #70b040; margin-left: 8px; }
+  .pct-bar { position: absolute; top: 0; left: 0; height: 100%; background: rgba(112,176,64,0.06); transition: width 0.9s cubic-bezier(.4,0,.2,1); z-index: 0; }
+  .commit-box { padding: 14px 18px; background: #0a0e06; border: 1px solid #101408; border-radius: 12px; text-align: center; animation: fadeUp 0.3s ease; }
+  .commit-hint { font-size: 11px; color: #1e2810; margin-bottom: 10px; font-style: italic; }
+  .commit-btn { padding: 12px 32px; background: linear-gradient(135deg, #70b040, #406020); border: none; border-radius: 10px; color: #080a06; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+  .result-box { padding: 14px 18px; background: #0a0e06; border: 1px solid #101408; border-radius: 12px; text-align: center; }
+  .result-text { font-size: 12px; letter-spacing: 2px; text-transform: uppercase; }
+  .majority { color: #7ec8a0; }
+  .minority { color: #c8a040; }
+  #champion-screen { text-align: center; padding: 36px 24px; animation: fadeUp 0.5s ease; }
+  .champ-emoji { font-size: 64px; margin-bottom: 12px; }
+  .champ-label { font-size: 10px; letter-spacing: 4px; color: #70b040; text-transform: uppercase; margin-bottom: 8px; }
+  .champ-name { font-size: 20px; font-weight: 700; color: #f0f8e8; margin-bottom: 4px; line-height: 1.3; }
+  .champ-from { font-size: 12px; color: #70b040; font-style: italic; margin-bottom: 4px; }
+  .champ-meta { font-size: 11px; color: #1e2810; margin-bottom: 16px; }
+  .champ-fact { font-size: 13px; color: #304020; font-style: italic; max-width: 310px; margin: 0 auto 28px; line-height: 1.8; }
+  .reset-btn { padding: 12px 28px; background: linear-gradient(135deg, #70b040, #406020); border: none; border-radius: 10px; color: #080a06; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  button:active { filter: brightness(0.88); }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div>
+      <a href="index.html" class="title" style="text-decoration:none;cursor:pointer" title="All brackets">VERDICT</a>
+      <div class="subtitle">They Almost Didn't Make It — 32 Greatest Near-Misses</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="back-btn" id="back-btn" style="display:none" onclick="showBracket()">← Bracket</button>
+      <div class="counter" id="counter">0/31</div>
+    </div>
+  </header>
+  <div id="main"></div>
+</div>
+
+<script>
+const ALL = [
+  // FILM NEAR-MISSES
+  {id:0, name:"Star Wars Gets Made", from:"Film · George Lucas · 1977", emoji:"⭐", div:"Film Near-Misses", seed:1, year:1977, fact:"Every major Hollywood studio passed on Star Wars. Universal. United Artists. Disney. Only Alan Ladd Jr. at 20th Century Fox said yes — and even he didn't fully understand what he was greenlit. Lucas was so convinced it would fail he left the premiere to go on vacation. The most successful film franchise in history was one studio executive's gut feeling away from never existing."},
+  {id:1, name:"Stallone Turns Down $350,000 for Rocky", from:"Film · Sylvester Stallone · 1976", emoji:"🥊", div:"Film Near-Misses", seed:2, year:1976, fact:"Stallone wrote Rocky in three days. Studios loved the script and offered $350,000 for it — an enormous sum — on one condition: he couldn't star in it. They wanted Ryan O'Neal or James Caan. Stallone was broke, his wife was pregnant, and he'd just sold his dog for $40. He said no. He held out until they agreed to let him star. Rocky won Best Picture. The dog's name was Butkus. He bought him back."},
+  {id:2, name:"Spielberg Almost Doesn't Direct Jaws", from:"Film · Steven Spielberg · 1975", emoji:"🦈", div:"Film Near-Misses", seed:3, year:1975, fact:"The mechanical shark broke constantly. The studio wanted to replace Spielberg. He was 26 years old and had never directed a major feature. He solved the shark problem by not showing it — which made the film infinitely scarier. The film that invented the summer blockbuster almost had a different director and a working shark. Both would have made it worse."},
+  {id:3, name:"The Wizard of Oz Almost Stars Shirley Temple", from:"Film · MGM · 1939", emoji:"🌈", div:"Film Near-Misses", seed:4, year:1939, fact:"MGM's first choice for Dorothy was Shirley Temple. 20th Century Fox wouldn't loan her out. Judy Garland got the role and recorded Somewhere Over the Rainbow — a song that was almost cut from the final film because an executive thought it slowed things down. The most beloved song in Hollywood history survived by one vote in a screening room."},
+
+  // MUSIC NEAR-MISSES
+  {id:4, name:"Decca Rejects The Beatles", from:"Music · The Beatles · 1962", emoji:"🎸", div:"Music Near-Misses", seed:1, year:1962, fact:"On January 1, 1962, Decca Records auditioned The Beatles and passed. The executive said guitar groups are on the way out. Their own label EMI almost passed too — it was a junior A&R man named George Martin who said yes, almost as an afterthought. The band that changed music forever was one bored executive's indifference away from never being signed."},
+  {id:5, name:"Bohemian Rhapsody Almost Gets Shelved", from:"Music · Queen · 1975", emoji:"🎵", div:"Music Near-Misses", seed:2, year:1975, fact:"Every radio programmer told Queen that Bohemian Rhapsody was too long to play. Six minutes wouldn't get airtime. EMI almost refused to release it. DJ Kenny Everett got an advance copy, played it anyway, and the phones didn't stop. The song spent nine weeks at number one. The greatest rock song ever recorded almost never got played because of a three-minute rule."},
+  {id:6, name:"Elvis Almost Stays a Truck Driver", from:"Music · Elvis Presley · 1954", emoji:"🎤", div:"Music Near-Misses", seed:3, year:1954, fact:"Elvis Presley walked into Sun Studio in Memphis to record a song for his mother's birthday. Sam Phillips wasn't there. His secretary Marion Keisker recorded him anyway and wrote a note: Good ballad singer. Hold. Phillips called him back months later almost by accident. Elvis was driving a truck for Crown Electric at the time. He almost kept driving."},
+  {id:7, name:"Bob Dylan Gets Dropped After First Album", from:"Music · Bob Dylan · 1962", emoji:"🎙", div:"Music Near-Misses", seed:4, year:1962, fact:"Bob Dylan's debut album sold fewer than 5,000 copies. Columbia Records executives called him Hammond's Folly after the producer who signed him. They nearly dropped him before Freewheelin' was recorded. The man who would win the Nobel Prize for Literature was one quarterly sales report from being a footnote. John Hammond kept fighting for him. The rest is everything."},
+
+  // SPORTS NEAR-MISSES
+  {id:8, name:"Michael Jordan Gets Cut from JV", from:"Sports · Michael Jordan · 1978", emoji:"🏀", div:"Sports Near-Misses", seed:1, year:1978, fact:"Michael Jordan tried out for his high school varsity basketball team as a sophomore and was cut. He went home and cried in his room. He came back and made JV, then varsity, then North Carolina, then the NBA, then six championships. Jordan said being cut was the best thing that ever happened to him. The greatest basketball player who ever lived needed to be told he wasn't good enough first."},
+  {id:9, name:"Muhammad Ali Refuses the Draft", from:"Sports · Muhammad Ali · 1967", emoji:"🥊", div:"Sports Near-Misses", seed:2, year:1967, fact:"When Ali refused induction into the US Army in 1967 he was stripped of his title, banned from boxing for three years, and faced five years in prison. He gave up his prime years willingly. The Supreme Court overturned his conviction 8-0 in 1971. Ali came back and fought Frazier, Foreman, and everyone else. The near-miss wasn't losing the title. It was what he became because of losing it."},
+  {id:10, name:"Wayne Gretzky Almost Stays in Edmonton", from:"Sports · Wayne Gretzky · 1988", emoji:"🏒", div:"Sports Near-Misses", seed:3, year:1988, fact:"The trade of Wayne Gretzky from Edmonton to Los Angeles in 1988 was so controversial that the Canadian government considered blocking it. Gretzky wept at the press conference. The trade that broke Canadian hearts built hockey in America, put the sport in Los Angeles, and directly led to the Anaheim Ducks, the San Jose Sharks, and eventually the NHL expanding across the Sun Belt. One trade changed a sport's geography."},
+  {id:11, name:"Tiger Woods Survives the Car Crash", from:"Sports · Tiger Woods · 2021", emoji:"⛳", div:"Sports Near-Misses", seed:4, year:2021, fact:"In February 2021 Tiger Woods' SUV rolled several times down a California hillside. First responders said he was lucky to be alive. His leg was shattered in multiple places. Doctors discussed amputation. Fourteen months later Tiger Woods walked onto the first tee at the Masters. He didn't win. He didn't need to. The near-miss was the story. He'd already won everything else."},
+
+  // LITERARY NEAR-MISSES
+  {id:12, name:"Tolkien's Publisher Says Yes to LOTR", from:"Literary · J.R.R. Tolkien · 1954", emoji:"💍", div:"Literary Near-Misses", seed:1, year:1954, fact:"Tolkien's publisher Allen & Unwin told him Lord of the Rings was too long and would lose money. They published it anyway in three volumes because Tolkien refused to cut it. The chairman's ten-year-old son Rayner Unwin had reviewed The Hobbit and recommended it — his father paid him a shilling. The same boy, now grown, championed Lord of the Rings. The most influential fantasy novel ever written was greenlit twice by the same child."},
+  {id:13, name:"Harry Potter Gets Published on 12th Try", from:"Literary · J.K. Rowling · 1997", emoji:"🧙", div:"Literary Near-Misses", seed:2, year:1997, fact:"J.K. Rowling was a single mother on welfare writing Harry Potter in Edinburgh cafes while her daughter slept in a stroller. Twelve publishers rejected it. Bloomsbury only said yes because the chairman's eight-year-old daughter read the first chapter and demanded more. The most successful book series in history was rejected a dozen times and saved by a child's enthusiasm. The parallels to the story itself are not subtle."},
+  {id:14, name:"Stephen King Pulls Carrie from the Trash", from:"Literary · Stephen King · 1973", emoji:"🔪", div:"Literary Near-Misses", seed:3, year:1973, fact:"Stephen King threw the first pages of Carrie in the trash. He thought a story about a teenage girl's period was outside his range. His wife Tabitha retrieved the pages, read them, and told him to keep going. Doubleday bought the book. The paperback rights sold for $400,000. King gave half to Tabitha. The entire Stephen King publishing empire began because his wife went through the garbage."},
+  {id:15, name:"Fitzgerald Sends Gatsby to One More Editor", from:"Literary · F. Scott Fitzgerald · 1925", emoji:"📗", div:"Literary Near-Misses", seed:4, year:1925, fact:"The Great Gatsby sold only 20,000 copies in Fitzgerald's lifetime — far below his expectations. He died in 1940 believing it was a failure. The novel was distributed to soldiers during World War II through the Armed Services Editions program. Servicemen brought it home. Professors started teaching it. By 1960 it was required reading across America. The great American novel needed a war and 20 years of neglect to become what it is."},
+
+  // TV & COMEDY NEAR-MISSES
+  {id:16, name:"Seinfeld Survives Cancellation", from:"TV · Jerry Seinfeld · 1990", emoji:"🥨", div:"TV Near-Misses", seed:1, year:1990, fact:"The pilot of Seinfeld tested so badly that NBC only ordered four episodes as a summer replacement — an insult booking. The show about nothing nearly became nothing. One NBC executive kept fighting for it internally. By season three it was the most watched show on television. By the end it was the most profitable sitcom in history. The show that defined a generation of comedy was one bad test screening from four episodes and a footnote."},
+  {id:17, name:"SNL Gets a Second Season", from:"TV · Lorne Michaels · 1976", emoji:"🎭", div:"TV Near-Misses", seed:2, year:1976, fact:"Saturday Night Live's first season was considered a disaster by NBC executives. Too weird. Too political. Too late. Lorne Michaels was told not to expect a renewal. The network reversed course after the ratings came in and the show found its audience. SNL has now run for 50 years and launched more comedy careers than any other program in television history. It almost ended after 17 episodes."},
+  {id:18, name:"The Simpsons Gets Picked Up by Fox", from:"TV · Matt Groening · 1989", emoji:"🍩", div:"TV Near-Misses", seed:3, year:1989, fact:"Matt Groening created the Simpsons in 15 minutes in a waiting room at Fox because he didn't want to give up the rights to his existing comic strip Life in Hell. He drew the family on the spot, named them after his own family members, and pitched it cold. Fox ordered a Christmas special. Then a series. The show he invented in a waiting room to avoid giving something else away became the longest-running primetime animated series in history."},
+  {id:19, name:"Cheers Finds Its Audience in Reruns", from:"TV · NBC · 1983", emoji:"🍺", div:"TV Near-Misses", seed:4, year:1983, fact:"Cheers finished last in the Nielsen ratings its entire first season — dead last out of 77 shows. NBC renewed it anyway because the network had nothing else. Summer reruns found the audience the regular season missed. Season two built on that. By season three Cheers was a top ten show. It ran for eleven seasons and won 111 Emmy nominations. The show that defined appointment television spent its first year invisible."},
+
+  // PERSONAL LEGENDS
+  {id:20, name:"Walt Disney Gets Fired from His Newspaper Job", from:"Personal Legends · Walt Disney · 1919", emoji:"🏰", div:"Personal Legends", seed:1, year:1919, fact:"Walt Disney was fired from the Kansas City Star in 1919 because his editor said he lacked imagination and had no good ideas. He then started a company that went bankrupt. Then another. Then he moved to Hollywood with $40 and drew a mouse. The man told he had no imagination built the most imagination-dependent entertainment company in history. The editor's name has been forgotten. Disney's hasn't."},
+  {id:21, name:"Oprah Gets Fired from Her First TV Job", from:"Personal Legends · Oprah Winfrey · 1976", emoji:"📺", div:"Personal Legends", seed:2, year:1976, fact:"Oprah Winfrey was fired from her first television job as a reporter because she was too emotionally invested in the stories. She was told she wasn't fit for TV. She was moved to a morning talk show as a punishment posting. The talk show format suited her perfectly. She built a media empire from a demotion. The thing they fired her for — emotional investment — became the entire foundation of everything she built."},
+  {id:22, name:"Steve Jobs Gets Fired from Apple", from:"Personal Legends · Steve Jobs · 1985", emoji:"🍎", div:"Personal Legends", seed:3, year:1985, fact:"In 1985 the board of Apple — the company Jobs co-founded in his garage — voted to remove him from his own company. He spent 11 years away, started NeXT and Pixar, and came back to Apple in 1997 when the company was 90 days from bankruptcy. He then built the iMac, iPod, iTunes, iPhone, and iPad. Being fired from Apple was the best thing that ever happened to Apple. Jobs said so himself."},
+  {id:23, name:"Einstein Fails His University Entrance Exam", from:"Personal Legends · Albert Einstein · 1895", emoji:"🧠", div:"Personal Legends", seed:4, year:1895, fact:"Albert Einstein failed the entrance examination for the Swiss Federal Polytechnic in Zurich at age 16. He failed the language and botany sections. He spent a year in remedial school in Aarau — which he later said was the most intellectually stimulating year of his life. He passed the second time. The man who rewrote physics needed two attempts to get into university and the year he spent waiting may have given him the thinking time that everything else required."},
+
+  // WILD CARDS
+  {id:24, name:"The Beatles Almost Break Up Before Hamburg", from:"Wild Cards · The Beatles · 1960", emoji:"🎸", div:"Wild Cards", seed:1, year:1960, fact:"Before Hamburg, The Beatles were a mediocre skiffle band from Liverpool who had been rejected everywhere. Hamburg took them in — brutal gigs, 8 hours a night, seven nights a week, for months. They played over 800 times in Hamburg before they were famous. The rejection that sent them to Germany forged them into the tightest live band in the world. Every rejection before fame was the education fame couldn't provide."},
+  {id:25, name:"Pixar Almost Gets Shut Down Before Toy Story", from:"Wild Cards · Pixar · 1991", emoji:"🎈", div:"Wild Cards", seed:2, year:1991, fact:"Steve Jobs bought Pixar from George Lucas for $5 million in 1986 and spent the next nine years losing money on it. He nearly sold it multiple times. Disney almost bought it for parts. Jobs kept it alive by personally subsidizing it. Toy Story was made for $30 million and grossed $362 million. The studio that would go on to make the most consistently beloved films in animation history was one impatient board decision from being an industrial light and effects shop."},
+  {id:26, name:"Nike Almost Stays a Shoe Importer", from:"Wild Cards · Phil Knight · 1964", emoji:"👟", div:"Wild Cards", seed:3, year:1964, fact:"Phil Knight started Nike as Blue Ribbon Sports — an importer of Japanese Onitsuka Tiger shoes. When Onitsuka threatened to cut him off he had 13 days to find a new manufacturer and a new name. A friend suggested Nike — Greek goddess of victory — in a dream. Knight didn't love it. His accountant said just do it. The most recognizable brand in sports history was named in 13 days under duress because a Japanese shoe company got greedy."},
+  {id:27, name:"Spielberg Gets Rejected by USC Film School Twice", from:"Wild Cards · Steven Spielberg · 1964", emoji:"🎬", div:"Wild Cards", seed:4, year:1964, fact:"Steven Spielberg applied to the prestigious USC School of Cinematic Arts twice and was rejected both times — his grades weren't good enough. He talked his way into an unpaid internship at Universal instead, started squatting in an unused office, and began making films. The director of Jaws, Raiders, ET, Schindler's List, and Saving Private Ryan was not considered qualified to study film. He was finally awarded an honorary degree by USC in 1994. He'd already won two Oscars."},
+
+  // DARK HORSES
+  {id:28, name:"The Rolling Stones Almost Break Up in 1969", from:"Dark Horses · The Rolling Stones · 1969", emoji:"👅", div:"Dark Horses", seed:1, year:1969, fact:"Brian Jones was fired from the band he founded in June 1969 and found dead in his swimming pool 25 days later. Altamont followed six months after that — a concert that ended with a murder. The Stones were finished, everyone said. Instead they went to France, rented a mansion, and recorded Exile on Main St. in the basement. Widely considered their masterpiece. The band that should have ended made the best thing they ever made because they had nowhere else to go."},
+  {id:29, name:"Francis Ford Coppola Gets One More Shot at The Godfather", from:"Dark Horses · Francis Coppola · 1972", emoji:"🌹", div:"Dark Horses", seed:2, year:1972, fact:"Paramount wanted to fire Coppola three times during the making of The Godfather. They hated his casting choices — Brando was considered washed up, Pacino was unknown. Executives flew to the set repeatedly to shut it down. Producer Robert Evans kept blocking them. The film they almost stopped is considered the greatest American film ever made. Every Oscar it won was a vote against the people who tried to stop it."},
+  {id:30, name:"Johnny Cash Records at Folsom Prison", from:"Dark Horses · Johnny Cash · 1968", emoji:"🎸", div:"Dark Horses", seed:3, year:1968, fact:"By 1967 Johnny Cash's career was effectively over. Addiction had destroyed his health, his marriages, his reputation, and his record sales. Columbia was about to drop him. He proposed recording a live album at Folsom State Prison — an idea his label thought was career suicide. At Folsom Prison became one of the best-selling country albums in history and relaunched a career that lasted another 35 years. He recorded it two days after getting clean."},
+  {id:31, name:"Freddie Mercury Performs at Live Aid", from:"Dark Horses · Queen · 1985", emoji:"🎤", div:"Dark Horses", seed:4, year:1985, fact:"By 1985 Queen were considered finished. Punk had happened. New Wave had happened. They were dinosaurs. Live Aid gave them 20 minutes at Wembley Stadium in front of 72,000 people and a global TV audience of 1.9 billion. What followed is still called the greatest live performance in rock history. Freddie Mercury turned a career eulogy into its greatest moment. He had six years left. He spent them proving everyone wrong."},
+];
+
+const R16=[[0,3],[1,2],[4,7],[5,6],[8,11],[9,10],[12,15],[13,14],[16,19],[17,18],[20,23],[21,22],[24,27],[25,26],[28,31],[29,30]];
+const COUNTS=[16,8,4,2,1];
+const RLABELS=["Round of 32","Round of 16","Quarterfinals","Semifinals","The Final"];
+
+let results=[Array(16).fill(null),Array(8).fill(null),Array(4).fill(null),Array(2).fill(null),Array(1).fill(null)];
+let currentVote=null,selected=null,locked=false;
+
+function getC(round,mi,slot){if(round===0)return ALL[R16[mi][slot]];const prev=mi*2+slot;const wid=results[round-1][prev];return wid!=null?ALL[wid]:null;}
+function getCurrentRound(){for(let r=0;r<5;r++)if(results[r].some(w=>w===null))return r;return 5;}
+function getNextActive(){const cr=getCurrentRound();if(cr>=5)return null;for(let mi=0;mi<COUNTS[cr];mi++){if(results[cr][mi]===null){const a=getC(cr,mi,0),b=getC(cr,mi,1);if(a&&b)return{round:cr,mi};}}return null;}
+function totalVotes(){return results.flat().filter(v=>v!==null).length;}
+function fakeA(a,b){return Math.min(88,Math.max(18,50+(b.id-a.id)%17+(a.seed===1?9:a.seed===2?4:0)));}
+
+function render(){
+  document.getElementById('counter').textContent=totalVotes()+'/31';
+  const cr=getCurrentRound();
+  if(cr===5&&results[4][0]!==null)renderChampion(ALL[results[4][0]]);
+  else if(currentVote)renderVote();
+  else renderBracket();
+}
+
+function renderBracket(){
+  document.getElementById('back-btn').style.display='none';
+  const cr=getCurrentRound(),next=getNextActive();
+  const divNames=["Film","Music","Sports","Literary","TV","Personal","Wild Cards","Dark Horses"];
+  let html='<div class="div-labels">';
+  divNames.forEach(d=>{html+=`<div class="div-label">${d}</div>`;});
+  html+='</div><div class="bracket-cols">';
+  for(let r=0;r<5;r++){
+    const count=COUNTS[r],maxH=[22,30,44,70,100][r],gap=[2,5,12,28,0][r];
+    html+=`<div class="bracket-col"><div class="col-label" style="color:${r===cr?'#70b040':'#141a08'}">${["R32","R16","QF","SF","Final"][r]}</div><div class="col-matches" style="gap:${gap}px">`;
+    for(let mi=0;mi<count;mi++){
+      const a=getC(r,mi,0),b=getC(r,mi,1),winner=results[r][mi];
+      const active=r===cr&&winner===null&&a&&b,done=winner!==null;
+      const cls=active?'active':done?'done':'empty';
+      const onclick=(active||done)?`onclick="startVote(${r},${mi})"`:'';
+      html+=`<div class="match-cell ${cls}" style="max-height:${maxH}px;${!active&&!done?'border:1px solid #0c1008':''}" ${onclick}>`;
+      [a,b].forEach((c,si)=>{
+        if(!c){html+=`<div class="tbd">—</div>`;return;}
+        const isW=winner===c.id,isL=done&&!isW;
+        const nm=c.name.split(' ').slice(0,r===0?4:5).join(' ');
+        html+=`${si===1?'<hr class="match-divider">':''}<div class="match-row ${isW?'winner':isL?'loser':''}"><span class="em">${c.emoji}</span><span class="nm">${nm}</span></div>`;
+      });
+      html+='</div>';
+    }
+    html+='</div></div>';
+  }
+  html+='</div>';
+  if(next)html+=`<div style="padding:14px 16px 0"><button class="vote-btn" onclick="startVote(${next.round},${next.mi})">Vote Next Near-Miss →</button><div class="vote-hint">Tap any green-bordered match to vote</div></div>`;
+  document.getElementById('main').innerHTML=html;
+}
+
+function startVote(round,mi){currentVote={round,mi};selected=null;locked=false;const w=results[round][mi];if(w!==null){const a=getC(round,mi,0);selected=(a&&a.id===w)?'a':'b';}render();}
+
+function renderVote(){
+  document.getElementById('back-btn').style.display='block';
+  const{round,mi}=currentVote,a=getC(round,mi,0),b=getC(round,mi,1);
+  if(!a||!b){showBracket();return;}
+  const pA=fakeA(a,b),pB=100-pA,majority=selected?(selected==='a'?pA:pB)>=50:false;
+  const hint=!selected?"— Which near-miss would have hurt you more. —":locked?"— Verdict locked —":"— Tap to switch. Button to commit. —";
+  let html=`<div id="vote-screen"><div class="vote-header"><div class="round-label">${RLABELS[round]}</div><div class="vote-hint-text">${hint}</div></div>`;
+  [{side:'a',c:a,pct:pA},{side:'b',c:b,pct:pB}].forEach(({side,c,pct})=>{
+    const isSel=selected===side;
+    html+=`<div class="card${isSel?' selected':''}" onclick="selectCard('${side}')">`;
+    if(locked&&isSel)html+=`<div class="pct-bar" style="width:${pct}%"></div>`;
+    html+=`<div class="card-inner"><div class="card-top"><div class="card-emoji">${c.emoji}</div><div style="flex:1;min-width:0"><div class="card-meta">${c.div} · #${c.seed}</div><div class="card-name">${c.name}</div><div class="card-from">${c.from}</div></div>${isSel&&!locked?'<div class="card-arrow">◀</div>':''}</div><div class="card-fact">${c.fact}</div>${locked&&isSel?`<div class="card-pct">${pct}%<span>felt this one more</span><span class="check">· Your verdict ✓</span></div>`:''}</div></div>`;
+  });
+  if(selected&&!locked)html+=`<div class="commit-box"><div class="commit-hint">Changed your mind? Tap the other. Ready?</div><button class="commit-btn" onclick="commitVote()">Lock In Verdict →</button></div>`;
+  if(locked)html+=`<div class="result-box"><div class="result-text ${majority?'majority':'minority'}">${majority?'✓ With the majority':'🔥 You picked different'}</div></div>`;
+  html+='</div>';
+  document.getElementById('main').innerHTML=html;
+}
+
+function selectCard(side){if(locked)return;selected=side;renderVote();}
+function commitVote(){
+  if(!selected||locked)return;
+  locked=true;
+  const{round,mi}=currentVote,a=getC(round,mi,0),b=getC(round,mi,1);
+  results[round][mi]=selected==='a'?a.id:b.id;
+  renderVote();
+  document.getElementById('counter').textContent=totalVotes()+'/31';
+  setTimeout(()=>{currentVote=null;locked=false;selected=null;render();},800);
+}
+function showBracket(){currentVote=null;selected=null;locked=false;render();}
+function renderChampion(c){
+  document.getElementById('back-btn').style.display='none';
+  document.getElementById('main').innerHTML=`<div id="champion-screen"><div class="champ-emoji">${c.emoji}</div><div class="champ-label">The Greatest Near-Miss of All Time</div><div class="champ-name">${c.name}</div><div class="champ-from">${c.from}</div><div class="champ-meta">${c.div}</div><div class="champ-fact">${c.fact}</div><button class="reset-btn" onclick="resetGame()">Run It Back</button></div>`;
+}
+function resetGame(){results=[Array(16).fill(null),Array(8).fill(null),Array(4).fill(null),Array(2).fill(null),Array(1).fill(null)];currentVote=null;selected=null;locked=false;render();}
+render();
+</script>
+</body>
+</html>

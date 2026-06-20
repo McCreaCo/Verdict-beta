@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VERDICT — What If? The 32 Greatest Hinges in Human History</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #04060a; color: #e8eef8; font-family: Georgia, 'Times New Roman', serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
+  #app { width: 100%; max-width: 560px; min-height: 100vh; display: flex; flex-direction: column; }
+  header { padding: 18px 20px 14px; border-bottom: 1px solid #0a0e18; display: flex; align-items: center; justify-content: space-between; }
+  .title { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; }
+  .subtitle { font-size: 9px; color: #5a8adf; letter-spacing: 2px; text-transform: uppercase; margin-top: 2px; }
+  .counter { font-size: 10px; color: #0e1420; background: #080c14; border: 1px solid #0a0e18; border-radius: 16px; padding: 4px 10px; }
+  .back-btn { background: transparent; border: 1px solid #0e1420; border-radius: 8px; padding: 5px 10px; color: #1e2a3a; font-size: 11px; cursor: pointer; font-family: Georgia, serif; }
+  #main { flex: 1; padding: 14px 0; }
+  .div-labels { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px; margin: 0 10px 8px; }
+  .div-label { font-size: 7px; color: #1a2030; text-align: center; padding: 3px 2px; background: #080c14; border-radius: 4px; }
+  .bracket-cols { display: flex; gap: 3px; padding: 0 10px; }
+  .bracket-col { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+  .col-label { font-size: 7px; letter-spacing: 1.5px; text-transform: uppercase; text-align: center; margin-bottom: 5px; }
+  .col-matches { display: flex; flex-direction: column; justify-content: space-around; height: 380px; }
+  .match-cell { border-radius: 5px; overflow: hidden; cursor: default; flex: 1; transition: border-color 0.2s; }
+  .match-cell.active { border: 1px solid #5a8adf !important; background: #080c18 !important; cursor: pointer; }
+  .match-cell.done { border: 1px solid #0a1020 !important; background: #060a10 !important; cursor: pointer; }
+  .match-cell.empty { border: 1px solid #080c14; background: #04060a; }
+  .match-row { display: flex; align-items: center; gap: 2px; padding: 2px 3px; transition: opacity 0.3s; }
+  .match-row.loser { opacity: 0.22; }
+  .match-row.winner { background: rgba(90,138,223,0.1); }
+  .match-row .em { font-size: 8px; }
+  .match-row .nm { font-size: 7px; color: #1a2030; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 400; }
+  .match-row.winner .nm { color: #5a8adf; font-weight: 700; }
+  .match-divider { border: none; border-top: 1px solid #0a0e18; margin: 0; }
+  .tbd { padding: 2px 3px; font-size: 6px; color: #0e1420; }
+  .vote-btn { width: 100%; padding: 14px; background: linear-gradient(135deg, #5a8adf, #2a4a8a); border: none; border-radius: 12px; color: #e8eef8; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; margin-top: 14px; }
+  .vote-hint { font-size: 10px; color: #0e1420; text-align: center; margin-top: 6px; }
+  #vote-screen { padding: 0 16px; animation: fadeUp 0.3s ease; }
+  .vote-header { text-align: center; margin-bottom: 16px; }
+  .round-label { font-size: 10px; letter-spacing: 3px; color: #5a8adf; text-transform: uppercase; margin-bottom: 3px; }
+  .vote-hint-text { font-size: 11px; color: #1a2030; letter-spacing: 1px; }
+  .card { display: block; width: 100%; margin-bottom: 10px; border-radius: 14px; padding: 16px 18px; cursor: pointer; text-align: left; transition: all 0.25s; position: relative; overflow: hidden; border: 2px solid #0a0e18; background: #060a10; }
+  .card.selected { border-color: #5a8adf !important; background: #0a1020 !important; transform: scale(1.01); }
+  .card-inner { position: relative; z-index: 1; }
+  .card-top { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 8px; }
+  .card-emoji { font-size: 28px; margin-top: 2px; flex-shrink: 0; }
+  .card-meta { font-size: 9px; color: #5a8adf; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 2px; }
+  .card-name { font-size: 16px; font-weight: 700; color: #2a3848; line-height: 1.2; margin-bottom: 2px; transition: color 0.2s; }
+  .card.selected .card-name { color: #e8eef8; }
+  .card-from { font-size: 10px; color: #141e2a; font-style: italic; transition: color 0.2s; }
+  .card.selected .card-from { color: #4a6a9a; }
+  .card-fact { font-size: 12px; color: #141e2a; line-height: 1.75; transition: color 0.2s; }
+  .card.selected .card-fact { color: #6a8aaa; }
+  .card-arrow { font-size: 16px; color: #5a8adf; margin-left: auto; flex-shrink: 0; }
+  .card-pct { font-size: 18px; font-weight: 700; color: #5a8adf; margin-top: 10px; }
+  .card-pct span { font-size: 12px; font-weight: 400; color: #2a3848; margin-left: 6px; }
+  .card-pct .check { color: #5a8adf; margin-left: 8px; }
+  .pct-bar { position: absolute; top: 0; left: 0; height: 100%; background: rgba(90,138,223,0.06); transition: width 0.9s cubic-bezier(.4,0,.2,1); z-index: 0; }
+  .commit-box { padding: 14px 18px; background: #060a10; border: 1px solid #0a0e18; border-radius: 12px; text-align: center; animation: fadeUp 0.3s ease; }
+  .commit-hint { font-size: 11px; color: #1a2030; margin-bottom: 10px; font-style: italic; }
+  .commit-btn { padding: 12px 32px; background: linear-gradient(135deg, #5a8adf, #2a4a8a); border: none; border-radius: 10px; color: #e8eef8; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+  .result-box { padding: 14px 18px; background: #060a10; border: 1px solid #0a0e18; border-radius: 12px; text-align: center; }
+  .result-text { font-size: 12px; letter-spacing: 2px; text-transform: uppercase; }
+  .majority { color: #7ec8a0; }
+  .minority { color: #e8856a; }
+  #champion-screen { text-align: center; padding: 36px 24px; animation: fadeUp 0.5s ease; }
+  .champ-emoji { font-size: 60px; margin-bottom: 12px; }
+  .champ-label { font-size: 10px; letter-spacing: 4px; color: #5a8adf; text-transform: uppercase; margin-bottom: 8px; }
+  .champ-name { font-size: 22px; font-weight: 700; color: #e8eef8; margin-bottom: 4px; line-height: 1.2; }
+  .champ-from { font-size: 12px; color: #5a8adf; font-style: italic; margin-bottom: 4px; }
+  .champ-meta { font-size: 11px; color: #1a2030; margin-bottom: 16px; }
+  .champ-fact { font-size: 13px; color: #2a3a4a; font-style: italic; max-width: 310px; margin: 0 auto 28px; line-height: 1.8; }
+  .reset-btn { padding: 12px 28px; background: linear-gradient(135deg, #5a8adf, #2a4a8a); border: none; border-radius: 10px; color: #e8eef8; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  button:active { filter: brightness(0.85); }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div>
+      <a href="index.html" class="title" style="text-decoration:none;cursor:pointer" title="All brackets">VERDICT</a>
+      <div class="subtitle">What If? — 32 Hinges in Human History</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="back-btn" id="back-btn" style="display:none" onclick="showBracket()">← Bracket</button>
+      <div class="counter" id="counter">0/31</div>
+    </div>
+  </header>
+  <div id="main"></div>
+</div>
+
+<script>
+const ALL = [
+  // ANCIENT WORLD
+  {id:0, name:"The Library of Alexandria Never Burns", from:"Ancient World · ~48 BC", emoji:"🔥", div:"Ancient World", seed:1, year:-48, fact:"The greatest collection of human knowledge in the ancient world — possibly 700,000 scrolls — destroyed across multiple incidents. What was in those scrolls we will never know. We lost centuries of mathematics, medicine, astronomy, and philosophy. Every scientific revolution that followed was built on rubble."},
+  {id:1, name:"Caesar Survives the Ides of March", from:"Ancient World · 44 BC", emoji:"🗡", div:"Ancient World", seed:2, year:-44, fact:"23 stab wounds. Caesar dies. The Roman Republic collapses anyway — but without Caesar's death as the catalyst, the Empire may never have formed under Augustus, Christianity may never have spread the same way, and the entire Western world gets a different operating system. Everything downstream changes."},
+  {id:2, name:"The Greek City-States Unify", from:"Ancient World · ~400 BC", emoji:"🏛", div:"Ancient World", seed:3, year:-400, fact:"Athens and Sparta spent a generation destroying each other in the Peloponnesian War while Persia watched. A unified Greece doesn't just hold off Persia — it potentially conquers it a century before Alexander. Democracy as an idea gets a head start of 400 years on the world."},
+  {id:3, name:"The Black Death Never Reaches Europe", from:"Ancient World · 1347", emoji:"☠", div:"Ancient World", seed:4, year:1347, fact:"One third of Europe's population dead in four years. And yet — the Black Death accidentally accelerated the Renaissance, broke the feudal system, raised wages for surviving workers, and forced the Catholic Church into a crisis that led to the Reformation. Remove it and medieval Europe stagnates for another 200 years."},
+
+  // RELIGION & IDEAS
+  {id:4, name:"Hitler Gets Into Art School", from:"Religion & Ideas · 1907", emoji:"🎨", div:"Religion & Ideas", seed:1, year:1907, fact:"The Vienna Academy of Fine Arts rejected Adolf Hitler twice. He moved into a homeless shelter, developed his hatreds, and found politics instead. One admission letter changes the 20th century entirely. 70 to 85 million people died in World War II. All of it downstream from a failed art school application."},
+  {id:5, name:"The Gutenberg Press Is Never Invented", from:"Religion & Ideas · 1440", emoji:"📖", div:"Religion & Ideas", seed:2, year:1440, fact:"Before Gutenberg, books were hand-copied by monks. The printing press made the Protestant Reformation possible, spread scientific ideas faster than authorities could suppress them, and eventually produced newspapers, democracy, and the internet's entire logic. Remove it and every revolution of the last 600 years slows by centuries."},
+  {id:6, name:"Muhammad Dies Without an Heir Dispute", from:"Religion & Ideas · 632 AD", emoji:"🌙", div:"Religion & Ideas", seed:3, year:632, fact:"When the Prophet Muhammad died, the dispute over his succession split Islam into Sunni and Shia within decades. That schism has shaped Middle Eastern politics, warfare, and culture for 1,400 years. A clear succession changes the internal history of 1.8 billion people's faith and every geopolitical consequence attached to it."},
+  {id:7, name:"The Protestant Reformation Never Happens", from:"Religion & Ideas · 1517", emoji:"⛪", div:"Religion & Ideas", seed:4, year:1517, fact:"Martin Luther nailed his 95 theses and fractured Christianity forever. Without the Reformation there's no 30 Years War, no Puritan exodus to America, no ideological foundation for individual conscience over institutional authority. The entire philosophical DNA of Western democracy comes from people arguing about church doctrine."},
+
+  // WAR & EMPIRE
+  {id:8, name:"The Atomic Bomb Is Never Built", from:"War & Empire · 1945", emoji:"☢", div:"War & Empire", seed:1, year:1945, fact:"The Manhattan Project produced the most destructive weapon in history and ended World War II in the Pacific. Without it the US invades Japan — estimated casualties between 250,000 and 1 million American soldiers, millions of Japanese. The Cold War arms race never happens the same way. Nuclear deterrence never becomes the strange peace it became. The entire post-war order is unrecognizable."},
+  {id:9, name:"Lincoln Is Not Assassinated", from:"War & Empire · 1865", emoji:"🎩", div:"War & Empire", seed:2, year:1865, fact:"Lincoln had a specific plan for Reconstruction — generous, fast reintegration of Southern states with rights for formerly enslaved people. Andrew Johnson dismantled all of it. Jim Crow, sharecropping, a century of terror and legal oppression — much of that is downstream from one bullet at Ford's Theatre. Lincoln lives and Black American history takes a different road."},
+  {id:10, name:"Archduke Franz Ferdinand's Car Doesn't Turn Around", from:"War & Empire · 1914", emoji:"🚗", div:"War & Empire", seed:3, year:1914, fact:"The assassin Gavrilo Princip had already failed and was eating a sandwich when Franz Ferdinand's car took a wrong turn and stopped directly in front of him. World War I. 20 million dead. The collapse of four empires. The rise of communism and fascism. The seeds of World War II. All of it because a driver took a wrong turn."},
+  {id:11, name:"Napoleon Wins at Waterloo", from:"War & Empire · 1815", emoji:"👑", div:"War & Empire", seed:4, year:1815, fact:"Wellington said it was the nearest run thing you ever saw in your life. Napoleon loses by the slimmest of margins on a field in Belgium. His victory means no British-dominated 19th century, no Congress of Vienna world order, no same path to nationalism across Europe. The map of the modern world gets redrawn by one afternoon."},
+
+  // SCIENCE & TECHNOLOGY
+  {id:12, name:"The Internet Is Never Commercialized", from:"Science & Tech · 1991", emoji:"🌐", div:"Science & Tech", seed:1, year:1991, fact:"ARPANET existed for decades as a military and academic tool. Tim Berners-Lee's World Wide Web proposal in 1989 and its public release in 1991 put it in everyone's hands. Without that — no Amazon, no Google, no social media, no smartphones as we know them, no remote work, no this conversation. The entire economy of the last 30 years evaporates."},
+  {id:13, name:"Fleming Doesn't Discover Penicillin", from:"Science & Tech · 1928", emoji:"🧫", div:"Science & Tech", seed:2, year:1928, fact:"Alexander Fleming left a petri dish uncovered by accident. A mold spore landed in it. He noticed it was killing bacteria. Penicillin led to all modern antibiotics. Without it — World War II kills dramatically more people from infected wounds, childhood mortality stays at pre-war levels, life expectancy in the 20th century barely moves. An untidy lab bench changed how long humans live."},
+  {id:14, name:"Einstein Is Born in a Different Country", from:"Science & Tech · 1879", emoji:"🧠", div:"Science & Tech", seed:3, year:1879, fact:"Einstein was a German-born Jew who fled to America when Hitler rose to power. His letter to Roosevelt directly initiated the Manhattan Project. A Einstein born elsewhere — or one who doesn't flee, or one who is killed — means no relativity as we know it, possibly no atomic bomb, certainly a different 20th century of physics. One birth certificate rewrites the modern world."},
+  {id:15, name:"The Moon Landing Fails", from:"Science & Tech · 1969", emoji:"🌕", div:"Science & Tech", seed:4, year:1969, fact:"Nixon had a speech prepared in case Armstrong and Aldrin didn't make it back. They made it back. The moon landing was the single greatest demonstration of human capability in history — and it ended the space race, unified a fractured country for one night, and set the ambition ceiling for what civilization believed it could do. A failure reshapes what humanity thinks it's capable of."},
+
+  // AMERICAN HISTORY
+  {id:16, name:"The South Wins the Civil War", from:"American History · 1865", emoji:"🇺🇸", div:"American History", seed:1, year:1865, fact:"The Confederacy needed one decisive victory to force a negotiated peace. They came close at Antietam, at Gettysburg, at a dozen other moments. A Confederate victory means slavery continues — possibly for decades — in a separate nation on the North American continent. The United States as a world power doesn't emerge the same way. The 20th century belongs to someone else."},
+  {id:17, name:"JFK Is Not Assassinated", from:"American History · 1963", emoji:"🌹", div:"American History", seed:2, year:1963, fact:"Kennedy was ambivalent about Vietnam escalation in ways Johnson was not. His advisors believed he intended to withdraw after the 1964 election. No Kennedy assassination may mean no full-scale Vietnam War — which means no 58,000 American dead, no anti-war movement as it happened, no Nixon as a reaction to it, and a completely different American political identity in the late 20th century."},
+  {id:18, name:"Columbus Turns Back", from:"American History · 1492", emoji:"⛵", div:"American History", seed:3, year:1492, fact:"On October 10, 1492, the crew of the Santa Maria was ready to mutiny and turn back. Columbus convinced them to continue for three more days. Land was spotted on day two. If he turns back — Europe colonizes the Americas later, differently, or possibly never at the same scale. 90% of the Indigenous population of the Americas — killed by disease and conquest — possibly survives. The entire modern world is unrecognizable."},
+  {id:19, name:"The American Revolution Fails", from:"American History · 1776", emoji:"🔔", div:"American History", seed:4, year:1776, fact:"The Continental Army nearly collapsed a dozen times. Washington's crossing of the Delaware was a desperation move. A British victory means no United States, no Constitution as a model for democracy, no French Revolution inspired by it, possibly no spread of republican government across the 19th century world. The democratic experiment dies in its cradle."},
+
+  // BIOLOGY & NATURE
+  {id:20, name:"The Chicxulub Asteroid Misses Earth", from:"Biology & Nature · 66M BC", emoji:"☄", div:"Biology & Nature", seed:1, year:-66000000, fact:"The asteroid that killed the dinosaurs was six miles wide and hit with the force of a billion nuclear bombs. Without it, dinosaurs continue to evolve for another 66 million years. Mammals — small, nocturnal, hiding in burrows — never get their shot. Humans never exist. The dominant intelligence on Earth, if any emerges, is something we would not recognize."},
+  {id:21, name:"The 1918 Flu Pandemic Doesn't Happen", from:"Biology & Nature · 1918", emoji:"🤧", div:"Biology & Nature", seed:2, year:1918, fact:"50 to 100 million dead. More than World War I itself. The 1918 flu killed young, healthy adults — not the old and weak — and decimated the workforce and military of every nation it touched. It helped end World War I by killing soldiers faster than the trenches could. Without it, the war continues longer, different peace terms, different Europe, different century."},
+  {id:22, name:"Homo Sapiens and Neanderthals Coexist", from:"Biology & Nature · 40,000 BC", emoji:"🦴", div:"Biology & Nature", seed:3, year:-40000, fact:"Neanderthals had larger brains than us, made tools, buried their dead, and may have had language. They disappeared roughly 40,000 years ago — possibly killed by us, possibly outcompeted, possibly absorbed. A world where two species of intelligent humans coexist — or where Neanderthals survive — is a world with an entirely different concept of what humanity means."},
+  {id:23, name:"HIV Never Jumps to Humans", from:"Biology & Nature · ~1920", emoji:"🧬", div:"Biology & Nature", seed:4, year:1920, fact:"HIV crossed from chimpanzees to humans in the Congo around 1920 and spread silently for 60 years before anyone understood what was happening. By then it had killed 40 million people and counting. A world without HIV means a different history of human sexuality, medicine, stigma, and activism — and 40 million lives simply lived."},
+
+  // COLD WAR & MODERN
+  {id:24, name:"The Soviet Union Launches First Strike", from:"Cold War · 1983", emoji:"☢", div:"Cold War & Modern", seed:1, year:1983, fact:"On September 26, 1983, Soviet officer Stanislav Petrov received a missile alert showing five US nuclear warheads incoming. Protocol said launch. He decided it was a false alarm — correctly. He was right. If he follows orders, the Soviet Union launches, the US retaliates, and the nuclear exchange kills hundreds of millions. One man choosing to wait saved civilization."},
+  {id:25, name:"The Berlin Wall Never Falls", from:"Cold War · 1989", emoji:"🧱", div:"Cold War & Modern", seed:2, year:1989, fact:"On November 9, 1989, a Communist Party spokesman accidentally announced East Germans could cross the border immediately. He was wrong — the order hadn't been given — but crowds gathered and guards stood down. A single order to fire would have ended it. The Wall stays up, the Cold War continues, the Soviet Union may never collapse. The entire post-1989 world order doesn't happen."},
+  {id:26, name:"September 11th Is Prevented", from:"Cold War · 2001", emoji:"🌆", div:"Cold War & Modern", seed:3, year:2001, fact:"No September 11th means no Afghanistan War, no Iraq War, no ISIS, no Arab Spring as it happened, no surveillance state as it expanded, no 20-year trauma in American foreign policy. Roughly one million people died in the wars that followed. The geopolitical map of the Middle East, the nature of American democracy, and the meaning of the 21st century all hinge on four planes on one morning."},
+  {id:27, name:"Gorbachev Is Hardliner Instead of Reformer", from:"Cold War · 1985", emoji:"⭐", div:"Cold War & Modern", seed:4, year:1985, fact:"Mikhail Gorbachev came to power in 1985 as a reformer — glasnost, perestroika, willingness to let Eastern Europe go. A hardliner in his place crushes the reform movements, keeps the Iron Curtain intact, and the Cold War continues indefinitely. No fall of the Berlin Wall. No reunified Germany. The entire post-Cold War world order — including the internet economy that grew inside it — doesn't exist."},
+
+  // WILD CARDS
+  {id:28, name:"Tesla Gets Edison's Funding", from:"Wild Cards · 1884", emoji:"⚡", div:"Wild Cards", seed:1, year:1884, fact:"Nikola Tesla arrived in America, worked for Edison, and was cheated out of promised payment. He died broke and alone while Edison became rich and famous. Tesla held patents for AC power, radio, and concepts that anticipated WiFi, radar, and X-rays. A funded Tesla changes the entire trajectory of electrical technology — and potentially who controls it."},
+  {id:29, name:"The Titanic Misses the Iceberg", from:"Wild Cards · 1912", emoji:"🚢", div:"Wild Cards", seed:2, year:1912, fact:"1,500 people dead. And with them went some of the wealthiest and most powerful men in the world — including opponents of the Federal Reserve, which was established the following year. The Titanic sinking directly influenced maritime safety law, changed the power balance of American banking, and altered who would finance World War I. An iceberg moved the course of history."},
+  {id:30, name:"The Printing Press Arrives 200 Years Earlier", from:"Wild Cards · ~1250", emoji:"📜", div:"Wild Cards", seed:3, year:1250, fact:"Gutenberg invented the press around 1440. What if it arrived in 1250 — before the Black Death, before the full medieval period? The Renaissance, the Reformation, the Scientific Revolution all accelerate by 200 years. We potentially reach the Industrial Revolution by 1600, germ theory by 1700, and the modern world a full two centuries ahead of schedule. What problem that kills us today gets solved in 1900 instead of 2100?"},
+  {id:31, name:"The First Agricultural Revolution Never Happens", from:"Wild Cards · ~10,000 BC", emoji:"🌾", div:"Wild Cards", seed:4, year:-10000, fact:"About 12,000 years ago, humans in several places independently began farming instead of hunting and gathering. Farming allowed population growth, specialization, cities, armies, empires, and eventually everything. Without it, humans remain in small nomadic bands — possibly forever. No civilization, no history as we know it, no suffering of civilization either. Whether that world is better or worse is the most uncomfortable question in this bracket."},
+];
+
+const R16 = [[0,3],[1,2],[4,7],[5,6],[8,11],[9,10],[12,15],[13,14],[16,19],[17,18],[20,23],[21,22],[24,27],[25,26],[28,31],[29,30]];
+const COUNTS = [16,8,4,2,1];
+const RLABELS = ["Round of 32","Round of 16","Quarterfinals","Semifinals","The Final"];
+
+let results = [Array(16).fill(null),Array(8).fill(null),Array(4).fill(null),Array(2).fill(null),Array(1).fill(null)];
+let currentVote = null;
+let selected = null;
+let locked = false;
+
+function getC(round,mi,slot){
+  if(round===0)return ALL[R16[mi][slot]];
+  const prev=mi*2+slot;
+  const wid=results[round-1][prev];
+  return wid!=null?ALL[wid]:null;
+}
+function getCurrentRound(){for(let r=0;r<5;r++)if(results[r].some(w=>w===null))return r;return 5;}
+function getNextActive(){
+  const cr=getCurrentRound();
+  if(cr>=5)return null;
+  for(let mi=0;mi<COUNTS[cr];mi++){
+    if(results[cr][mi]===null){
+      const a=getC(cr,mi,0),b=getC(cr,mi,1);
+      if(a&&b)return{round:cr,mi};
+    }
+  }
+  return null;
+}
+function totalVotes(){return results.flat().filter(v=>v!==null).length;}
+function fakeA(a,b){return Math.min(88,Math.max(18,50+(b.id-a.id)%17+(a.seed===1?9:a.seed===2?4:0)));}
+
+function render(){
+  document.getElementById('counter').textContent=totalVotes()+'/31';
+  const cr=getCurrentRound();
+  if(cr===5&&results[4][0]!==null){renderChampion(ALL[results[4][0]]);}
+  else if(currentVote){renderVote();}
+  else{renderBracket();}
+}
+
+function renderBracket(){
+  document.getElementById('back-btn').style.display='none';
+  const cr=getCurrentRound();
+  const next=getNextActive();
+  const divNames=["Ancient World","Religion & Ideas","War & Empire","Science & Tech","American History","Biology & Nature","Cold War","Wild Cards"];
+  const colLabels=["R32","R16","QF","SF","Final"];
+  let html='<div class="div-labels">';
+  divNames.forEach(d=>{html+=`<div class="div-label">${d}</div>`;});
+  html+='</div><div class="bracket-cols">';
+  for(let r=0;r<5;r++){
+    const count=COUNTS[r];
+    const maxH=[22,30,44,70,100][r];
+    const gap=[2,5,12,28,0][r];
+    html+=`<div class="bracket-col"><div class="col-label" style="color:${r===cr?'#5a8adf':'#1a2030'}">${colLabels[r]}</div><div class="col-matches" style="gap:${gap}px">`;
+    for(let mi=0;mi<count;mi++){
+      const a=getC(r,mi,0),b=getC(r,mi,1);
+      const winner=results[r][mi];
+      const active=r===cr&&winner===null&&a&&b;
+      const done=winner!==null;
+      const cls=active?'active':done?'done':'empty';
+      const onclick=(active||done)?`onclick="startVote(${r},${mi})"`:'' ;
+      html+=`<div class="match-cell ${cls}" style="max-height:${maxH}px;${!active&&!done?'border:1px solid #080c14':''}" ${onclick}>`;
+      [a,b].forEach((c,si)=>{
+        if(!c){html+=`<div class="tbd">—</div>`;return;}
+        const isW=winner===c.id,isL=done&&!isW;
+        const nm=c.name.split(' ').slice(0,r===0?3:4).join(' ');
+        html+=`${si===1?'<hr class="match-divider">':''}<div class="match-row ${isW?'winner':isL?'loser':''}"><span class="em">${c.emoji}</span><span class="nm">${nm}</span></div>`;
+      });
+      html+='</div>';
+    }
+    html+='</div></div>';
+  }
+  html+='</div>';
+  if(next){html+=`<div style="padding:14px 16px 0"><button class="vote-btn" onclick="startVote(${next.round},${next.mi})">Vote Next What-If →</button><div class="vote-hint">Tap any blue-bordered match to vote</div></div>`;}
+  document.getElementById('main').innerHTML=html;
+}
+
+function startVote(round,mi){
+  currentVote={round,mi};
+  selected=null;
+  locked=false;
+  const w=results[round][mi];
+  if(w!==null){const a=getC(round,mi,0);selected=(a&&a.id===w)?'a':'b';}
+  render();
+}
+
+function renderVote(){
+  document.getElementById('back-btn').style.display='block';
+  const{round,mi}=currentVote;
+  const a=getC(round,mi,0),b=getC(round,mi,1);
+  if(!a||!b){showBracket();return;}
+  const pA=fakeA(a,b),pB=100-pA;
+  const majority=selected?(selected==='a'?pA:pB)>=50:false;
+  const hintText=!selected?"— Which haunts you more. —":locked?"— Verdict locked —":"— Tap to switch. Button to commit. —";
+  let html=`<div id="vote-screen"><div class="vote-header"><div class="round-label">${RLABELS[round]}</div><div class="vote-hint-text">${hintText}</div></div>`;
+  [{side:'a',c:a,pct:pA},{side:'b',c:b,pct:pB}].forEach(({side,c,pct})=>{
+    const isSel=selected===side;
+    html+=`<div class="card${isSel?' selected':''}" onclick="selectCard('${side}')">`;
+    if(locked&&isSel)html+=`<div class="pct-bar" style="width:${pct}%"></div>`;
+    html+=`<div class="card-inner"><div class="card-top"><div class="card-emoji">${c.emoji}</div><div style="flex:1;min-width:0"><div class="card-meta">${c.div} · #${c.seed}</div><div class="card-name">${c.name}</div><div class="card-from">${c.from}</div></div>${isSel&&!locked?'<div class="card-arrow">◀</div>':''}</div><div class="card-fact">${c.fact}</div>${locked&&isSel?`<div class="card-pct">${pct}%<span>chose this moment</span><span class="check">· Your verdict ✓</span></div>`:''}</div></div>`;
+  });
+  if(selected&&!locked){html+=`<div class="commit-box"><div class="commit-hint">Changed your mind? Tap the other. Ready?</div><button class="commit-btn" onclick="commitVote()">Lock In Verdict →</button></div>`;}
+  if(locked){html+=`<div class="result-box"><div class="result-text ${majority?'majority':'minority'}">${majority?'✓ With the majority':'🔥 Against the crowd'}</div></div>`;}
+  html+='</div>';
+  document.getElementById('main').innerHTML=html;
+}
+
+function selectCard(side){if(locked)return;selected=side;renderVote();}
+
+function commitVote(){
+  if(!selected||locked)return;
+  locked=true;
+  const{round,mi}=currentVote;
+  const a=getC(round,mi,0),b=getC(round,mi,1);
+  results[round][mi]=selected==='a'?a.id:b.id;
+  renderVote();
+  document.getElementById('counter').textContent=totalVotes()+'/31';
+  setTimeout(()=>{currentVote=null;locked=false;selected=null;render();},800);
+}
+
+function showBracket(){currentVote=null;selected=null;locked=false;render();}
+
+function renderChampion(c){
+  document.getElementById('back-btn').style.display='none';
+  document.getElementById('main').innerHTML=`<div id="champion-screen"><div class="champ-emoji">${c.emoji}</div><div class="champ-label">The Hinge That Haunts Us Most</div><div class="champ-name">${c.name}</div><div class="champ-from">${c.from}</div><div class="champ-meta">${c.div}</div><div class="champ-fact">${c.fact}</div><button class="reset-btn" onclick="resetGame()">Run It Back</button></div>`;
+}
+
+function resetGame(){results=[Array(16).fill(null),Array(8).fill(null),Array(4).fill(null),Array(2).fill(null),Array(1).fill(null)];currentVote=null;selected=null;locked=false;render();}
+
+render();
+</script>
+</body>
+</html>

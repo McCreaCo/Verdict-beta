@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VERDICT — The 32 Greatest Movie Villains of All Time</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #080608; color: #f5e8e8; font-family: Georgia, 'Times New Roman', serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
+  #app { width: 100%; max-width: 560px; min-height: 100vh; display: flex; flex-direction: column; }
+  header { padding: 16px 20px 12px; border-bottom: 1px solid #2a1014; display: flex; align-items: center; justify-content: space-between; background: #140a0c; }
+  .title { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; color: #e8354a; }
+  .subtitle { font-size: 9px; color: #c0303a; letter-spacing: 2px; text-transform: uppercase; margin-top: 2px; }
+  .counter { font-size: 10px; color: #3a1c20; background: #1a0a0c; border: 1px solid #2a1014; border-radius: 16px; padding: 4px 10px; }
+  .back-btn { background: transparent; border: 1px solid #2a1014; border-radius: 8px; padding: 5px 10px; color: #4a2228; font-size: 11px; cursor: pointer; font-family: Georgia, serif; }
+  #main { flex: 1; padding: 14px 0; }
+  .core-q { text-align: center; font-size: 12px; color: #e8354a; font-style: italic; padding: 4px 20px 0; line-height: 1.4; }
+  .div-labels { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px; margin: 10px 10px 8px; }
+  .div-label { font-size: 7px; color: #4a2228; text-align: center; padding: 3px 2px; background: #1a0a0c; border-radius: 4px; }
+  .bracket-cols { display: flex; gap: 3px; padding: 0 10px; }
+  .bracket-col { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+  .col-label { font-size: 7px; letter-spacing: 1.5px; text-transform: uppercase; text-align: center; margin-bottom: 5px; }
+  .col-matches { display: flex; flex-direction: column; justify-content: space-around; height: 380px; }
+  .match-cell { border-radius: 5px; overflow: hidden; cursor: default; flex: 1; transition: border-color 0.2s; }
+  .match-cell.active { border: 1px solid #e8354a !important; background: #1a0a0c !important; cursor: pointer; }
+  .match-cell.done { border: 1px solid #2e1010 !important; background: #140a0c !important; cursor: pointer; }
+  .match-cell.empty { border: 1px solid #1a0a0c; background: #080608; }
+  .match-row { display: flex; align-items: center; gap: 2px; padding: 2px 3px; transition: opacity 0.3s; }
+  .match-row.loser { opacity: 0.22; }
+  .match-row.winner { background: rgba(232,53,74,0.12); }
+  .match-row .em { font-size: 8px; }
+  .match-row .nm { font-size: 7px; color: #4a2228; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 400; }
+  .match-row.winner .nm { color: #e8354a; font-weight: 700; }
+  .match-divider { border: none; border-top: 1px solid #26101a; margin: 0; }
+  .tbd { padding: 2px 3px; font-size: 6px; color: #2a1218; }
+  .vote-btn { width: 100%; padding: 14px; background: linear-gradient(135deg, #e8354a, #a01828); border: none; border-radius: 12px; color: #080608; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; margin-top: 14px; }
+  .vote-hint { font-size: 10px; color: #3a1c20; text-align: center; margin-top: 6px; }
+  #vote-screen { padding: 0 16px; animation: fadeUp 0.3s ease; }
+  .vote-header { text-align: center; margin-bottom: 16px; }
+  .round-label { font-size: 10px; letter-spacing: 3px; color: #e8354a; text-transform: uppercase; margin-bottom: 3px; }
+  .vote-hint-text { font-size: 11px; color: #4a2228; letter-spacing: 1px; }
+  .card { display: block; width: 100%; margin-bottom: 10px; border-radius: 14px; padding: 16px 18px; cursor: pointer; text-align: left; transition: all 0.25s; position: relative; overflow: hidden; border: 2px solid #2a1014; background: #140a0c; }
+  .card.selected { border-color: #e8354a !important; background: #220c10 !important; transform: scale(1.01); }
+  .card-inner { position: relative; z-index: 1; }
+  .card-top { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 8px; }
+  .card-emoji { font-size: 34px; margin-top: 2px; flex-shrink: 0; }
+  .card-meta { font-size: 9px; color: #a01828; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 2px; }
+  .card-name { font-size: 18px; font-weight: 700; color: #4a2228; line-height: 1.2; margin-bottom: 2px; transition: color 0.2s; }
+  .card.selected .card-name { color: #f5e8e8; }
+  .card-from { font-size: 10px; color: #3a1c20; font-style: italic; transition: color 0.2s; }
+  .card.selected .card-from { color: #b06058; }
+  .card-tag { display: inline-block; margin-top: 8px; padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 700; background: #2a1014; color: #e8354a; letter-spacing: 1px; }
+  .card.selected .card-tag { background: #e8354a; color: #080608; }
+  .card-stats { margin-top: 8px; font-size: 9px; color: #5a282e; letter-spacing: 0.5px; }
+  .card.selected .card-stats { color: #c06058; }
+  .card-fact { font-size: 12px; color: #3a1c20; line-height: 1.75; transition: color 0.2s; margin-top: 8px; }
+  .card.selected .card-fact { color: #a06860; }
+  .card-arrow { font-size: 16px; color: #e8354a; margin-left: auto; flex-shrink: 0; }
+  .card-pct { font-size: 20px; font-weight: 700; color: #e8354a; margin-top: 10px; }
+  .card-pct span { font-size: 12px; font-weight: 400; color: #4a2228; margin-left: 6px; }
+  .card-pct .check { color: #e8354a; margin-left: 8px; }
+  .pct-bar { position: absolute; top: 0; left: 0; height: 100%; background: rgba(232,53,74,0.06); transition: width 0.9s cubic-bezier(.4,0,.2,1); z-index: 0; }
+  .commit-box { padding: 14px 18px; background: #140a0c; border: 1px solid #2a1014; border-radius: 12px; text-align: center; animation: fadeUp 0.3s ease; }
+  .commit-hint { font-size: 11px; color: #4a2228; margin-bottom: 10px; font-style: italic; }
+  .commit-btn { padding: 12px 32px; background: linear-gradient(135deg, #e8354a, #a01828); border: none; border-radius: 10px; color: #080608; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+  .result-box { padding: 16px 18px; background: #140a0c; border: 1px solid #2a1014; border-radius: 12px; text-align: center; margin-top: 2px; animation: fadeUp 0.3s ease; }
+  .result-majority { font-size: 13px; color: #7ec8a0; font-weight: 700; letter-spacing: 1px; }
+  .result-minority { font-size: 13px; color: #a01828; font-weight: 700; letter-spacing: 1px; }
+  .next-btn { width: 100%; margin-top: 14px; padding: 14px; background: linear-gradient(135deg, #e8354a, #a01828); border: none; border-radius: 12px; color: #080608; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+  #champion-screen { text-align: center; padding: 36px 24px; animation: fadeUp 0.5s ease; }
+  .champ-emoji { font-size: 76px; margin-bottom: 8px; }
+  .champ-trophy { font-size: 11px; letter-spacing: 4px; color: #e8354a; text-transform: uppercase; margin-bottom: 8px; }
+  .champ-name { font-size: 26px; font-weight: 700; color: #f5e8e8; margin-bottom: 4px; }
+  .champ-from { font-size: 13px; color: #a01828; font-style: italic; margin-bottom: 4px; }
+  .champ-fact { font-size: 13px; color: #5a282e; font-style: italic; max-width: 310px; margin: 14px auto 28px; line-height: 1.8; }
+  .reset-btn { padding: 14px 32px; background: linear-gradient(135deg, #e8354a, #a01828); border: none; border-radius: 12px; color: #080608; font-size: 14px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  button:active { filter: brightness(0.88); }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div>
+      <a href="index.html" class="title" style="text-decoration:none;cursor:pointer" title="All brackets">VERDICT</a>
+      <div class="subtitle">Greatest Movie Villain Ever</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="back-btn" id="back-btn" style="display:none" onclick="showBracket()">← Bracket</button>
+      <div class="counter" id="counter">0/31</div>
+    </div>
+  </header>
+  <div id="main"></div>
+</div>
+
+<script>
+const ALL = [
+  // DIVISION 1 \u2014 CLASSIC HORROR
+  {id:0,  name:"Hannibal Lecter",  from:"The Silence of the Lambs",  emoji:"\ud83c\udf77", div:"Classic Horror", seed:1, stats:"16 min of screen time \u00b7 Won Best Actor", fact:"Anthony Hopkins was on screen for 16 minutes and won the Oscar anyway. Hannibal Lecter is the standard by which all movie villains are now judged \u2014 a man so intelligent and controlled that his cage feels less like protection for us and more like a courtesy from him. The fava beans line alone rewired a generation's nightmares."},
+  {id:1,  name:"Norman Bates",     from:"Psycho",                    emoji:"\ud83d\udd2a", div:"Classic Horror", seed:2, stats:"1960 \u00b7 Invented the slasher template", fact:"Hitchcock's masterpiece gave us the sympathetic psychopath before anyone had the vocabulary for it. Anthony Perkins made Norman shy, boyish, almost lovable \u2014 which is exactly what makes the reveal unbearable. Every slasher film made since owes Norman Bates a royalty check."},
+  {id:2,  name:"Count Orlok",      from:"Nosferatu",                 emoji:"\ud83e\udddb", div:"Classic Horror", seed:3, stats:"1922 \u00b7 Cinema's first great monster", fact:"Count Orlok crawling from his coffin is the original nightmare \u2014 the first time the movies truly frightened an audience. Max Schreck's rat-like silhouette has been imitated for a century and never bettered. A hundred years later it is still genuinely unsettling to look at."},
+  {id:3,  name:"Jack Torrance",    from:"The Shining",               emoji:"\ud83e\ude93", div:"Classic Horror", seed:4, stats:"Here's Johnny \u00b7 Kubrick + Nicholson", fact:"Jack Nicholson turned a father's slow breakdown into pure cinema. The axe through the door, the typewriter pages, the frozen hedge maze \u2014 Kubrick built dread out of carpet patterns and Nicholson supplied the human collapse at the center of it. Burned into every brain that's seen it."},
+
+  // DIVISION 2 \u2014 SCI-FI MENACE
+  {id:4,  name:"Darth Vader",      from:"Star Wars",                 emoji:"\u26ab", div:"Sci-Fi", seed:1, stats:"Most recognizable villain in cinema", fact:"The most recognizable villain in film history. That breathing. That entrance. James Earl Jones never showed his face and still owns every frame he enters. Vader is the rare villain who became more iconic than the heroes he hunts, and the prequels only deepened the tragedy underneath the mask."},
+  {id:5,  name:"The Xenomorph",    from:"Alien",                     emoji:"\ud83d\udc7e", div:"Sci-Fi", seed:2, stats:"H.R. Giger design \u00b7 1979", fact:"H.R. Giger designed something that taps directly into primal fear \u2014 birth, parasitism, the body turned against itself. The Xenomorph isn't evil. It has no motive beyond survival, which is somehow worse than malice. A perfect organism, as Ash admiringly called it, and nothing about it has aged a day."},
+  {id:6,  name:"HAL 9000",         from:"2001: A Space Odyssey",     emoji:"\ud83d\udd34", div:"Sci-Fi", seed:3, stats:"1968 \u00b7 A red dot that murders calmly", fact:"I'm sorry, Dave. I'm afraid I can't do that. HAL is a red dot and a soft voice that murders the entire crew without ever raising its tone. Kubrick understood that the calmest villain is the most terrifying. The moment HAL reads lips through the glass is when sci-fi grew up."},
+  {id:7,  name:"Agent Smith",      from:"The Matrix",                emoji:"\ud83d\udd76", div:"Sci-Fi", seed:4, stats:"1999 \u00b7 Hugo Weaving", fact:"Hugo Weaving made a machine subroutine feel personal. Smith doesn't just want to win \u2014 he is disgusted by humanity, and he wants you to know it before he wins. The way he says the word 'Mister Anderson' turned a program into one of cinema's great sneering antagonists."},
+
+  // DIVISION 3 \u2014 CRIME LORDS
+  {id:8,  name:"Anton Chigurh",    from:"No Country for Old Men",    emoji:"\ud83d\udca8", div:"Crime", seed:1, stats:"Oscar winner \u00b7 The coin decides", fact:"Javier Bardem won the Oscar playing death with a bad haircut and a cattle gun. Chigurh doesn't hate you. He simply follows a code so alien that a coin flip carries the full weight of your life. The most genuinely frightening thing about him is that you cannot bargain, because there is nothing human to bargain with."},
+  {id:9,  name:"Hans Landa",       from:"Inglourious Basterds",      emoji:"\ud83c\udf7a", div:"Crime", seed:2, stats:"Oscar winner \u00b7 The opening scene", fact:"Christoph Waltz was so charming you briefly forgot he was hunting families under a French farmhouse floor. The Jew Hunter weaponizes politeness, languages, and a glass of milk into pure menace. The most dangerous smile in modern cinema, and Waltz won the Oscar the instant the film premiered."},
+  {id:10, name:"Nurse Ratched",    from:"One Flew Over the Cuckoo's Nest", emoji:"\ud83d\udc89", div:"Crime", seed:3, stats:"Oscar winner \u00b7 Institutional evil", fact:"Louise Fletcher never yelled, never threatened. She just smiled and slowly crushed every soul on the ward with procedure and patience. Nurse Ratched is the villain who taught audiences that the most complete control wears a calm face and follows the rules. Institutional evil at its most precise."},
+  {id:11, name:"Bill the Butcher", from:"Gangs of New York",         emoji:"\ud83d\udd28", div:"Crime", seed:4, stats:"Daniel Day-Lewis \u00b7 2002", fact:"Daniel Day-Lewis disappeared so completely into Bill Cutting that you forget you are watching a performance. A man of genuine principle who happens to be a monster, draped in an American flag and a glass eye. Terrifying precisely because his code makes a horrible kind of sense to him."},
+
+  // DIVISION 4 \u2014 PSYCHOLOGICAL TERROR
+  {id:12, name:"Amy Dunne",        from:"Gone Girl",                 emoji:"\ud83d\udcf0", div:"Psych", seed:1, stats:"The Cool Girl monologue", fact:"Rosamund Pike weaponized the Cool Girl monologue into the most chilling villain speech of the 21st century, and she never raises her voice once. Amy Dunne is a few steps ahead of everyone, including the audience, and the horror is how reasonable her cruelty starts to sound. The scariest part is how much you understand her."},
+  {id:13, name:"Patrick Bateman",  from:"American Psycho",           emoji:"\ud83d\udcb3", div:"Psych", seed:2, stats:"Christian Bale \u00b7 2000", fact:"Christian Bale plays the yuppie who may or may not be killing everyone \u2014 and the genuine horror is that you cannot tell, neither can he, and neither can we. The business card scene contains more menace than most slashers manage in 90 minutes. A satire so sharp it became the thing it mocked."},
+  {id:14, name:"Annie Wilkes",     from:"Misery",                    emoji:"\ud83d\udcda", div:"Psych", seed:3, stats:"Oscar winner \u00b7 The hobbling scene", fact:"Kathy Bates won the Oscar playing your biggest fan. The hobbling scene, the typewriter, the word 'cockadoodie' \u2014 Annie Wilkes is the reason authors fear their readers. She swings from doting to homicidal in a single sentence, and Bates makes every swing feel completely real."},
+  {id:15, name:"Alex Forrest",     from:"Fatal Attraction",          emoji:"\ud83d\udc07", div:"Psych", seed:4, stats:"I will not be ignored \u00b7 1987", fact:"Glenn Close boiled the rabbit and invented an entire new category of fear. 'I will not be ignored' became a cultural threat. Alex Forrest is terrifying because she begins as someone sympathetic and curdles into obsession so gradually you can't name the exact moment it turned. Nobody who saw it ever forgot her."},
+
+  // DIVISION 5 \u2014 FANTASY & EVIL
+  {id:16, name:"The Joker",        from:"The Dark Knight",           emoji:"\ud83c\udccf", div:"Fantasy", seed:1, stats:"Posthumous Oscar \u00b7 Heath Ledger", fact:"Heath Ledger died and left behind the greatest villain performance in superhero history. Some men just want to watch the world burn \u2014 and Ledger made that idea feel like a genuine philosophy rather than a comic book line. The pencil trick, the hospital, the magic of an agent of pure chaos. Won the Oscar posthumously, deservedly."},
+  {id:17, name:"Voldemort",        from:"Harry Potter",              emoji:"\ud83d\udc0d", div:"Fantasy", seed:2, stats:"He Who Must Not Be Named", fact:"He Who Must Not Be Named terrified an entire generation of children and their parents equally. Ralph Fiennes without a nose should be silly. It is not. He plays the Dark Lord as something genuinely beyond human \u2014 a soul split so many times that mercy is no longer available to it. The villain a whole childhood was afraid of."},
+  {id:18, name:"Sauron",          from:"The Lord of the Rings",      emoji:"\ud83d\udc41", div:"Fantasy", seed:3, stats:"A flaming eye \u00b7 Never speaks", fact:"Sauron is a villain who is barely ever physically present \u2014 a flaming eye on a tower and a will that bends an entire world toward ruin. The genius is that the absence is scarier than any monster. The Ring whispers; the eye searches; and the dread he generates carries three of the greatest films ever made without a single line of dialogue."},
+  {id:19, name:"Maleficent",       from:"Sleeping Beauty",           emoji:"\ud83c\udf39", div:"Fantasy", seed:4, stats:"1959 \u00b7 Disney's original terror", fact:"Disney's original terrifying villain. She cursed a baby because she wasn't invited to a party \u2014 and that petty, immortal fury is a form of genius. The Mistress of All Evil turns into a dragon and stands in for every grand, theatrical, gloriously unreasonable villain who came after. Pure operatic menace in animated form."},
+
+  // DIVISION 6 \u2014 COMIC BOOK
+  {id:20, name:"Thanos",           from:"Avengers: Infinity War",    emoji:"\ud83d\udc9c", div:"Comic", seed:1, stats:"He won \u00b7 Erased half of life", fact:"He won. The heroes lost. The audience sat in stunned silence as the credits rolled on a defeat. Josh Brolin made genocide feel like a sad, reasonable conviction \u2014 a villain who weeps as he wins. Making the most powerful franchise on earth end a chapter with the bad guy victorious is the most disturbing thing Marvel ever did."},
+  {id:21, name:"Magneto",          from:"X-Men",                     emoji:"\ud83e\uddf2", div:"Comic", seed:2, stats:"Ian McKellen \u00b7 Holocaust survivor", fact:"Ian McKellen played a Holocaust survivor turned supervillain with such dignity that you agreed with him half the time. Magneto is the best kind of antagonist \u2014 one whose logic you cannot fully dismiss because history proved his fears correct. Never wrong, exactly. Just unwilling to wait."},
+  {id:22, name:"Loki",             from:"Thor / The Avengers",       emoji:"\ud83d\udc1a", div:"Comic", seed:3, stats:"Tom Hiddleston \u00b7 The fan favorite", fact:"Tom Hiddleston made Loki so compelling that Marvel kept dragging him back from every death. The God of Mischief became more beloved than half the heroes \u2014 a villain whose wounded jealousy and silver tongue made betrayal feel like theater. 'I have an army.' 'We have a Hulk.' Even getting smashed, he was the most fun in the room."},
+  {id:23, name:"Green Goblin",     from:"Spider-Man",                emoji:"\ud83c\udf83", div:"Comic", seed:4, stats:"Willem Dafoe \u00b7 Confirmed best 20 yrs later", fact:"Willem Dafoe in a rubber mask was somehow genuinely terrifying, and No Way Home confirmed it 20 years later \u2014 he never stopped being the best Spider-Man villain. The mirror-argument scene, where Norman fights himself, is a master class. Dafoe plays two people inside one skull and makes both frightening."},
+
+  // DIVISION 7 \u2014 SLASHERS
+  {id:24, name:"Michael Myers",    from:"Halloween",                 emoji:"\ud83d\udd2a", div:"Slashers", seed:1, stats:"$300k budget \u00b7 Invented the genre", fact:"John Carpenter spent $300,000 and invented the modern slasher. Michael Myers never runs \u2014 he doesn't need to, and that walking inevitability is the whole point. The Shape has no motive you can reason with, which is why he's still standing up at the end of every film. The blank mask is a screen you paint your own fear onto."},
+  {id:25, name:"Freddy Krueger",   from:"A Nightmare on Elm Street",  emoji:"\u270b", div:"Slashers", seed:2, stats:"Kills you in your dreams", fact:"Robert Englund turned a child murderer into a wisecracking icon who kills you in your sleep \u2014 the one place you cannot stay awake to defend. Freddy broke the slasher rule that the villain must be silent. He talks, he jokes, and somehow the gallows humor makes the glove worse, not better. You can't outrun the thing waiting in your own exhaustion."},
+  {id:26, name:"Jason Voorhees",   from:"Friday the 13th",           emoji:"\ud83c\udfd5", div:"Slashers", seed:3, stats:"The hockey mask \u00b7 Unstoppable wrath", fact:"Technically his mother did the killing in the first film. Jason took over and never left. The hockey mask became the universal symbol of unstoppable, wordless wrath \u2014 a man drowned as a boy who simply refuses to stay dead. He is the genre's blunt instrument, and the franchise's body count proves the formula works."},
+  {id:27, name:"Ghostface",        from:"Scream",                    emoji:"\ud83d\udc7b", div:"Slashers", seed:4, stats:"Meta before meta \u00b7 Wes Craven", fact:"What's your favorite scary movie? Wes Craven built a villain who knows he's in a horror movie and plays by its rules on purpose. Ghostface was meta before meta was a word \u2014 a killer who could be anyone, who trips over furniture, who quizzes you before stabbing. The mask is iconic and the identity changes, which is the whole terrifying joke."},
+
+  // DIVISION 8 \u2014 WILD CARDS
+  {id:28, name:"Daniel Plainview", from:"There Will Be Blood",       emoji:"\ud83d\udee2", div:"Wild Cards", seed:1, stats:"Oscar winner \u00b7 I drink your milkshake", fact:"I drink your milkshake. Daniel Day-Lewis as Daniel Plainview isn't a traditional villain \u2014 he's something worse, a man capitalism sharpened into a perfect, friendless instrument of acquisition. The bowling-alley finale is one of the most unhinged scenes ever filmed. The monster here is ambition with the humanity boiled out of it."},
+  {id:29, name:"Judge Doom",       from:"Who Framed Roger Rabbit",   emoji:"\ud83d\udc07", div:"Wild Cards", seed:2, stats:"1988 \u00b7 Traumatized a generation", fact:"Christopher Lloyd went full nightmare in a children's movie. The true-form reveal \u2014 those red cartoon eyes, that shrieking voice \u2014 traumatized an entire generation that thought it was sitting down to a fun cartoon. Judge Doom is proof that the scariest villain can hide inside the most innocent-looking film."},
+  {id:30, name:"Hans Gruber",      from:"Die Hard",                  emoji:"\ud83c\udf84", div:"Wild Cards", seed:3, stats:"Alan Rickman's film debut", fact:"Alan Rickman's debut film performance, and he improvised the famous fall. Hans Gruber is the reason Die Hard is a perfect movie \u2014 charming, brilliant, funny, and utterly ruthless. He set the template for the smooth, intelligent action villain, and nobody since has matched his blend of menace and impeccable tailoring."},
+  {id:31, name:"Buffalo Bill",     from:"The Silence of the Lambs",  emoji:"\ud83e\udd8b", div:"Wild Cards", seed:4, stats:"It puts the lotion on its skin", fact:"It puts the lotion on its skin. Ted Levine created something so deeply disturbing that Hannibal Lecter \u2014 in the same film \u2014 seems almost comforting by comparison. The well, the night-vision goggles, the dance. Buffalo Bill is the rare secondary villain who would headline any other movie and terrify just as completely."}
+];
+
+const R16=[[0,3],[1,2],[4,7],[5,6],[8,11],[9,10],[12,15],[13,14],[16,19],[17,18],[20,23],[21,22],[24,27],[25,26],[28,31],[29,30]];
+const COUNTS=[16,8,4,2,1];
+const RLABELS=["Round of 32","Round of 16","Quarterfinal","Semifinal","The Final"];
+let results=[Array(16).fill(null),Array(8).fill(null),Array(4).fill(null),Array(2).fill(null),Array(1).fill(null)];
+let currentVote=null,selected=null,locked=false,askPrompt='';
+
+const ASK_ROOM=[
+  "Scariest in the moment, or scariest to think about later?",
+  "Could this villain carry a movie alone, or do they need a hero to play off?",
+  "Performance or writing \u2014 which makes this villain work?",
+  "Who on the losing side is actually underrated?",
+  "If this villain walked into your house tonight, how cooked are you?"
+];
+
+function getC(r,mi,slot){
+  if(r===0){const idx=R16[mi][slot];return ALL[idx];}
+  const prevMi=mi*2+slot,prevW=results[r-1][prevMi];
+  if(prevW===null)return null;
+  return ALL.find(c=>c.id===prevW);
+}
+function getCurrentRound(){for(let r=0;r<5;r++){for(let mi=0;mi<COUNTS[r];mi++){if(results[r][mi]===null){const a=getC(r,mi,0),b=getC(r,mi,1);if(a&&b)return r;}}};return 4;}
+function getNextActive(){const cr=getCurrentRound();for(let mi=0;mi<COUNTS[cr];mi++){if(results[cr][mi]===null){const a=getC(cr,mi,0),b=getC(cr,mi,1);if(a&&b)return{round:cr,mi};}}return null;}
+function totalVotes(){return results.flat().filter(v=>v!==null).length;}
+function fakeA(a,b){return Math.min(86,Math.max(20,50+(b.id-a.id)%17+(a.id%4)*2));}
+
+function render(){
+  const done=results[4][0]!==null;
+  if(done){const w=ALL.find(c=>c.id===results[4][0]);renderChampion(w);return;}
+  if(currentVote!==null){renderVote();return;}
+  renderBracket();
+}
+
+function renderBracket(){
+  document.getElementById('back-btn').style.display='none';
+  const cr=getCurrentRound(),next=getNextActive();
+  const divNames=["Classic Horror","Sci-Fi","Crime","Psych","Fantasy","Comic","Slashers","Wild Cards"];
+  let html='<div class="core-q">Who is the greatest movie villain of all time?</div>';
+  html+='<div class="div-labels">';
+  divNames.forEach(d=>{html+=`<div class="div-label">${d}</div>`;});
+  html+='</div><div class="bracket-cols">';
+  for(let r=0;r<5;r++){
+    const count=COUNTS[r],maxH=[22,30,44,70,100][r],gap=[2,5,12,28,0][r];
+    html+=`<div class="bracket-col"><div class="col-label" style="color:${r===cr?'#e8354a':'#3a1c20'}">${["R32","R16","QF","SF","Final"][r]}</div><div class="col-matches" style="gap:${gap}px">`;
+    for(let mi=0;mi<count;mi++){
+      const a=getC(r,mi,0),b=getC(r,mi,1),winner=results[r][mi];
+      const active=r===cr&&winner===null&&a&&b,done=winner!==null;
+      const cls=active?'active':done?'done':'empty';
+      const onclick=(active||done)?`onclick="startVote(${r},${mi})"`:'';
+      html+=`<div class="match-cell ${cls}" style="max-height:${maxH}px;${!active&&!done?'border:1px solid #1a0a0c':''}" ${onclick}>`;
+      [a,b].forEach((c,si)=>{
+        if(!c){html+=`<div class="tbd">—</div>`;return;}
+        const isW=winner===c.id,isL=done&&!isW;
+        const nm=c.name.split(' ').slice(0,r===0?2:3).join(' ');
+        html+=`${si===1?'<hr class="match-divider">':''}<div class="match-row ${isW?'winner':isL?'loser':''}"><span class="em">${c.emoji}</span><span class="nm">${nm}</span></div>`;
+      });
+      html+='</div>';
+    }
+    html+='</div></div>';
+  }
+  html+='</div>';
+  if(next)html+=`<div style="padding:14px 16px 0"><button class="vote-btn" onclick="startVote(${next.round},${next.mi})">Vote Next Matchup →</button><div class="vote-hint">Tap any gold-bordered match to vote</div></div>`;
+  document.getElementById('main').innerHTML=html;
+}
+
+function startVote(round,mi){currentVote={round,mi};selected=null;locked=false;const w=results[round][mi];if(w!==null){const a=getC(round,mi,0);selected=(a&&a.id===w)?'a':'b';}render();}
+
+function renderVote(){
+  document.getElementById('back-btn').style.display='block';
+  const{round,mi}=currentVote,a=getC(round,mi,0),b=getC(round,mi,1);
+  if(!a||!b){showBracket();return;}
+  const pA=fakeA(a,b),pB=100-pA,majority=selected?(selected==='a'?pA:pB)>=50:false;
+  const hint=!selected?"— Who is more terrifying? —":locked?"— Verdict locked! —":"— Tap to switch. Button to commit. —";
+  let html=`<div id="vote-screen"><div class="vote-header"><div class="round-label">${RLABELS[round]}</div><div class="vote-hint-text">${hint}</div></div>`;
+  [{side:'a',c:a,pct:pA},{side:'b',c:b,pct:pB}].forEach(({side,c,pct})=>{
+    const isSel=selected===side;
+    html+=`<div class="card${isSel?' selected':''}" onclick="selectCard('${side}')">`;
+    if(locked&&isSel)html+=`<div class="pct-bar" style="width:${pct}%"></div>`;
+    html+=`<div class="card-inner">
+      <div class="card-top">
+        <div class="card-emoji">${c.emoji}</div>
+        <div style="flex:1;min-width:0">
+          <div class="card-meta">${c.div} · ${c.from}</div>
+          <div class="card-name">${c.name}</div>
+        </div>
+        ${isSel&&!locked?'<div class="card-arrow">◀</div>':''}
+      </div>
+      <div class="card-tag">${c.seed === 1 ? '#1 SEED' : c.seed === 2 ? '#2 SEED' : c.seed === 3 ? '#3 SEED' : '#4 SEED'}</div>
+      <div class="card-stats">📊 ${c.stats}</div>
+      <div class="card-fact">${c.fact}</div>
+      ${locked&&isSel?`<div class="card-pct">${pct}%<span>voted scariest</span><span class="check">✓</span></div>`:''}
+    </div></div>`;
+  });
+  if(selected&&!locked)html+=`<div class="commit-box"><div class="commit-hint">Still deciding? Tap the other card to compare.</div><button class="commit-btn" onclick="commitVote()">Lock In Verdict →</button></div>`;
+  if(locked){
+    html+=`<div class="result-box"><div class="${majority?'result-majority':'result-minority'}">${majority?'✓ With the majority':'🔥 Against the crowd'}</div>
+      <div class="ask-room" style="margin-top:14px;padding-top:14px;border-top:1px dashed #4a2228"><div style="font-size:9px;letter-spacing:3px;color:#a01828;text-transform:uppercase;margin-bottom:6px">Ask the Room</div><div style="font-size:15px;color:#f0d8d8;font-style:italic;line-height:1.4">${askPrompt}</div></div>
+    </div>
+    <button class="next-btn" onclick="advance()">Vote Next Matchup →</button>`;
+  }
+  html+='</div>';
+  document.getElementById('main').innerHTML=html;
+}
+
+function selectCard(side){if(locked)return;selected=side;renderVote();}
+function commitVote(){
+  if(!selected||locked)return;
+  locked=true;
+  askPrompt=ASK_ROOM[Math.floor(Math.random()*ASK_ROOM.length)];
+  const{round,mi}=currentVote,a=getC(round,mi,0),b=getC(round,mi,1);
+  results[round][mi]=selected==='a'?a.id:b.id;
+  renderVote();
+  document.getElementById('counter').textContent=totalVotes()+'/31';
+}
+function advance(){currentVote=null;locked=false;selected=null;render();}
+function showBracket(){currentVote=null;selected=null;locked=false;render();}
+function renderChampion(c){
+  document.getElementById('back-btn').style.display='none';
+  document.getElementById('main').innerHTML=`
+    <div id="champion-screen">
+      <div style="font-size:44px;margin-bottom:6px">🏆</div>
+      <div class="champ-emoji">${c.emoji}</div>
+      <div class="champ-trophy">Greatest Movie Villain of All Time</div>
+      <div class="champ-name">${c.name}</div>
+      <div class="champ-from">${c.from}</div>
+      <div style="display:inline-block;margin:10px 0 6px;padding:4px 16px;border-radius:20px;background:#e8354a;color:#080608;font-size:11px;font-weight:700;letter-spacing:1px">YOUR VERDICT</div>
+      <div class="champ-fact">${c.fact}</div>
+      <button class="reset-btn" onclick="resetGame()">Run It Back</button>
+    </div>`;
+}
+function resetGame(){results=[Array(16).fill(null),Array(8).fill(null),Array(4).fill(null),Array(2).fill(null),Array(1).fill(null)];currentVote=null;selected=null;locked=false;render();}
+render();
+</script>
+</body>
+</html>

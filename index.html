@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VERDICT — Pick Your Bracket</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #060507; color: #f0eef4; font-family: Georgia, 'Times New Roman', serif; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+  #app { width: 100%; max-width: 760px; margin: 0 auto; min-height: 100vh; padding-bottom: 48px; }
+
+  header { padding: 38px 24px 26px; text-align: center; border-bottom: 1px solid #18141e; }
+  .wordmark { font-size: 40px; font-weight: 700; letter-spacing: 2px; line-height: 1; }
+  .wordmark .v { color: #f5a623; }
+  .tagline { font-size: 12px; color: #6a6478; letter-spacing: 4px; text-transform: uppercase; margin-top: 12px; }
+  .blurb { font-size: 14px; color: #8a8499; font-style: italic; margin-top: 16px; line-height: 1.6; max-width: 440px; margin-left: auto; margin-right: auto; }
+
+  .shelf { padding: 28px 18px 4px; }
+  .shelf-head { display: flex; align-items: baseline; gap: 10px; padding: 0 6px 14px; border-bottom: 1px solid #14111a; margin-bottom: 16px; }
+  .shelf-icon { font-size: 18px; }
+  .shelf-name { font-size: 13px; letter-spacing: 3px; text-transform: uppercase; color: #c8c2d8; font-weight: 700; }
+  .shelf-count { font-size: 10px; color: #4a4658; letter-spacing: 1px; margin-left: auto; }
+
+  .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  @media (max-width: 540px) { .grid { grid-template-columns: 1fr; } }
+
+  .card { display: block; text-decoration: none; border-radius: 14px; padding: 18px 18px 16px; background: #0e0c14; border: 1px solid #1c1826; position: relative; overflow: hidden; transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease; }
+  .card:hover, .card:focus-visible { transform: translateY(-2px); background: #131019; outline: none; }
+  .card-accent { position: absolute; top: 0; left: 0; width: 4px; height: 100%; }
+  .card-emoji { font-size: 26px; line-height: 1; margin-bottom: 10px; display: block; }
+  .card-title { font-size: 17px; font-weight: 700; color: #f0eef4; line-height: 1.2; margin-bottom: 5px; }
+  .card-q { font-size: 11.5px; color: #8a8499; font-style: italic; line-height: 1.5; min-height: 34px; }
+  .card-foot { display: flex; align-items: center; gap: 8px; margin-top: 12px; }
+  .card-pill { font-size: 9px; letter-spacing: 1px; text-transform: uppercase; padding: 3px 9px; border-radius: 20px; font-weight: 700; }
+  .card-go { margin-left: auto; font-size: 13px; color: #4a4658; transition: color 0.15s, transform 0.15s; }
+  .card:hover .card-go { transform: translateX(3px); }
+
+  footer { text-align: center; padding: 36px 24px 0; }
+  .foot-line { font-size: 11px; color: #3e3a4a; letter-spacing: 1px; line-height: 1.8; }
+  .foot-line .v { color: #b8821e; }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="wordmark"><span class="v">VERDICT</span></div>
+    <div class="tagline">You vs. the Crowd</div>
+    <div class="blurb">Pick a bracket. Vote your gut. Find out if you're with the majority — or all alone out there. Every matchup has a case for both sides. What's your verdict?</div>
+  </header>
+  <div id="shelves"></div>
+  <footer>
+    <div class="foot-line">15 brackets &middot; 1 endless argument<br><span class="v">VERDICT</span> &middot; an opinion is just a verdict you haven't defended yet</div>
+  </footer>
+</div>
+
+<script>
+// ─────────────────────────────────────────────────────────────
+// HUB DATA — to add a new bracket later, drop one line into the
+// right shelf's `items` array. No other edits needed.
+// ─────────────────────────────────────────────────────────────
+const SHELVES = [
+  {
+    icon: "🏈", name: "Sports",
+    items: [
+      { file:"sports-nfl-goat.html",     emoji:"🏆", title:"Greatest NFL Player Ever",   q:"Who is the greatest NFL player of all time?",        accent:"#f5a623", pill:"32 · Resume" },
+      { file:"sports-greatest-moments.html",emoji:"🥅", title:"Greatest Sports Moments",     q:"Which moment made you feel more alive?",             accent:"#4a9eff", pill:"32 · Moments" },
+      { file:"sports-wrestlers.html",    emoji:"🤼", title:"Greatest Pro Wrestlers",      q:"Who is the greatest professional wrestler of all time?",accent:"#e8b830", pill:"32 · Resume" },
+    ]
+  },
+  {
+    icon: "🎬", name: "Screen",
+    items: [
+      { file:"screen-villains.html",     emoji:"🃏", title:"Greatest Movie Villains",     q:"Who is more terrifying?",                            accent:"#e8354a", pill:"32 · Icons" },
+      { file:"screen-universes.html",    emoji:"🌌", title:"Greatest Fictional Universes", q:"Which world would you rather live in?",              accent:"#8060df", pill:"32 · Worlds" },
+      { file:"screen-90s-sitcoms.html",       emoji:"📺", title:"Greatest 90s Sitcoms",        q:"Which 90s sitcom is the greatest of all time?",      accent:"#c8a96e", pill:"32 · Comedy" },
+      { file:"screen-rewired-characters.html",      emoji:"🧠", title:"Characters Who Rewired You",  q:"Who changed how you see the world?",                 accent:"#46c8a0", pill:"32 · Deep" },
+      { file:"screen-oh-hell-yes.html",        emoji:"🙌", title:"Greatest OH HELL YES Moments",q:"Which moment gave you the biggest rush?",            accent:"#ff8a3c", pill:"32 · Hype" },
+    ]
+  },
+  {
+    icon: "🎵", name: "Music",
+    items: [
+      { file:"music-90s-songs.html",    emoji:"🎸", title:"Greatest 90s Songs",          q:"Which 90s song is the greatest of all time?",        accent:"#e0408a", pill:"32 · Anthems" },
+    ]
+  },
+  {
+    icon: "🎮", name: "Kids & Play",
+    items: [
+      { file:"kids-videogame-characters.html",    emoji:"🎮", title:"Greatest Video Game Characters",q:"Which character do you love more?",                accent:"#f8d030", pill:"32 · Kids" },
+      { file:"kids-movies.html",   emoji:"🍿", title:"Greatest Kids Movies",        q:"Which do you love more?",                            accent:"#60c8ff", pill:"32 · Kids" },
+      { file:"kids-80s-draft.html",    emoji:"📼", title:"80s Kids Character Draft",    q:"Who belongs on your '80s dream team?",               accent:"#ff3ca6", pill:"32 · Room" },
+      { file:"kids-your-team.html",         emoji:"🛟", title:"Who's On Your Team?",         q:"Who do you want when everything goes sideways?",     accent:"#33d6c7", pill:"32 · Room" },
+    ]
+  },
+  {
+    icon: "🕰", name: "History & Big Questions",
+    items: [
+      { file:"history-what-if.html",       emoji:"🔀", title:"What If? Hinges in History",  q:"Which 'what if' haunts you more?",                   accent:"#c0a060", pill:"32 · History" },
+      { file:"history-near-miss.html",     emoji:"⏳", title:"They Almost Didn't Make It",  q:"Which near-miss would have hurt you more?",          accent:"#d08850", pill:"32 · History" },
+    ]
+  },
+];
+
+function render(){
+  const root = document.getElementById('shelves');
+  let html = '';
+  for (const shelf of SHELVES){
+    html += `<section class="shelf">
+      <div class="shelf-head">
+        <span class="shelf-icon">${shelf.icon}</span>
+        <span class="shelf-name">${shelf.name}</span>
+        <span class="shelf-count">${shelf.items.length} bracket${shelf.items.length>1?'s':''}</span>
+      </div>
+      <div class="grid">`;
+    for (const it of shelf.items){
+      html += `<a class="card" href="${it.file}">
+        <span class="card-accent" style="background:${it.accent}"></span>
+        <span class="card-emoji">${it.emoji}</span>
+        <div class="card-title">${it.title}</div>
+        <div class="card-q">${it.q}</div>
+        <div class="card-foot">
+          <span class="card-pill" style="background:${hexA(it.accent,0.16)};color:${it.accent}">${it.pill}</span>
+          <span class="card-go">Play →</span>
+        </div>
+      </a>`;
+    }
+    html += `</div></section>`;
+  }
+  root.innerHTML = html;
+}
+
+// turn #rrggbb + alpha into rgba() for the pill backgrounds
+function hexA(hex, a){
+  const n = parseInt(hex.slice(1),16);
+  const r=(n>>16)&255, g=(n>>8)&255, b=n&255;
+  return `rgba(${r},${g},${b},${a})`;
+}
+
+render();
+</script>
+</body>
+</html>

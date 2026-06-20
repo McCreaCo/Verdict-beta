@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VERDICT — The 32 Greatest Kids Movies Ever</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #060c1a; color: #f0f8ff; font-family: Georgia, 'Times New Roman', serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
+  #app { width: 100%; max-width: 560px; min-height: 100vh; display: flex; flex-direction: column; }
+  header { padding: 16px 20px 12px; border-bottom: 1px solid #0e1830; display: flex; align-items: center; justify-content: space-between; background: #080e20; }
+  .title { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; color: #60c8ff; }
+  .subtitle { font-size: 9px; color: #ff8030; letter-spacing: 2px; text-transform: uppercase; margin-top: 2px; }
+  .counter { font-size: 10px; color: #101c30; background: #0c1428; border: 1px solid #0e1830; border-radius: 16px; padding: 4px 10px; }
+  .back-btn { background: transparent; border: 1px solid #0e1830; border-radius: 8px; padding: 5px 10px; color: #162030; font-size: 11px; cursor: pointer; font-family: Georgia, serif; }
+  #main { flex: 1; padding: 14px 0; }
+  .div-labels { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px; margin: 0 10px 8px; }
+  .div-label { font-size: 7px; color: #162030; text-align: center; padding: 3px 2px; background: #0c1428; border-radius: 4px; }
+  .bracket-cols { display: flex; gap: 3px; padding: 0 10px; }
+  .bracket-col { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+  .col-label { font-size: 7px; letter-spacing: 1.5px; text-transform: uppercase; text-align: center; margin-bottom: 5px; }
+  .col-matches { display: flex; flex-direction: column; justify-content: space-around; height: 380px; }
+  .match-cell { border-radius: 5px; overflow: hidden; cursor: default; flex: 1; transition: border-color 0.2s; }
+  .match-cell.active { border: 1px solid #60c8ff !important; background: #0c1428 !important; cursor: pointer; }
+  .match-cell.done { border: 1px solid #0e1c30 !important; background: #080e20 !important; cursor: pointer; }
+  .match-cell.empty { border: 1px solid #0c1428; background: #060c1a; }
+  .match-row { display: flex; align-items: center; gap: 2px; padding: 2px 3px; transition: opacity 0.3s; }
+  .match-row.loser { opacity: 0.22; }
+  .match-row.winner { background: rgba(96,200,255,0.12); }
+  .match-row .em { font-size: 8px; }
+  .match-row .nm { font-size: 7px; color: #162030; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 400; }
+  .match-row.winner .nm { color: #60c8ff; font-weight: 700; }
+  .match-divider { border: none; border-top: 1px solid #0c1424; margin: 0; }
+  .tbd { padding: 2px 3px; font-size: 6px; color: #101828; }
+  .vote-btn { width: 100%; padding: 14px; background: linear-gradient(135deg, #60c8ff, #2060c0); border: none; border-radius: 12px; color: #060c1a; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; margin-top: 14px; }
+  .vote-hint { font-size: 10px; color: #101c30; text-align: center; margin-top: 6px; }
+  #vote-screen { padding: 0 16px; animation: fadeUp 0.3s ease; }
+  .vote-header { text-align: center; margin-bottom: 16px; }
+  .round-label { font-size: 10px; letter-spacing: 3px; color: #60c8ff; text-transform: uppercase; margin-bottom: 3px; }
+  .vote-hint-text { font-size: 11px; color: #162030; letter-spacing: 1px; }
+  .card { display: block; width: 100%; margin-bottom: 10px; border-radius: 14px; padding: 16px 18px; cursor: pointer; text-align: left; transition: all 0.25s; position: relative; overflow: hidden; border: 2px solid #0e1830; background: #0a1020; }
+  .card.selected { border-color: #60c8ff !important; background: #0e1c34 !important; transform: scale(1.01); }
+  .card-inner { position: relative; z-index: 1; }
+  .card-top { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 8px; }
+  .card-emoji { font-size: 34px; margin-top: 2px; flex-shrink: 0; }
+  .card-meta { font-size: 9px; color: #60c8ff; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 2px; }
+  .card-name { font-size: 17px; font-weight: 700; color: #1e3050; line-height: 1.2; margin-bottom: 2px; transition: color 0.2s; }
+  .card.selected .card-name { color: #f0f8ff; }
+  .card-from { font-size: 10px; color: #121e30; font-style: italic; transition: color 0.2s; }
+  .card.selected .card-from { color: #4090c0; }
+  .card-tag { display: inline-block; margin-top: 8px; padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 700; background: #0e1830; color: #ff8030; letter-spacing: 1px; }
+  .card.selected .card-tag { background: #ff8030; color: #060c1a; }
+  .card-fact { font-size: 12px; color: #121e30; line-height: 1.75; transition: color 0.2s; margin-top: 10px; }
+  .card.selected .card-fact { color: #6090b0; }
+  .card-arrow { font-size: 16px; color: #60c8ff; margin-left: auto; flex-shrink: 0; }
+  .card-pct { font-size: 20px; font-weight: 700; color: #60c8ff; margin-top: 10px; }
+  .card-pct span { font-size: 12px; font-weight: 400; color: #1e3050; margin-left: 6px; }
+  .card-pct .check { color: #60c8ff; margin-left: 8px; }
+  .pct-bar { position: absolute; top: 0; left: 0; height: 100%; background: rgba(96,200,255,0.06); transition: width 0.9s cubic-bezier(.4,0,.2,1); z-index: 0; }
+  .commit-box { padding: 14px 18px; background: #0a1020; border: 1px solid #0e1830; border-radius: 12px; text-align: center; animation: fadeUp 0.3s ease; }
+  .commit-hint { font-size: 11px; color: #162030; margin-bottom: 10px; font-style: italic; }
+  .commit-btn { padding: 12px 32px; background: linear-gradient(135deg, #60c8ff, #2060c0); border: none; border-radius: 10px; color: #060c1a; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+  .result-box { padding: 14px 18px; background: #0a1020; border: 1px solid #0e1830; border-radius: 12px; text-align: center; margin-top: 2px; }
+  .result-majority { font-size: 13px; color: #7ec8a0; font-weight: 700; }
+  .result-minority { font-size: 13px; color: #ff8030; font-weight: 700; }
+  #champion-screen { text-align: center; padding: 36px 24px; animation: fadeUp 0.5s ease; }
+  .champ-emoji { font-size: 72px; margin-bottom: 12px; }
+  .champ-trophy { font-size: 10px; letter-spacing: 4px; color: #60c8ff; text-transform: uppercase; margin-bottom: 8px; }
+  .champ-name { font-size: 26px; font-weight: 700; color: #f0f8ff; margin-bottom: 4px; }
+  .champ-from { font-size: 12px; color: #ff8030; font-style: italic; margin-bottom: 4px; }
+  .champ-meta { font-size: 11px; color: #162030; margin-bottom: 16px; }
+  .champ-fact { font-size: 13px; color: #2a4060; font-style: italic; max-width: 310px; margin: 0 auto 28px; line-height: 1.8; }
+  .reset-btn { padding: 14px 32px; background: linear-gradient(135deg, #60c8ff, #2060c0); border: none; border-radius: 12px; color: #060c1a; font-size: 14px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  button:active { filter: brightness(0.88); }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div>
+      <a href="index.html" class="title" style="text-decoration:none;cursor:pointer" title="All brackets">VERDICT</a>
+      <div class="subtitle">Greatest Kids Movies Ever Made</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="back-btn" id="back-btn" style="display:none" onclick="showBracket()">← Bracket</button>
+      <div class="counter" id="counter">0/31</div>
+    </div>
+  </header>
+  <div id="main"></div>
+</div>
+
+<script>
+const ALL = [
+  // PIXAR
+  {id:0,  name:"The Lion King",      from:"Disney · 1994",                emoji:"🦁", div:"Disney Classics",  tag:"CIRCLE OF LIFE",    fact:"The Lion King is based on Shakespeare's Hamlet — a prince whose father is murdered by his uncle who then takes the throne. Disney turned it into a cartoon lion with a warthog and a meerkat for best friends. The scene where Mufasa dies is still considered one of the most emotional moments in all of animation. Simba running back to Pride Rock 20 years later still makes adults cry in theaters."},
+  {id:1,  name:"Aladdin",            from:"Disney · 1992",                emoji:"🧞", div:"Disney Classics",  tag:"THREE WISHES",      fact:"Robin Williams improvised so much of the Genie's dialogue that the animators had to create new animation techniques just to keep up with him. He recorded hours of material for every scene. The final film used maybe a third of what he gave them. The rest became outtakes that Disney has never fully released. Robin Williams essentially performed a stand-up special inside a cartoon and then Disney animated around it."},
+  {id:2,  name:"Beauty and the Beast",from:"Disney · 1991",               emoji:"🌹", div:"Disney Classics",  tag:"ENCHANTED CASTLE",  fact:"Beauty and the Beast was the first animated film ever nominated for the Academy Award for Best Picture. The ballroom scene was the first time a major studio used computer-generated animation combined with hand-drawn characters. The chandelier, the ballroom floor, the swirling camera — all CGI in 1991 when most people had never heard the term. It looks extraordinary. It still does."},
+  {id:3,  name:"Mulan",              from:"Disney · 1998",                emoji:"🏮", div:"Disney Classics",  tag:"WARRIOR PRINCESS",  fact:"Mulan was based on a 1,500-year-old Chinese poem about a woman who disguised herself as a man to fight in her father's place. Disney's version made her the first Disney princess who saves the day entirely through her own intelligence and courage — not through romance or magic. She outsmarts an entire army using an avalanche. I'll Make a Man Out of You is still one of the best training montage songs ever written."},
+
+  // PIXAR
+  {id:4,  name:"Toy Story",          from:"Pixar · 1995",                 emoji:"🤠", div:"Pixar Power",      tag:"TO INFINITY",       fact:"Toy Story was the world's first fully computer-animated feature film. Before 1995 every animated movie was hand-drawn. Pixar changed everything with one film about a cowboy doll who was jealous of a space ranger. The technology was so new that Pixar nearly ran out of money before finishing it. Disney almost shut the whole production down. Woody and Buzz surviving that is its own story about not giving up."},
+  {id:5,  name:"Finding Nemo",       from:"Pixar · 2003",                 emoji:"🐠", div:"Pixar Power",      tag:"JUST KEEP SWIMMING", fact:"Finding Nemo's director Andrew Stanton was inspired by looking at a fish tank in a dentist's office and wondering what the fish thought about. The film required Pixar to build an entirely new software system just to animate water realistically. They spent three years making water look right. Dory's short-term memory loss was written as a funny character quirk — it also became the most accurate and compassionate portrayal of memory difficulty in any family film."},
+  {id:6,  name:"The Incredibles",    from:"Pixar · 2004",                 emoji:"🦸", div:"Pixar Power",      tag:"SUPER FAMILY",      fact:"The Incredibles was the first Pixar film with no animal characters, no toys, and no magic — just a family of superheroes trying to live normal lives. Director Brad Bird wanted to make a film about what it feels like when the thing that makes you special is the thing the world tells you to hide. Every kid who ever felt different understood it immediately. Edna Mode was originally a small role. Brad Bird voiced her himself as a placeholder. They kept him."},
+  {id:7,  name:"Up",                 from:"Pixar · 2009",                 emoji:"🎈", div:"Pixar Power",      tag:"ADVENTURE IS OUT THERE", fact:"The first four minutes of Up — a wordless montage of a couple's entire life together — is considered the greatest opening sequence in animation history. It makes adults cry before the story has started. The rest of the film is about a grumpy old man, a small boy, a talking dog, and a giant colorful bird. Up won two Academy Awards. The wordless opening that devastates everyone was almost cut because test audiences said it was too sad for a children's movie. It stayed."},
+
+  // ADVENTURE
+  {id:8,  name:"Home Alone",         from:"Hughes/Columbus · 1990",       emoji:"🏠", div:"Adventure & Action", tag:"BOOBY TRAPS",     fact:"Kevin McCallister was left home alone by accident when his family flew to Paris for Christmas. He then defeated two professional burglars using booby traps he built himself from household items. John Hughes wrote the script in nine days. Macaulay Culkin was eight years old and had never starred in a major film. Home Alone became the highest-grossing comedy in history at the time. The aftershave scream is one of the most recognized moments in Christmas movie history."},
+  {id:9,  name:"The Goonies",        from:"Spielberg/Donner · 1985",      emoji:"🗺", div:"Adventure & Action", tag:"GOONIES NEVER SAY DIE", fact:"A group of kids discover a pirate treasure map in an attic and spend one day following it through underground caves, booby traps, and a family of criminals. Steven Spielberg produced it and let the child actors improvise huge sections of dialogue. The truffle shuffle was Sean Astin's idea. The entire cast became real friends making the film and that genuine friendship is visible in every scene. The Goonies never say die. Neither does the film."},
+  {id:10, name:"Jumanji",            from:"Joe Johnston · 1995",          emoji:"🎲", div:"Adventure & Action", tag:"ROLL THE DICE",    fact:"A magical board game that releases wild animals, natural disasters, and a man who has been trapped inside it for 26 years whenever someone rolls the dice. Robin Williams plays Alan Parrish — a boy who got sucked into the game in 1969 and came out as a grown adult in 1995. The film asked what you'd miss most if you lost your entire childhood. Alan missed everything. The stampede scene required so much CGI that it nearly broke the production budget."},
+  {id:11, name:"Spy Kids",           from:"Robert Rodriguez · 2001",      emoji:"🕶", div:"Adventure & Action", tag:"SECRET AGENTS",    fact:"Two kids discover their parents are retired secret agents and have to rescue them from a villain who makes evil robots out of children's TV show characters. Robert Rodriguez made the film specifically because his own kids kept interrupting him at work and he wanted to make something for them. He shot it with his children watching from the set. The gadgets — thumbs that fly, jetpacks the size of backpacks — were designed with input from actual children. It shows."},
+
+  // ANIMATED ADVENTURES
+  {id:12, name:"Shrek",              from:"DreamWorks · 2001",            emoji:"🧅", div:"Animated Adventures", tag:"FAR FAR AWAY",   fact:"Shrek was deliberately designed to make fun of every Disney fairy tale ever made. The swamp ogre who rescues the princess but isn't charming, the princess who isn't what she appears, the donkey who won't stop talking — all of it was a loving argument with a hundred years of fairy tale tradition. Shrek won the very first Academy Award for Best Animated Feature in 2002. Smash Mouth's All Star became immortal because of one film."},
+  {id:13, name:"Kung Fu Panda",      from:"DreamWorks · 2008",            emoji:"🐼", div:"Animated Adventures", tag:"THERE IS NO SECRET", fact:"Po is an overweight panda who works in a noodle shop and is obsessed with kung fu. He gets chosen as the Dragon Warrior by accident. The villain Tai Lung escapes from a prison that was built specifically to hold him. The film's central message — there is no secret ingredient, what makes something special is that you believe it is — landed harder than anyone expected. Jack Black said Po was the role he was born to play. He meant it."},
+  {id:14, name:"How to Train Your Dragon", from:"DreamWorks · 2010",     emoji:"🐉", div:"Animated Adventures", tag:"THIS IS BERK",    fact:"Hiccup is the worst Viking in a village of dragon slayers. He shoots down the most feared dragon alive — and then can't bring himself to kill it. The friendship between Hiccup and Toothless was animated by studying how dogs interact with their owners. Toothless behaves exactly like a large, loyal, occasionally terrifying dog. The flying sequences were choreographed to feel like surfing through the air. The film has almost no dialogue during its best scenes. It doesn't need any."},
+  {id:15, name:"Moana",              from:"Disney · 2016",                emoji:"🌊", div:"Animated Adventures", tag:"THE OCEAN CHOSE ME", fact:"Moana sails alone across the Pacific Ocean to return the heart of the ocean goddess Te Fiti and save her island. She does it without a love interest, without a prince, and without magic powers — just stubbornness and navigation skills. The ocean itself is a character. Disney hired a council of Pacific Islander cultural experts to advise on every detail of Polynesian culture in the film. How Far I'll Go was written by Lin-Manuel Miranda. He was also writing Hamilton at the same time."},
+
+  // SCI-FI & FANTASY
+  {id:16, name:"E.T.",               from:"Spielberg · 1982",             emoji:"🌙", div:"Sci-Fi & Fantasy",  tag:"PHONE HOME",       fact:"E.T. was the highest-grossing film of all time when it was released in 1982 — it held that record for eleven years until Jurassic Park. Spielberg based the story on an imaginary friend he invented as a child after his parents divorced. The scene where Elliott and E.T. fly across the moon on a bicycle became the most recognized image in Spielberg's career. The silhouette appears in the Amblin Entertainment logo before every film he makes."},
+  {id:17, name:"Matilda",            from:"Danny DeVito · 1996",          emoji:"📚", div:"Sci-Fi & Fantasy",  tag:"TELEKINESIS",      fact:"Matilda is a genius child with telekinetic powers who loves books, defeats a terrifying headmistress, and finds a family that deserves her. Roald Dahl wrote the original novel. Mara Wilson played Matilda and said the role felt personal because she was also a bookish kid who felt misunderstood by the adults around her. Miss Trunchbull — a former Olympic hammer thrower who uses children as projectiles — remains one of the greatest villains in children's film history."},
+  {id:18, name:"Honey I Shrunk the Kids", from:"Disney · 1989",          emoji:"🔬", div:"Sci-Fi & Fantasy",  tag:"MINIATURIZED",     fact:"A scientist accidentally shrinks his children and the neighbors' kids to a quarter of an inch and then throws them out with the trash. They spend the film surviving in their own backyard — riding bees, sheltering under Lego bricks, nearly drowning in a bowl of cereal. The backyard set was the largest set ever built for a Disney live-action film at the time. Every ant, every blade of grass, every drop of water was engineered to feel enormous. The film made suburban backyards feel like alien worlds."},
+  {id:19, name:"Beetlejuice",        from:"Tim Burton · 1988",            emoji:"👻", div:"Sci-Fi & Fantasy",  tag:"SAY IT THREE TIMES", fact:"Two newly dead ghosts hire a freelance bio-exorcist named Betelgeuse to haunt the family that moved into their house. Tim Burton made a horror comedy for kids that was genuinely weird enough that adults couldn't fully explain it to children who asked questions. Michael Keaton improvised most of Beetlejuice's dialogue. He was only on set for two weeks. The Handbook for the Recently Deceased — the afterlife manual the ghosts read — was actually designed as a full prop book with real pages."},
+
+  // FAMILY COMEDY
+  {id:20, name:"Mrs. Doubtfire",     from:"Chris Columbus · 1993",        emoji:"👓", div:"Family Comedy",    tag:"HELLO DEARIE",     fact:"A divorced father disguises himself as a Scottish nanny to spend time with his own children. Robin Williams performed a different character voice for every take and the crew often couldn't keep a straight face. The film required Williams to do full makeup and costume changes between shots — taking over two hours each time — so he could film scenes as both himself and Mrs. Doubtfire on the same day. He said the makeup helped him find the character. The character helped him find the love."},
+  {id:21, name:"Elf",                from:"Jon Favreau · 2003",           emoji:"🎄", div:"Family Comedy",    tag:"BUDDY THE ELF",    fact:"Will Ferrell played a human raised as an elf in the North Pole with complete sincerity. He ate cotton balls. He put syrup on everything. He greeted everyone with maximum enthusiasm. Every comedic choice Ferrell made was played completely straight — Buddy genuinely doesn't understand why everyone around him is tired and cynical. Elf became the most beloved Christmas comedy since Home Alone and it happened because one actor decided that childlike joy was not embarrassing to portray."},
+  {id:22, name:"The Parent Trap",    from:"Nancy Meyers · 1998",          emoji:"🏕", div:"Family Comedy",    tag:"TWIN TROUBLE",     fact:"Lindsay Lohan played both twins — a girl raised in California and a girl raised in London who meet at summer camp and realize they're sisters. She was eleven years old and performed every scene twice, acting opposite herself via split-screen technology. The fencing scene, the poker game, the prank war — all of it was filmed twice so Lohan could appear on both sides. Directors said she was completely professional from the first day of shooting. The Parent Trap made her a star at eleven."},
+  {id:23, name:"Paddington",         from:"Paul King · 2014",             emoji:"🐻", div:"Family Comedy",    tag:"MARMALADE PLEASE", fact:"A small bear from Darkest Peru arrives in London looking for the explorer who once visited his homeland. He carries a suitcase and a jar of marmalade and believes that if you're polite and kind the world will treat you fairly. The film was almost destroyed by a CGI bear that looked genuinely terrifying in early test screenings. They rebuilt Paddington from scratch. The final version has such warmth in his eyes that audiences immediately believed he was real. Paddington 2 has a 100% rating on Rotten Tomatoes."},
+
+  // CLASSICS
+  {id:24, name:"The Wizard of Oz",   from:"Victor Fleming · 1939",        emoji:"🌈", div:"Timeless Classics", tag:"FOLLOW THE ROAD",  fact:"The Wizard of Oz was made in 1939 and is still watched by more people every year than almost any film made since. Judy Garland was 16 when she played Dorothy. The transition from black-and-white Kansas to full color Oz was the most technically ambitious sequence in cinema at the time. There's No Place Like Home has been sung by children for 85 years. The ruby slippers are in the Smithsonian. The Cowardly Lion suit was made from real lion skin and weighed 90 pounds."},
+  {id:25, name:"Willy Wonka & the Chocolate Factory", from:"Mel Stuart · 1971", emoji:"🍫", div:"Timeless Classics", tag:"GOLDEN TICKET", fact:"Gene Wilder's Willy Wonka was terrifying and wonderful in equal measure — a man who genuinely loved children and genuinely didn't mind if the bad ones disappeared into the machinery of his factory. Roald Dahl wrote the screenplay himself and was unhappy with the result. Gene Wilder said he would only do the film if Wonka could limp at his first appearance and then walk normally — he wanted the audience to never know what to trust. The studio agreed. The limp appears once. You never forget it."},
+  {id:26, name:"Babe",               from:"Chris Noonan · 1995",          emoji:"🐷", div:"Timeless Classics", tag:"THAT'LL DO PIG",    fact:"A pig who wants to be a sheepdog. That's the whole story. Babe won seven Academy Award nominations including Best Picture — one of only a handful of G-rated films ever nominated. The sheep in the film were trained by the same trainers who worked on Mad Max. The farmer's final words — that'll do, pig, that'll do — were voted the most emotionally effective line in film history by the British Film Institute. A sentence five words long about a pig made an entire planet cry simultaneously."},
+  {id:27, name:"The Princess Bride",  from:"Rob Reiner · 1987",           emoji:"🤺", div:"Timeless Classics", tag:"AS YOU WISH",       fact:"A grandfather reads his sick grandson a story about pirates, princesses, giants, sword fights, and true love. The grandson keeps interrupting to say he doesn't want mushy stuff. The grandfather keeps reading. The Princess Bride failed at the box office when it was released — studios didn't know how to market it. VHS rentals turned it into one of the most beloved films in history. Every line is quotable. You know the lines already. As you wish."},
+
+  // WILD CARDS
+  {id:28, name:"Monsters Inc.",      from:"Pixar · 2001",                 emoji:"👁", div:"Wild Cards",        tag:"WE SCARE BECAUSE WE CARE", fact:"Monsters use children's screams as energy. A little girl accidentally follows a monster back through her closet door. The film's twist — that children's laughter produces ten times more energy than screams — is both a plot point and a philosophy. Sully's face when he realizes Boo thinks he's scary is one of the greatest pieces of animated acting ever committed to film. Billy Crystal and John Goodman recorded their dialogue together in the same room — almost unheard of in animation — so their friendship felt real. It does."},
+  {id:29, name:"Ratatouille",        from:"Pixar · 2007",                 emoji:"🐀", div:"Wild Cards",        tag:"ANYONE CAN COOK",   fact:"A rat in Paris wants to be a chef. His only friend is a talentless cooking school dropout whose hat the rat hides under to control his hands. Ratatouille required Pixar to simulate individual hairs on a rat moving through water — a computational problem so difficult it nearly delayed the film by a year. The food critic Anton Ego's flashback — one bite of ratatouille returning him to his mother's kitchen as a child — is 40 seconds long and contains no dialogue. It is the most emotionally precise sequence Pixar ever made."},
+  {id:30, name:"The Iron Giant",     from:"Brad Bird · 1999",             emoji:"🤖", div:"Wild Cards",        tag:"SUPERMAN",          fact:"A giant robot falls from space during the Cold War and is befriended by a nine-year-old boy who teaches him that he doesn't have to be a weapon. The Iron Giant failed completely at the box office — Warner Bros. barely promoted it. DVD releases and word of mouth turned it into one of the most beloved animated films ever made. The robot's final word — Superman — and his sacrifice at the end is considered one of the greatest endings in animation history. He chose who to be. That's the whole film."},
+  {id:31, name:"Treasure Planet",    from:"Disney · 2002",                emoji:"🚀", div:"Wild Cards",        tag:"LOOK AT YOU",       fact:"Treasure Island set in space — a teenage boy and a cyborg pirate sailing a solar galleon through the cosmos. Treasure Planet was a massive box office failure when it was released and nearly caused Disney to shut down its animation department entirely. It has spent 20 years being rediscovered by people who watched it as children and realized it was genuinely brilliant. John Silver's goodbye to Jim — I'll look for you in every port — made an entire generation of kids feel something they didn't have words for yet."},
+];
+
+const R16=[[0,3],[1,2],[4,7],[5,6],[8,11],[9,10],[12,15],[13,14],[16,19],[17,18],[20,23],[21,22],[24,27],[25,26],[28,31],[29,30]];
+const COUNTS=[16,8,4,2,1];
+const RLABELS=["Round of 32","Round of 16","Quarterfinals","Semifinals","The Final"];
+
+let results=[Array(16).fill(null),Array(8).fill(null),Array(4).fill(null),Array(2).fill(null),Array(1).fill(null)];
+let currentVote=null,selected=null,locked=false;
+
+function getC(r,mi,slot){if(r===0)return ALL[R16[mi][slot]];const prev=mi*2+slot;const wid=results[r-1][prev];return wid!=null?ALL[wid]:null;}
+function getCurrentRound(){for(let r=0;r<5;r++)if(results[r].some(w=>w===null))return r;return 5;}
+function getNextActive(){const cr=getCurrentRound();if(cr>=5)return null;for(let mi=0;mi<COUNTS[cr];mi++){if(results[cr][mi]===null){const a=getC(cr,mi,0),b=getC(cr,mi,1);if(a&&b)return{round:cr,mi};}}return null;}
+function totalVotes(){return results.flat().filter(v=>v!==null).length;}
+function fakeA(a,b){return Math.min(86,Math.max(20,50+(b.id-a.id)%17+(a.seed===1?8:a.seed===2?4:0)));}
+
+function render(){
+  document.getElementById('counter').textContent=totalVotes()+'/31';
+  const cr=getCurrentRound();
+  if(cr===5&&results[4][0]!==null)renderChampion(ALL[results[4][0]]);
+  else if(currentVote)renderVote();
+  else renderBracket();
+}
+
+function renderBracket(){
+  document.getElementById('back-btn').style.display='none';
+  const cr=getCurrentRound(),next=getNextActive();
+  const divNames=["Disney","Pixar","Adventure","Animated","Sci-Fi","Comedy","Classics","Wild Cards"];
+  let html='<div class="div-labels">';
+  divNames.forEach(d=>{html+=`<div class="div-label">${d}</div>`;});
+  html+='</div><div class="bracket-cols">';
+  for(let r=0;r<5;r++){
+    const count=COUNTS[r],maxH=[22,30,44,70,100][r],gap=[2,5,12,28,0][r];
+    html+=`<div class="bracket-col"><div class="col-label" style="color:${r===cr?'#60c8ff':'#0e1830'}">${["R32","R16","QF","SF","Final"][r]}</div><div class="col-matches" style="gap:${gap}px">`;
+    for(let mi=0;mi<count;mi++){
+      const a=getC(r,mi,0),b=getC(r,mi,1),winner=results[r][mi];
+      const active=r===cr&&winner===null&&a&&b,done=winner!==null;
+      const cls=active?'active':done?'done':'empty';
+      const onclick=(active||done)?`onclick="startVote(${r},${mi})"`:'';
+      html+=`<div class="match-cell ${cls}" style="max-height:${maxH}px;${!active&&!done?'border:1px solid #0c1428':''}" ${onclick}>`;
+      [a,b].forEach((c,si)=>{
+        if(!c){html+=`<div class="tbd">—</div>`;return;}
+        const isW=winner===c.id,isL=done&&!isW;
+        const nm=c.name.split(' ').slice(0,r===0?3:4).join(' ');
+        html+=`${si===1?'<hr class="match-divider">':''}<div class="match-row ${isW?'winner':isL?'loser':''}"><span class="em">${c.emoji}</span><span class="nm">${nm}</span></div>`;
+      });
+      html+='</div>';
+    }
+    html+='</div></div>';
+  }
+  html+='</div>';
+  if(next)html+=`<div style="padding:14px 16px 0"><button class="vote-btn" onclick="startVote(${next.round},${next.mi})">Vote Next Movie →</button><div class="vote-hint">Tap any blue-bordered match to vote</div></div>`;
+  document.getElementById('main').innerHTML=html;
+}
+
+function startVote(round,mi){currentVote={round,mi};selected=null;locked=false;const w=results[round][mi];if(w!==null){const a=getC(round,mi,0);selected=(a&&a.id===w)?'a':'b';}render();}
+
+function renderVote(){
+  document.getElementById('back-btn').style.display='block';
+  const{round,mi}=currentVote,a=getC(round,mi,0),b=getC(round,mi,1);
+  if(!a||!b){showBracket();return;}
+  const pA=fakeA(a,b),pB=100-pA,majority=selected?(selected==='a'?pA:pB)>=50:false;
+  const hint=!selected?"— Which one do you love more? —":locked?"— Verdict locked! —":"— Tap to switch. Button to lock it in. —";
+  let html=`<div id="vote-screen"><div class="vote-header"><div class="round-label">${RLABELS[round]}</div><div class="vote-hint-text">${hint}</div></div>`;
+  [{side:'a',c:a,pct:pA},{side:'b',c:b,pct:pB}].forEach(({side,c,pct})=>{
+    const isSel=selected===side;
+    html+=`<div class="card${isSel?' selected':''}" onclick="selectCard('${side}')">`;
+    if(locked&&isSel)html+=`<div class="pct-bar" style="width:${pct}%"></div>`;
+    html+=`<div class="card-inner">
+      <div class="card-top">
+        <div class="card-emoji">${c.emoji}</div>
+        <div style="flex:1;min-width:0">
+          <div class="card-meta">${c.div}</div>
+          <div class="card-name">${c.name}</div>
+          <div class="card-from">${c.from}</div>
+        </div>
+        ${isSel&&!locked?'<div class="card-arrow">◀</div>':''}
+      </div>
+      <div class="card-tag">${c.tag}</div>
+      <div class="card-fact">${c.fact}</div>
+      ${locked&&isSel?`<div class="card-pct">${pct}%<span>voted this movie</span><span class="check">✓</span></div>`:''}
+    </div></div>`;
+  });
+  if(selected&&!locked)html+=`<div class="commit-box"><div class="commit-hint">Still deciding? Tap the other one to compare.</div><button class="commit-btn" onclick="commitVote()">Lock In My Pick →</button></div>`;
+  if(locked)html+=`<div class="result-box"><div class="${majority?'result-majority':'result-minority'}">${majority?'✓ You picked with the crowd!':'🔥 Bold choice — you picked different!'}</div></div>`;
+  html+='</div>';
+  document.getElementById('main').innerHTML=html;
+}
+
+function selectCard(side){if(locked)return;selected=side;renderVote();}
+function commitVote(){
+  if(!selected||locked)return;
+  locked=true;
+  const{round,mi}=currentVote,a=getC(round,mi,0),b=getC(round,mi,1);
+  results[round][mi]=selected==='a'?a.id:b.id;
+  renderVote();
+  document.getElementById('counter').textContent=totalVotes()+'/31';
+  setTimeout(()=>{currentVote=null;locked=false;selected=null;render();},800);
+}
+function showBracket(){currentVote=null;selected=null;locked=false;render();}
+function renderChampion(c){
+  document.getElementById('back-btn').style.display='none';
+  document.getElementById('main').innerHTML=`
+    <div id="champion-screen">
+      <div style="font-size:48px;margin-bottom:8px">🏆</div>
+      <div class="champ-emoji">${c.emoji}</div>
+      <div class="champ-trophy">Greatest Kids Movie Ever Made!</div>
+      <div class="champ-name">${c.name}</div>
+      <div class="champ-from">${c.from}</div>
+      <div style="display:inline-block;margin:8px 0 16px;padding:4px 16px;border-radius:20px;background:#ff8030;color:#060c1a;font-size:11px;font-weight:700">${c.tag}</div>
+      <div class="champ-fact">${c.fact}</div>
+      <button class="reset-btn" onclick="resetGame()">Play Again!</button>
+    </div>`;
+}
+function resetGame(){results=[Array(16).fill(null),Array(8).fill(null),Array(4).fill(null),Array(2).fill(null),Array(1).fill(null)];currentVote=null;selected=null;locked=false;render();}
+render();
+</script>
+</body>
+</html>

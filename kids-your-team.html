@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VERDICT — Who Would You Want On Your Team?</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #06100f; color: #eafaf6; font-family: Georgia, 'Times New Roman', serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
+  #app { width: 100%; max-width: 560px; min-height: 100vh; display: flex; flex-direction: column; }
+  header { padding: 16px 20px 12px; border-bottom: 1px solid #0e2622; display: flex; align-items: center; justify-content: space-between; background: #081815; }
+  .title { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; color: #33d6c7; }
+  .subtitle { font-size: 9px; color: #f0c65a; letter-spacing: 2px; text-transform: uppercase; margin-top: 2px; }
+  .counter { font-size: 10px; color: #143028; background: #0a201c; border: 1px solid #0e2622; border-radius: 16px; padding: 4px 10px; }
+  .back-btn { background: transparent; border: 1px solid #0e2622; border-radius: 8px; padding: 5px 10px; color: #1a3830; font-size: 11px; cursor: pointer; font-family: Georgia, serif; }
+  #main { flex: 1; padding: 14px 0; }
+  .core-q { text-align: center; font-size: 12px; color: #f0c65a; font-style: italic; padding: 4px 20px 0; line-height: 1.4; }
+  .div-labels { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px; margin: 10px 10px 8px; }
+  .div-label { font-size: 7px; color: #1a3830; text-align: center; padding: 3px 2px; background: #0a201c; border-radius: 4px; }
+  .bracket-cols { display: flex; gap: 3px; padding: 0 10px; }
+  .bracket-col { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+  .col-label { font-size: 7px; letter-spacing: 1.5px; text-transform: uppercase; text-align: center; margin-bottom: 5px; }
+  .col-matches { display: flex; flex-direction: column; justify-content: space-around; height: 380px; }
+  .match-cell { border-radius: 5px; overflow: hidden; cursor: default; flex: 1; transition: border-color 0.2s; }
+  .match-cell.active { border: 1px solid #33d6c7 !important; background: #0a201c !important; cursor: pointer; }
+  .match-cell.done { border: 1px solid #0e2a22 !important; background: #081815 !important; cursor: pointer; }
+  .match-cell.empty { border: 1px solid #0a201c; background: #06100f; }
+  .match-row { display: flex; align-items: center; gap: 2px; padding: 2px 3px; transition: opacity 0.3s; }
+  .match-row.loser { opacity: 0.22; }
+  .match-row.winner { background: rgba(51,214,199,0.12); }
+  .match-row .em { font-size: 8px; }
+  .match-row .nm { font-size: 7px; color: #1a3830; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 400; }
+  .match-row.winner .nm { color: #33d6c7; font-weight: 700; }
+  .match-divider { border: none; border-top: 1px solid #0a1e1a; margin: 0; }
+  .tbd { padding: 2px 3px; font-size: 6px; color: #122824; }
+  .vote-btn { width: 100%; padding: 14px; background: linear-gradient(135deg, #33d6c7, #1a9088); border: none; border-radius: 12px; color: #06100f; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; margin-top: 14px; }
+  .vote-hint { font-size: 10px; color: #143028; text-align: center; margin-top: 6px; }
+  #vote-screen { padding: 0 16px; animation: fadeUp 0.3s ease; }
+  .vote-header { text-align: center; margin-bottom: 16px; }
+  .round-label { font-size: 10px; letter-spacing: 3px; color: #33d6c7; text-transform: uppercase; margin-bottom: 3px; }
+  .vote-hint-text { font-size: 11px; color: #1a3830; letter-spacing: 1px; }
+  .card { display: block; width: 100%; margin-bottom: 10px; border-radius: 14px; padding: 16px 18px; cursor: pointer; text-align: left; transition: all 0.25s; position: relative; overflow: hidden; border: 2px solid #0e2622; background: #081a16; }
+  .card.selected { border-color: #33d6c7 !important; background: #0c241f !important; transform: scale(1.01); }
+  .card-inner { position: relative; z-index: 1; }
+  .card-top { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 8px; }
+  .card-emoji { font-size: 34px; margin-top: 2px; flex-shrink: 0; }
+  .card-meta { font-size: 9px; color: #f0c65a; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 2px; }
+  .card-name { font-size: 18px; font-weight: 700; color: #1c3830; line-height: 1.2; margin-bottom: 2px; transition: color 0.2s; }
+  .card.selected .card-name { color: #eafaf6; }
+  .card-from { font-size: 10px; color: #122824; font-style: italic; transition: color 0.2s; }
+  .card.selected .card-from { color: #2a9080; }
+  .card-tag { display: inline-block; margin-top: 8px; padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 700; background: #0e2622; color: #f0c65a; letter-spacing: 1px; }
+  .card.selected .card-tag { background: #f0c65a; color: #06100f; }
+  .card-fact { font-size: 12px; color: #122824; line-height: 1.75; transition: color 0.2s; margin-top: 10px; }
+  .card.selected .card-fact { color: #5a9088; }
+  .card-arrow { font-size: 16px; color: #33d6c7; margin-left: auto; flex-shrink: 0; }
+  .card-pct { font-size: 20px; font-weight: 700; color: #33d6c7; margin-top: 10px; }
+  .card-pct span { font-size: 12px; font-weight: 400; color: #1c3830; margin-left: 6px; }
+  .card-pct .check { color: #33d6c7; margin-left: 8px; }
+  .pct-bar { position: absolute; top: 0; left: 0; height: 100%; background: rgba(51,214,199,0.06); transition: width 0.9s cubic-bezier(.4,0,.2,1); z-index: 0; }
+  .commit-box { padding: 14px 18px; background: #081a16; border: 1px solid #0e2622; border-radius: 12px; text-align: center; animation: fadeUp 0.3s ease; }
+  .commit-hint { font-size: 11px; color: #1a3830; margin-bottom: 10px; font-style: italic; }
+  .commit-btn { padding: 12px 32px; background: linear-gradient(135deg, #33d6c7, #1a9088); border: none; border-radius: 10px; color: #06100f; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+  .result-box { padding: 16px 18px; background: #081a16; border: 1px solid #0e2622; border-radius: 12px; text-align: center; margin-top: 2px; animation: fadeUp 0.3s ease; }
+  .result-majority { font-size: 13px; color: #7ec8a0; font-weight: 700; letter-spacing: 1px; }
+  .result-minority { font-size: 13px; color: #f0c65a; font-weight: 700; letter-spacing: 1px; }
+  .ask-room { margin-top: 14px; padding-top: 14px; border-top: 1px dashed #143028; }
+  .ask-room-label { font-size: 9px; letter-spacing: 3px; color: #f0c65a; text-transform: uppercase; margin-bottom: 6px; }
+  .ask-room-prompt { font-size: 15px; color: #cfeae4; font-style: italic; line-height: 1.4; }
+  .next-btn { width: 100%; margin-top: 14px; padding: 14px; background: linear-gradient(135deg, #33d6c7, #1a9088); border: none; border-radius: 12px; color: #06100f; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+  #champion-screen { text-align: center; padding: 36px 24px; animation: fadeUp 0.5s ease; }
+  .champ-emoji { font-size: 76px; margin-bottom: 8px; }
+  .champ-trophy { font-size: 11px; letter-spacing: 4px; color: #33d6c7; text-transform: uppercase; margin-bottom: 8px; }
+  .champ-name { font-size: 28px; font-weight: 700; color: #eafaf6; margin-bottom: 4px; }
+  .champ-from { font-size: 13px; color: #f0c65a; font-style: italic; margin-bottom: 4px; }
+  .champ-fact { font-size: 13px; color: #3a6058; font-style: italic; max-width: 310px; margin: 14px auto 28px; line-height: 1.8; }
+  .reset-btn { padding: 14px 32px; background: linear-gradient(135deg, #33d6c7, #1a9088); border: none; border-radius: 12px; color: #06100f; font-size: 14px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  button:active { filter: brightness(0.88); }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div>
+      <a href="index.html" class="title" style="text-decoration:none;cursor:pointer" title="All brackets">VERDICT</a>
+      <div class="subtitle">Who Would You Want On Your Team?</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="back-btn" id="back-btn" style="display:none" onclick="showBracket()">← Bracket</button>
+      <div class="counter" id="counter">0/31</div>
+    </div>
+  </header>
+  <div id="main"></div>
+</div>
+
+<script>
+const ALL = [
+  // DIVISION 1 — THE STRATEGISTS
+  {id:0, name:"Batman", from:"DC", emoji:"🦇", div:"The Strategists", tag:"PREP TIME", fact:"No powers, no problem. If there is a way out, Batman probably packed it in his belt three days ago."},
+  {id:1, name:"Hermione Granger", from:"Harry Potter", emoji:"📚", div:"The Strategists", tag:"KNOWS THE SPELL", fact:"The smartest person in the room and usually the only reason the room survives."},
+  {id:2, name:"Shuri", from:"Black Panther", emoji:"🧪", div:"The Strategists", tag:"GENIUS TECH", fact:"If the plan needs science, weapons, healing, or an impossible upgrade, she is the whole department."},
+  {id:3, name:"Tyrion Lannister", from:"Game of Thrones", emoji:"🍷", div:"The Strategists", tag:"TALKS HIS WAY OUT", fact:"Smallest fighter, biggest survival brain. He wins before the swords come out."},
+  // DIVISION 2 — THE LOYAL ONES
+  {id:4, name:"Samwise Gamgee", from:"Lord of the Rings", emoji:"🥔", div:"The Loyal Ones", tag:"CARRIES YOU", fact:"He may not look like the strongest pick until you realize he is the reason the mission finishes."},
+  {id:5, name:"Spider-Man", from:"Marvel", emoji:"🕷", div:"The Loyal Ones", tag:"NEVER QUITS", fact:"Fast, funny, powerful, and somehow still worried about saving every single person."},
+  {id:6, name:"Aang", from:"Avatar", emoji:"🌪", div:"The Loyal Ones", tag:"BALANCE", fact:"He brings power, heart, and the rare ability to win without becoming the monster."},
+  {id:7, name:"WALL-E", from:"WALL-E", emoji:"🤖", div:"The Loyal Ones", tag:"PURE HEART", fact:"Tiny robot, massive soul. He will cross a dead planet for someone he loves."},
+  // DIVISION 3 — THE POWER PICKS
+  {id:8, name:"Wonder Woman", from:"DC", emoji:"⚔", div:"The Power Picks", tag:"WARRIOR HEART", fact:"Strength, compassion, leadership, and zero patience for cowards."},
+  {id:9, name:"Superman", from:"DC", emoji:"☀", div:"The Power Picks", tag:"HOPE", fact:"The obvious pick for a reason. If things go bad, having Superman nearby changes the math."},
+  {id:10, name:"Elsa", from:"Frozen", emoji:"❄", div:"The Power Picks", tag:"ICE QUEEN", fact:"She can build a castle by accident and freeze an army before breakfast."},
+  {id:11, name:"Godzilla", from:"Godzilla", emoji:"🦖", div:"The Power Picks", tag:"PROBLEM ENDER", fact:"Not subtle. Not safe. But if the problem is big enough, maybe you want bigger."},
+  // DIVISION 4 — THE CHAOS PICKS
+  {id:12, name:"Jack Sparrow", from:"Pirates of the Caribbean", emoji:"🏴‍☠", div:"The Chaos Picks", tag:"IMPOSSIBLE LUCK", fact:"You will hate the plan. The plan will make no sense. Somehow, you may still win."},
+  {id:13, name:"Indiana Jones", from:"Indiana Jones", emoji:"🤠", div:"The Chaos Picks", tag:"MAKES IT UP", fact:"Bad odds, ancient traps, angry enemies — this is just Tuesday."},
+  {id:14, name:"Marty McFly", from:"Back to the Future", emoji:"🎸", div:"The Chaos Picks", tag:"TIMELINE TROUBLE", fact:"He causes half the problems, but he has a weird talent for fixing the impossible ones."},
+  {id:15, name:"Han Solo", from:"Star Wars", emoji:"🚀", div:"The Chaos Picks", tag:"SHOOTS FIRST", fact:"Cocky, reckless, loyal when it counts, and very good at leaving before everything explodes."},
+  // DIVISION 5 — THE MAGIC & MYTH PICKS
+  {id:16, name:"Gandalf", from:"Lord of the Rings", emoji:"🧙", div:"Magic & Myth", tag:"YOU SHALL NOT PASS", fact:"Wizard, guide, morale boost, demon blocker. Hard to beat that resume."},
+  {id:17, name:"Yoda", from:"Star Wars", emoji:"🟢", div:"Magic & Myth", tag:"WISE MASTER", fact:"Small, ancient, terrifyingly powerful, and usually right in the most annoying way."},
+  {id:18, name:"Doctor Strange", from:"Marvel", emoji:"🌀", div:"Magic & Myth", tag:"SEES THE LINES", fact:"If there are fourteen million outcomes, he might know the one where you survive."},
+  {id:19, name:"Moana", from:"Moana", emoji:"🌊", div:"Magic & Myth", tag:"WAYFINDER", fact:"Brave enough to cross the ocean, stubborn enough to argue with a demigod, heart strong enough to restore one."},
+  // DIVISION 6 — THE LEADERS
+  {id:20, name:"Captain America", from:"Marvel", emoji:"🛡", div:"The Leaders", tag:"FIRST IN", fact:"If everyone panics, he is already standing between danger and the people behind him."},
+  {id:21, name:"Leia Organa", from:"Star Wars", emoji:"👑", div:"The Leaders", tag:"REBEL COMMAND", fact:"Leader, diplomat, fighter, survivor. She does not wait around to be rescued."},
+  {id:22, name:"Aragorn", from:"Lord of the Rings", emoji:"🗡", div:"The Leaders", tag:"KING ENERGY", fact:"Ranger, warrior, healer, leader — and somehow still humble about it."},
+  {id:23, name:"Katniss Everdeen", from:"Hunger Games", emoji:"🏹", div:"The Leaders", tag:"SURVIVOR", fact:"She does not want the spotlight. That is part of why people follow her."},
+  // DIVISION 7 — THE PROBLEM SOLVERS
+  {id:24, name:"Iron Man", from:"Marvel", emoji:"🤖", div:"The Problem Solvers", tag:"BUILDS THE ANSWER", fact:"Ego problems, yes. But if the solution requires impossible engineering, he is your guy."},
+  {id:25, name:"Velma Dinkley", from:"Scooby-Doo", emoji:"🔎", div:"The Problem Solvers", tag:"SOLVES IT", fact:"Everyone else runs from the monster. Velma figures out who bought the mask."},
+  {id:26, name:"Miles Morales", from:"Spider-Verse", emoji:"🕸", div:"The Problem Solvers", tag:"LEAP OF FAITH", fact:"Young, creative, brave, and capable of becoming exactly who the moment needs."},
+  {id:27, name:"MacGyver", from:"MacGyver", emoji:"🧷", div:"The Problem Solvers", tag:"PAPERCLIP MIRACLE", fact:"Give him string, gum, and thirty seconds. Somehow you now have a helicopter."},
+  // DIVISION 8 — THE WILD CARDS
+  {id:28, name:"The Doctor", from:"Doctor Who", emoji:"⏳", div:"The Wild Cards", tag:"BIGGER INSIDE", fact:"Ancient brain, impossible pockets, and a habit of turning disaster into a speech."},
+  {id:29, name:"Mary Poppins", from:"Mary Poppins", emoji:"☂", div:"The Wild Cards", tag:"PRACTICALLY PERFECT", fact:"You may not understand the rules she is playing by, but reality seems to listen."},
+  {id:30, name:"Toothless", from:"How to Train Your Dragon", emoji:"🐉", div:"The Wild Cards", tag:"SKY FURY", fact:"Loyal, fast, terrifying when needed, adorable when not."},
+  {id:31, name:"Genie", from:"Aladdin", emoji:"🧞", div:"The Wild Cards", tag:"PHENOMENAL POWER", fact:"If wishes are on the table, this may be the most broken pick in the bracket."},
+];
+
+const ASK_ROOM = [
+  "Defend your pick in one sentence.",
+  "Was that a heart pick or a strategy pick?",
+  "Who would cause more problems than they solve?",
+  "Would your answer change if you were choosing for your family?",
+  "Did you pick power, loyalty, brains, or chaos?",
+  "Who would the room trust least, even if they're useful?",
+];
+
+const R16=[[0,3],[1,2],[4,7],[5,6],[8,11],[9,10],[12,15],[13,14],[16,19],[17,18],[20,23],[21,22],[24,27],[25,26],[28,31],[29,30]];
+const COUNTS=[16,8,4,2,1];
+const RLABELS=["Round of 32","Round of 16","Quarterfinals","Semifinals","The Final"];
+
+let results=[Array(16).fill(null),Array(8).fill(null),Array(4).fill(null),Array(2).fill(null),Array(1).fill(null)];
+let currentVote=null,selected=null,locked=false,askPrompt="";
+
+function getC(r,mi,slot){if(r===0)return ALL[R16[mi][slot]];const prev=mi*2+slot;const wid=results[r-1][prev];return wid!=null?ALL[wid]:null;}
+function getCurrentRound(){for(let r=0;r<5;r++)if(results[r].some(w=>w===null))return r;return 5;}
+function getNextActive(){const cr=getCurrentRound();if(cr>=5)return null;for(let mi=0;mi<COUNTS[cr];mi++){if(results[cr][mi]===null){const a=getC(cr,mi,0),b=getC(cr,mi,1);if(a&&b)return{round:cr,mi};}}return null;}
+function totalVotes(){return results.flat().filter(v=>v!==null).length;}
+function fakeA(a,b){return Math.min(86,Math.max(20,50+(b.id-a.id)%17+(a.id%4)*2));}
+
+function render(){
+  document.getElementById('counter').textContent=totalVotes()+'/31';
+  const cr=getCurrentRound();
+  if(cr===5&&results[4][0]!==null)renderChampion(ALL[results[4][0]]);
+  else if(currentVote)renderVote();
+  else renderBracket();
+}
+
+function renderBracket(){
+  document.getElementById('back-btn').style.display='none';
+  const cr=getCurrentRound(),next=getNextActive();
+  const divNames=["Strategists","Loyal Ones","Power","Chaos","Magic & Myth","Leaders","Problem Solvers","Wild Cards"];
+  let html='<div class="core-q">Who would you want on your team when everything goes sideways?</div>';
+  html+='<div class="div-labels">';
+  divNames.forEach(d=>{html+=`<div class="div-label">${d}</div>`;});
+  html+='</div><div class="bracket-cols">';
+  for(let r=0;r<5;r++){
+    const count=COUNTS[r],maxH=[22,30,44,70,100][r],gap=[2,5,12,28,0][r];
+    html+=`<div class="bracket-col"><div class="col-label" style="color:${r===cr?'#33d6c7':'#0e2622'}">${["R32","R16","QF","SF","Final"][r]}</div><div class="col-matches" style="gap:${gap}px">`;
+    for(let mi=0;mi<count;mi++){
+      const a=getC(r,mi,0),b=getC(r,mi,1),winner=results[r][mi];
+      const active=r===cr&&winner===null&&a&&b,done=winner!==null;
+      const cls=active?'active':done?'done':'empty';
+      const onclick=(active||done)?`onclick="startVote(${r},${mi})"`:'';
+      html+=`<div class="match-cell ${cls}" style="max-height:${maxH}px;${!active&&!done?'border:1px solid #0a201c':''}" ${onclick}>`;
+      [a,b].forEach((c,si)=>{
+        if(!c){html+=`<div class="tbd">—</div>`;return;}
+        const isW=winner===c.id,isL=done&&!isW;
+        const nm=c.name.split(' ').slice(0,r===0?2:3).join(' ');
+        html+=`${si===1?'<hr class="match-divider">':''}<div class="match-row ${isW?'winner':isL?'loser':''}"><span class="em">${c.emoji}</span><span class="nm">${nm}</span></div>`;
+      });
+      html+='</div>';
+    }
+    html+='</div></div>';
+  }
+  html+='</div>';
+  if(next)html+=`<div style="padding:14px 16px 0"><button class="vote-btn" onclick="startVote(${next.round},${next.mi})">Vote Next Matchup →</button><div class="vote-hint">Tap any teal-bordered match to vote</div></div>`;
+  document.getElementById('main').innerHTML=html;
+}
+
+function startVote(round,mi){currentVote={round,mi};selected=null;locked=false;const w=results[round][mi];if(w!==null){const a=getC(round,mi,0);selected=(a&&a.id===w)?'a':'b';}render();}
+
+function renderVote(){
+  document.getElementById('back-btn').style.display='block';
+  const{round,mi}=currentVote,a=getC(round,mi,0),b=getC(round,mi,1);
+  if(!a||!b){showBracket();return;}
+  const pA=fakeA(a,b),pB=100-pA,majority=selected?(selected==='a'?pA:pB)>=50:false;
+  const hint=!selected?"— Pick your first draft. —":locked?"— Pick locked! —":"— Tap to switch. Button to draft them. —";
+  let html=`<div id="vote-screen"><div class="vote-header"><div class="round-label">${RLABELS[round]}</div><div class="vote-hint-text">${hint}</div></div>`;
+  [{side:'a',c:a,pct:pA},{side:'b',c:b,pct:pB}].forEach(({side,c,pct})=>{
+    const isSel=selected===side;
+    html+=`<div class="card${isSel?' selected':''}" onclick="selectCard('${side}')">`;
+    if(locked&&isSel)html+=`<div class="pct-bar" style="width:${pct}%"></div>`;
+    html+=`<div class="card-inner">
+      <div class="card-top">
+        <div class="card-emoji">${c.emoji}</div>
+        <div style="flex:1;min-width:0">
+          <div class="card-meta">${c.div}</div>
+          <div class="card-name">${c.name}</div>
+          <div class="card-from">${c.from}</div>
+        </div>
+        ${isSel&&!locked?'<div class="card-arrow">◀</div>':''}
+      </div>
+      <div class="card-tag">${c.tag}</div>
+      <div class="card-fact">${c.fact}</div>
+      ${locked&&isSel?`<div class="card-pct">${pct}%<span>drafted this pick</span><span class="check">✓</span></div>`:''}
+    </div></div>`;
+  });
+  if(selected&&!locked)html+=`<div class="commit-box"><div class="commit-hint">Still deciding? Tap the other one to compare.</div><button class="commit-btn" onclick="commitVote()">Lock In Verdict →</button></div>`;
+  if(locked){
+    html+=`<div class="result-box"><div class="${majority?'result-majority':'result-minority'}">${majority?'✓ With the majority':'🔥 Against the crowd'}</div>
+      <div class="ask-room"><div class="ask-room-label">🗣 Ask the Room</div><div class="ask-room-prompt">${askPrompt}</div></div>
+    </div>
+    <button class="next-btn" onclick="advance()">Vote Next Matchup →</button>`;
+  }
+  html+='</div>';
+  document.getElementById('main').innerHTML=html;
+}
+
+function selectCard(side){if(locked)return;selected=side;renderVote();}
+function commitVote(){
+  if(!selected||locked)return;
+  locked=true;
+  askPrompt=ASK_ROOM[Math.floor(Math.random()*ASK_ROOM.length)];
+  const{round,mi}=currentVote,a=getC(round,mi,0),b=getC(round,mi,1);
+  results[round][mi]=selected==='a'?a.id:b.id;
+  renderVote();
+  document.getElementById('counter').textContent=totalVotes()+'/31';
+}
+function advance(){currentVote=null;locked=false;selected=null;render();}
+function showBracket(){currentVote=null;selected=null;locked=false;render();}
+function renderChampion(c){
+  document.getElementById('back-btn').style.display='none';
+  document.getElementById('main').innerHTML=`
+    <div id="champion-screen">
+      <div style="font-size:44px;margin-bottom:6px">🏆</div>
+      <div class="champ-emoji">${c.emoji}</div>
+      <div class="champ-trophy">Your First Pick Is…</div>
+      <div class="champ-name">${c.name}</div>
+      <div class="champ-from">${c.from}</div>
+      <div style="display:inline-block;margin:10px 0 6px;padding:4px 16px;border-radius:20px;background:#f0c65a;color:#06100f;font-size:11px;font-weight:700;letter-spacing:1px">${c.tag}</div>
+      <div class="champ-fact">${c.fact}</div>
+      <button class="reset-btn" onclick="resetGame()">Draft Again</button>
+    </div>`;
+}
+function resetGame(){results=[Array(16).fill(null),Array(8).fill(null),Array(4).fill(null),Array(2).fill(null),Array(1).fill(null)];currentVote=null;selected=null;locked=false;render();}
+render();
+</script>
+</body>
+</html>

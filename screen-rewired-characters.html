@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VERDICT — Characters Who Changed How You See The World</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #060504; color: #f0e8d8; font-family: Georgia, 'Times New Roman', serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
+  #app { width: 100%; max-width: 560px; min-height: 100vh; display: flex; flex-direction: column; }
+  header { padding: 18px 20px 14px; border-bottom: 1px solid #141008; display: flex; align-items: center; justify-content: space-between; }
+  .title { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; }
+  .subtitle { font-size: 9px; color: #b8956a; letter-spacing: 2px; text-transform: uppercase; margin-top: 2px; }
+  .counter { font-size: 10px; color: #1a1408; background: #0c0a06; border: 1px solid #141008; border-radius: 16px; padding: 4px 10px; }
+  .back-btn { background: transparent; border: 1px solid #1a1408; border-radius: 8px; padding: 5px 10px; color: #3a2a18; font-size: 11px; cursor: pointer; font-family: Georgia, serif; }
+  #main { flex: 1; padding: 14px 0; }
+
+  /* BRACKET VIEW */
+  .div-labels { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px; margin: 0 10px 8px; }
+  .div-label { font-size: 7px; color: #2a1e10; text-align: center; padding: 3px 2px; background: #0c0a06; border-radius: 4px; }
+  .bracket-cols { display: flex; gap: 3px; padding: 0 10px; }
+  .bracket-col { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+  .col-label { font-size: 7px; letter-spacing: 1.5px; text-transform: uppercase; text-align: center; margin-bottom: 5px; }
+  .col-matches { display: flex; flex-direction: column; justify-content: space-around; height: 380px; }
+  .match-cell { border-radius: 5px; overflow: hidden; cursor: default; flex: 1; transition: border-color 0.2s; }
+  .match-cell.active { border: 1px solid #b8956a !important; background: #100e08 !important; cursor: pointer; }
+  .match-cell.done { border: 1px solid #1a140a !important; background: #0c0a06 !important; }
+  .match-cell.empty { border: 1px solid #100e08; background: #080706; }
+  .match-row { display: flex; align-items: center; gap: 2px; padding: 2px 3px; transition: opacity 0.3s; }
+  .match-row.loser { opacity: 0.22; }
+  .match-row.winner { background: rgba(184,149,106,0.1); }
+  .match-row .em { font-size: 8px; }
+  .match-row .nm { font-size: 7px; color: #2a2418; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 400; }
+  .match-row.winner .nm { color: #b8956a; font-weight: 700; }
+  .match-divider { border: none; border-top: 1px solid #0e0c06; margin: 0; }
+  .tbd { padding: 2px 3px; font-size: 6px; color: #141008; }
+
+  .vote-btn { width: 100%; padding: 14px; background: linear-gradient(135deg, #b8956a, #7a5a30); border: none; border-radius: 12px; color: #f0e8d8; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; margin-top: 14px; }
+  .vote-hint { font-size: 10px; color: #1a1408; text-align: center; margin-top: 6px; }
+
+  /* VOTE SCREEN */
+  #vote-screen { padding: 0 16px; animation: fadeUp 0.3s ease; }
+  .vote-header { text-align: center; margin-bottom: 16px; }
+  .round-label { font-size: 10px; letter-spacing: 3px; color: #b8956a; text-transform: uppercase; margin-bottom: 3px; }
+  .vote-hint-text { font-size: 11px; color: #2a2010; letter-spacing: 1px; }
+  .card { display: block; width: 100%; margin-bottom: 10px; border-radius: 14px; padding: 16px 18px; cursor: pointer; text-align: left; transition: all 0.25s; position: relative; overflow: hidden; border: 2px solid #141008; background: #080706; }
+  .card.selected { border-color: #b8956a !important; background: #161208 !important; transform: scale(1.01); }
+  .card-inner { position: relative; z-index: 1; }
+  .card-top { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 8px; }
+  .card-emoji { font-size: 28px; margin-top: 2px; }
+  .card-meta { font-size: 9px; color: #b8956a; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 2px; }
+  .card-name { font-size: 17px; font-weight: 700; color: #4a3a28; line-height: 1.2; margin-bottom: 2px; transition: color 0.2s; }
+  .card.selected .card-name { color: #f0e8d8; }
+  .card-from { font-size: 10px; color: #201808; font-style: italic; transition: color 0.2s; }
+  .card.selected .card-from { color: #6a5030; }
+  .card-fact { font-size: 12px; color: #2a1e10; line-height: 1.75; transition: color 0.2s; }
+  .card.selected .card-fact { color: #907860; }
+  .card-arrow { font-size: 16px; color: #b8956a; margin-left: auto; flex-shrink: 0; }
+  .card-pct { font-size: 18px; font-weight: 700; color: #b8956a; margin-top: 10px; }
+  .card-pct span { font-size: 12px; font-weight: 400; color: #3a2a18; margin-left: 6px; }
+  .card-pct .check { color: #b8956a; margin-left: 8px; }
+  .pct-bar { position: absolute; top: 0; left: 0; height: 100%; background: rgba(184,149,106,0.06); transition: width 0.9s cubic-bezier(.4,0,.2,1); z-index: 0; }
+
+  .commit-box { padding: 14px 18px; background: #080706; border: 1px solid #141008; border-radius: 12px; text-align: center; animation: fadeUp 0.3s ease; }
+  .commit-hint { font-size: 11px; color: #2a1e10; margin-bottom: 10px; font-style: italic; }
+  .commit-btn { padding: 12px 32px; background: linear-gradient(135deg, #b8956a, #7a5a30); border: none; border-radius: 10px; color: #f0e8d8; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+  .result-box { padding: 14px 18px; background: #080706; border: 1px solid #141008; border-radius: 12px; text-align: center; }
+  .result-text { font-size: 12px; letter-spacing: 2px; text-transform: uppercase; }
+  .majority { color: #7ec8a0; }
+  .minority { color: #e8856a; }
+
+  /* CHAMPION */
+  #champion-screen { text-align: center; padding: 36px 24px; animation: fadeUp 0.5s ease; }
+  .champ-emoji { font-size: 60px; margin-bottom: 12px; }
+  .champ-label { font-size: 10px; letter-spacing: 4px; color: #b8956a; text-transform: uppercase; margin-bottom: 8px; }
+  .champ-name { font-size: 24px; font-weight: 700; color: #f0e8d8; margin-bottom: 4px; line-height: 1.2; }
+  .champ-from { font-size: 12px; color: #b8956a; font-style: italic; margin-bottom: 4px; }
+  .champ-meta { font-size: 11px; color: #2a1e10; margin-bottom: 16px; }
+  .champ-fact { font-size: 13px; color: #4a3820; font-style: italic; max-width: 300px; margin: 0 auto 28px; line-height: 1.8; }
+  .reset-btn { padding: 12px 28px; background: linear-gradient(135deg, #b8956a, #7a5a30); border: none; border-radius: 10px; color: #f0e8d8; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  button:active { filter: brightness(0.85); }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div>
+      <a href="index.html" class="title" style="text-decoration:none;cursor:pointer" title="All brackets">VERDICT</a>
+      <div class="subtitle">Characters Who Changed How You See The World</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="back-btn" id="back-btn" style="display:none" onclick="showBracket()">← Bracket</button>
+      <div class="counter" id="counter">0/31</div>
+    </div>
+  </header>
+  <div id="main"></div>
+</div>
+
+<script>
+const ALL = [
+  // ANTIHEROES
+  {id:0, name:"Walter White", from:"Breaking Bad", emoji:"🧪", div:"The Antiheroes", seed:1, year:2008, fact:"He didn't break bad. He revealed himself. Every person who watched Breaking Bad spent five seasons rooting for a man becoming a monster — and only at the end asked why. Vince Gilligan said he wanted to turn Mr. Chips into Scarface. He turned us into accomplices instead."},
+  {id:1, name:"Tony Soprano", from:"The Sopranos", emoji:"🦢", div:"The Antiheroes", seed:2, year:1999, fact:"The man who invented modern television drama. Tony Soprano made you laugh, made you cringe, made you root for him to get away with it. Then you'd catch yourself in the shower thinking about what that said about you."},
+  {id:2, name:"Don Draper", from:"Mad Men", emoji:"🥃", div:"The Antiheroes", seed:3, year:2007, fact:"Dick Whitman invented himself from scratch and became the most successful man in the room. Mad Men asked whether the American Dream was real or just the best available lie. Don Draper was both the question and the answer."},
+  {id:3, name:"Dexter Morgan", from:"Dexter", emoji:"🩸", div:"The Antiheroes", seed:4, year:2006, fact:"A serial killer who only kills killers. You rooted for him. You shouldn't have. Dexter made an entire generation examine the uncomfortable distance between justice and murder and found it smaller than expected."},
+  // PURE EVIL
+  {id:4, name:"Hannibal Lecter", from:"Silence of the Lambs", emoji:"🍷", div:"Pure Evil", seed:1, year:1991, fact:"16 minutes of screen time. An Oscar. A generation of nightmares. Hannibal Lecter didn't just scare you — he charmed you first. That's the part that stays. You were glad to see him. What does that make you?"},
+  {id:5, name:"The Joker", from:"The Dark Knight", emoji:"🃏", div:"Pure Evil", seed:2, year:2008, fact:"Heath Ledger built a man with no origin, no plan, no demands. Just chaos as philosophy. The Joker's real trick wasn't the pencil or the knife. It was making you understand his argument. Some men just want to watch the world burn. You got it. That's the problem."},
+  {id:6, name:"Anton Chigurh", from:"No Country for Old Men", emoji:"💨", div:"Pure Evil", seed:3, year:2007, fact:"Anton Chigurh doesn't hate you. He has a system. The coin decides. You can't negotiate with a system. No Country for Old Men said evil isn't dramatic or explainable — it just moves through the world like weather. You can't stop weather."},
+  {id:7, name:"Amy Dunne", from:"Gone Girl", emoji:"📰", div:"Pure Evil", seed:4, year:2014, fact:"The Cool Girl monologue. Rosamund Pike delivered the most precise dissection of performed femininity in cinema history — through the mouth of a sociopath. You agreed with her for three full minutes before remembering what she'd done."},
+  // BROKEN HEROES
+  {id:8, name:"Atticus Finch", from:"To Kill a Mockingbird", emoji:"📋", div:"Broken Heroes", seed:1, year:1962, fact:"Gregory Peck made a generation of American boys want to be lawyers. Atticus Finch stood up in a courtroom in Alabama in 1932 and told the truth knowing it wouldn't matter. That kind of courage — doing right when losing is guaranteed — has no other name."},
+  {id:9, name:"Forrest Gump", from:"Forrest Gump", emoji:"🍫", div:"Broken Heroes", seed:2, year:1994, fact:"Forrest Gump ran through 30 years of American history and understood none of it — and still came out kinder than everyone around him. The movie argued that decency might be the only thing that survives everything. Half the audience cried before they knew why."},
+  {id:10, name:"John McClane", from:"Die Hard", emoji:"🎄", div:"Broken Heroes", seed:3, year:1988, fact:"Before McClane every action hero was invincible. John McClane bled. He complained. He was terrified. He did it anyway. Die Hard invented the reluctant everyman hero and the entire genre has been trying to replicate it for 35 years."},
+  {id:11, name:"Ellen Ripley", from:"Alien", emoji:"👾", div:"Broken Heroes", seed:4, year:1979, fact:"In 1979 the last person standing in a horror film was supposed to be a man. Sigourney Weaver didn't get that memo. Ripley was competent, furious, maternal, and terrifying. She rewrote what a movie hero was allowed to look like."},
+  // CULTURAL ICONS
+  {id:12, name:"Darth Vader", from:"Star Wars", emoji:"⬛", div:"Cultural Icons", seed:1, year:1977, fact:"The breathing. The entrance. The reveal. Darth Vader is the most recognizable fictional character on earth and he spends most of the original trilogy as the villain. Then Return of the Jedi asked if redemption was possible for anyone. Any. One. The answer wrecked a generation of kids."},
+  {id:13, name:"Indiana Jones", from:"Raiders of the Lost Ark", emoji:"🎩", div:"Cultural Icons", seed:2, year:1981, fact:"Harrison Ford made a professor of archaeology the coolest person in any room. Indy was afraid of snakes, got beaten up constantly, and frequently failed. He still got the job done. A hero built entirely on persistence and a great hat."},
+  {id:14, name:"Ferris Bueller", from:"Ferris Bueller's Day Off", emoji:"🚗", div:"Cultural Icons", seed:3, year:1986, fact:"Life moves pretty fast. Ferris Bueller was the philosopher-king of skipping school and the entire generation that grew up with him is still trying to decide if he was a genius or the most selfish person in Chicago. Either way, they all wanted to be him."},
+  {id:15, name:"Tyler Durden", from:"Fight Club", emoji:"🧼", div:"Cultural Icons", seed:4, year:1999, fact:"You are not your khakis. Fight Club came out in 1999 and a certain kind of 20-year-old male has been misquoting it incorrectly ever since. Tyler Durden was meant as a warning. He became a role model. David Fincher has never fully recovered from what he accidentally created."},
+  // ANIMATED
+  {id:16, name:"Simba", from:"The Lion King", emoji:"🦁", div:"Animated Souls", seed:1, year:1994, fact:"The Lion King taught an entire generation about grief, guilt, and running from your past — through a cartoon lion. When Mufasa died children experienced real loss for possibly the first time. You don't forget your first encounter with death. Even a fictional one."},
+  {id:17, name:"WALL-E", from:"WALL-E", emoji:"🤖", div:"Animated Souls", seed:2, year:2008, fact:"A trash-compacting robot with no dialogue who fell in love with a probe droid while tending to humanity's abandoned garbage. WALL-E made you feel more for a machine in eight minutes of near-silence than most films manage in two hours of dialogue."},
+  {id:18, name:"Woody", from:"Toy Story", emoji:"🤠", div:"Animated Souls", seed:3, year:1995, fact:"Woody's arc across four films is one of the most complete character studies in cinema. He started as a toy afraid of being replaced. He ended as a toy who understood his purpose wasn't to be owned — it was to be loved. That hit differently at 40 than it did at 8."},
+  {id:19, name:"Bojack Horseman", from:"Bojack Horseman", emoji:"🐴", div:"Animated Souls", seed:4, year:2014, fact:"A cartoon horse with depression, addiction, and self-destructive genius became the most honest portrayal of mental illness in television history. Bojack Horseman made you laugh until it made you look in the mirror and stop laughing."},
+  // REBELS
+  {id:20, name:"Randle McMurphy", from:"One Flew Over the Cuckoo's Nest", emoji:"🃏", div:"The Rebels", seed:1, year:1975, fact:"Jack Nicholson walked into a psychiatric ward and declared war on the system on behalf of everyone who ever felt crushed by it. McMurphy lost. Chief walked out anyway. That ending is one of the most devastating arguments for resistance ever put on film."},
+  {id:21, name:"Maximus", from:"Gladiator", emoji:"🗡", div:"The Rebels", seed:2, year:2000, fact:"Are you not entertained? Maximus Decimus Meridius lost everything and still refused to become what they wanted him to be. Gladiator made a Roman general into the purest revenge fantasy of the early 2000s and Russell Crowe made you believe every single second."},
+  {id:22, name:"V", from:"V for Vendetta", emoji:"🎭", div:"The Rebels", seed:3, year:2005, fact:"Ideas are bulletproof. V for Vendetta was a comic book adaptation that accidentally became a political manual. The Guy Fawkes mask went from Warner Bros. costume department to global protest symbol. That is an extraordinary thing for a movie to do."},
+  {id:23, name:"Cool Hand Luke", from:"Cool Hand Luke", emoji:"🥚", div:"The Rebels", seed:4, year:1967, fact:"What we've got here is a failure to communicate. Paul Newman ate 50 hard-boiled eggs and refused to stay down — not because he had a plan, not because he would win, but because giving in was the one thing he wouldn't do. Some people that's just how they're made."},
+  // COMPLEX WOMEN
+  {id:24, name:"Clarice Starling", from:"Silence of the Lambs", emoji:"🦋", div:"Complex Women", seed:1, year:1991, fact:"Jodie Foster built Clarice Starling as the most competent person in every room she entered — and still showed you every layer of what it cost her to be believed in those rooms. Clarice is the reason Silence of the Lambs is a film about more than a serial killer."},
+  {id:25, name:"Marge Gunderson", from:"Fargo", emoji:"🌨", div:"Complex Women", seed:2, year:1996, fact:"Frances McDormand created a pregnant Minnesota police chief who was smarter than everyone around her and never once needed to prove it. Marge Gunderson is the anti-action hero. She solves everything through patience, decency, and an extraordinary sense of smell."},
+  {id:26, name:"Imperator Furiosa", from:"Mad Max: Fury Road", emoji:"🚛", div:"Complex Women", seed:3, year:2015, fact:"George Miller made the greatest action film of the 21st century and centered it entirely on Charlize Theron's mechanical arm and the word witness. Furiosa didn't need a backstory. She needed a war rig and one road. She changed what blockbusters were allowed to be."},
+  {id:27, name:"Katniss Everdeen", from:"The Hunger Games", emoji:"🏹", div:"Complex Women", seed:4, year:2012, fact:"Katniss volunteered as tribute and accidentally started a revolution. Jennifer Lawrence gave a generation of young women a hero who was traumatized, furious, reluctant, and real. The Mockingjay wasn't brave because she wasn't afraid. She was brave because she was terrified and did it anyway."},
+  // WILD CARDS
+  {id:28, name:"The Dude", from:"The Big Lebowski", emoji:"🎳", div:"Wild Cards", seed:1, year:1998, fact:"Jeffrey Lebowski abides. The Dude is the least driven protagonist in cinema history and somehow became a philosophical touchstone for an entire generation of people who felt like capitalism was asking too much of them. Dudeism is a registered religion with three hundred thousand ordained ministers. That happened."},
+  {id:29, name:"Verbal Kint", from:"The Usual Suspects", emoji:"♟", div:"Wild Cards", seed:2, year:1995, fact:"The greatest trick the devil ever pulled was convincing the world he didn't exist. Kevin Spacey built an entire character as a deliberate lie and made you feel smart for believing it right up until the moment you felt like the biggest fool in the cinema. The coffee cup. You know."},
+  {id:30, name:"Col. Kurtz", from:"Apocalypse Now", emoji:"🌴", div:"Wild Cards", seed:3, year:1979, fact:"Marlon Brando in the dark. The horror. Kurtz went up the river looking for the war and found something worse — clarity. Apocalypse Now asked whether civilization was the thin story we tell ourselves to cover something much older and darker underneath."},
+  {id:31, name:"Gollum", from:"The Lord of the Rings", emoji:"💍", div:"Wild Cards", seed:4, year:2002, fact:"Andy Serkis built a fully realized performance inside a digital creature and made you feel genuine pity for something that wanted to eat a hobbit. Gollum is what addiction looks like when Tolkien writes it and Peter Jackson renders it. My precious. It's the saddest two words in the trilogy."},
+];
+
+const R16 = [[0,3],[1,2],[4,7],[5,6],[8,11],[9,10],[12,15],[13,14],[16,19],[17,18],[20,23],[21,22],[24,27],[25,26],[28,31],[29,30]];
+const COUNTS = [16,8,4,2,1];
+const RLABELS = ["Round of 32","Round of 16","Quarterfinals","Semifinals","The Final"];
+
+let results = [Array(16).fill(null),Array(8).fill(null),Array(4).fill(null),Array(2).fill(null),Array(1).fill(null)];
+let currentVote = null;
+let selected = null;
+let locked = false;
+
+function getC(round, mi, slot) {
+  if (round === 0) return ALL[R16[mi][slot]];
+  const prev = mi*2+slot;
+  const wid = results[round-1][prev];
+  return wid != null ? ALL[wid] : null;
+}
+
+function getCurrentRound() {
+  for (let r=0; r<5; r++) if (results[r].some(w=>w===null)) return r;
+  return 5;
+}
+
+function getNextActive() {
+  const cr = getCurrentRound();
+  if (cr>=5) return null;
+  for (let mi=0; mi<COUNTS[cr]; mi++) {
+    if (results[cr][mi]===null) {
+      const a=getC(cr,mi,0), b=getC(cr,mi,1);
+      if (a&&b) return {round:cr,mi};
+    }
+  }
+  return null;
+}
+
+function totalVotes() {
+  return results.flat().filter(v=>v!==null).length;
+}
+
+function fakeA(a,b) {
+  return Math.min(88,Math.max(18,50+(b.id-a.id)%17+(a.seed===1?9:a.seed===2?4:0)));
+}
+
+function render() {
+  document.getElementById('counter').textContent = totalVotes()+'/31';
+  const cr = getCurrentRound();
+  if (cr===5 && results[4][0]!==null) {
+    renderChampion(ALL[results[4][0]]);
+  } else if (currentVote) {
+    renderVote();
+  } else {
+    renderBracket();
+  }
+}
+
+function renderBracket() {
+  document.getElementById('back-btn').style.display='none';
+  const cr = getCurrentRound();
+  const next = getNextActive();
+  const divNames = ["Antiheroes","Pure Evil","Broken Heroes","Icons","Animated","Rebels","Complex Women","Wild Cards"];
+  const colLabels = ["R32","R16","QF","SF","Final"];
+
+  let html = '<div class="div-labels">';
+  divNames.forEach(d => { html += `<div class="div-label">${d}</div>`; });
+  html += '</div><div class="bracket-cols">';
+
+  for (let r=0; r<5; r++) {
+    const count = COUNTS[r];
+    const maxH = [22,30,44,70,100][r];
+    const gap = [2,5,12,28,0][r];
+    html += `<div class="bracket-col">
+      <div class="col-label" style="color:${r===cr?'#b8956a':'#1a1510'}">${colLabels[r]}</div>
+      <div class="col-matches" style="gap:${gap}px">`;
+
+    for (let mi=0; mi<count; mi++) {
+      const a = getC(r,mi,0), b = getC(r,mi,1);
+      const winner = results[r][mi];
+      const active = r===cr && winner===null && a && b;
+      const done = winner!==null;
+      const cls = active?'active':done?'done':'empty';
+      const onclick = active?`onclick="startVote(${r},${mi})"`:done?`onclick="startVote(${r},${mi})"`:'';;
+      html += `<div class="match-cell ${cls}" style="max-height:${maxH}px;border:${!active&&!done?'1px solid #100e08':''}" ${onclick}>`;
+
+      [a,b].forEach((c,si) => {
+        if (!c) { html += `<div class="tbd">—</div>`; return; }
+        const isW = winner===c.id, isL = done&&!isW;
+        const rowCls = isW?'winner':isL?'loser':'';
+        const nm = c.name.split(' ').slice(0,r===0?2:3).join(' ');
+        html += `${si===1?'<hr class="match-divider">':''}<div class="match-row ${rowCls}"><span class="em">${c.emoji}</span><span class="nm">${nm}</span></div>`;
+      });
+      html += '</div>';
+    }
+    html += '</div></div>';
+  }
+  html += '</div>';
+
+  if (next) {
+    html += `<div style="padding:14px 16px 0">
+      <button class="vote-btn" onclick="startVote(${next.round},${next.mi})">Vote Next Matchup →</button>
+      <div class="vote-hint">Tap any gold-bordered match to vote</div>
+    </div>`;
+  }
+
+  document.getElementById('main').innerHTML = html;
+}
+
+function startVote(round, mi) {
+  currentVote = {round, mi};
+  selected = null;
+  locked = false;
+  // pre-select existing winner if revisiting
+  const w = results[round][mi];
+  if (w !== null) {
+    const a = getC(round,mi,0);
+    selected = (a && a.id===w) ? 'a' : 'b';
+  }
+  render();
+}
+
+function renderVote() {
+  document.getElementById('back-btn').style.display='block';
+  const {round, mi} = currentVote;
+  const a = getC(round,mi,0), b = getC(round,mi,1);
+  if (!a||!b) { showBracket(); return; }
+  const pA = fakeA(a,b), pB = 100-pA;
+  const majority = selected ? (selected==='a'?pA:pB)>=50 : false;
+
+  const hintText = !selected ? "— Who rewired you more. —" : locked ? "— Verdict locked —" : "— Tap to switch. Button to commit. —";
+
+  let html = `<div id="vote-screen">
+    <div class="vote-header">
+      <div class="round-label">${RLABELS[round]}</div>
+      <div class="vote-hint-text">${hintText}</div>
+    </div>`;
+
+  [{side:'a',c:a,pct:pA},{side:'b',c:b,pct:pB}].forEach(({side,c,pct}) => {
+    const isSel = selected===side;
+    html += `<div class="card${isSel?' selected':''}" onclick="selectCard('${side}')">`;
+    if (locked && isSel) html += `<div class="pct-bar" style="width:${pct}%"></div>`;
+    html += `<div class="card-inner">
+      <div class="card-top">
+        <div class="card-emoji">${c.emoji}</div>
+        <div style="flex:1;min-width:0">
+          <div class="card-meta">${c.div} · #${c.seed}</div>
+          <div class="card-name">${c.name}</div>
+          <div class="card-from">${c.from} · ${c.year}</div>
+        </div>
+        ${isSel&&!locked?'<div class="card-arrow">◀</div>':''}
+      </div>
+      <div class="card-fact">${c.fact}</div>
+      ${locked&&isSel?`<div class="card-pct">${pct}%<span>chose this character</span><span class="check">· Your verdict ✓</span></div>`:''}
+    </div></div>`;
+  });
+
+  if (selected && !locked) {
+    html += `<div class="commit-box">
+      <div class="commit-hint">Changed your mind? Tap the other. Ready?</div>
+      <button class="commit-btn" onclick="commitVote()">Lock In Verdict →</button>
+    </div>`;
+  }
+  if (locked) {
+    html += `<div class="result-box">
+      <div class="result-text ${majority?'majority':'minority'}">${majority?'✓ With the majority':'🔥 Against the crowd'}</div>
+    </div>`;
+  }
+
+  html += '</div>';
+  document.getElementById('main').innerHTML = html;
+}
+
+function selectCard(side) {
+  if (locked) return;
+  selected = side;
+  renderVote();
+}
+
+function commitVote() {
+  if (!selected || locked) return;
+  locked = true;
+  const {round, mi} = currentVote;
+  const a = getC(round,mi,0), b = getC(round,mi,1);
+  const winnerId = selected==='a' ? a.id : b.id;
+  results[round][mi] = winnerId;
+  renderVote();
+  document.getElementById('counter').textContent = totalVotes()+'/31';
+  setTimeout(() => {
+    currentVote = null;
+    locked = false;
+    selected = null;
+    if (round===4) { render(); } else { render(); }
+  }, 800);
+}
+
+function showBracket() {
+  currentVote = null;
+  selected = null;
+  locked = false;
+  render();
+}
+
+function renderChampion(c) {
+  document.getElementById('back-btn').style.display='none';
+  document.getElementById('main').innerHTML = `
+    <div id="champion-screen">
+      <div class="champ-emoji">${c.emoji}</div>
+      <div class="champ-label">Changed The Way We See The World</div>
+      <div class="champ-name">${c.name}</div>
+      <div class="champ-from">${c.from}</div>
+      <div class="champ-meta">${c.year} · ${c.div}</div>
+      <div class="champ-fact">${c.fact}</div>
+      <button class="reset-btn" onclick="resetGame()">Run It Back</button>
+    </div>`;
+}
+
+function resetGame() {
+  results = [Array(16).fill(null),Array(8).fill(null),Array(4).fill(null),Array(2).fill(null),Array(1).fill(null)];
+  currentVote = null;
+  selected = null;
+  locked = false;
+  render();
+}
+
+render();
+</script>
+</body>
+</html>

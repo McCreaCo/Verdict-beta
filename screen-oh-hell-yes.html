@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VERDICT — The 32 Greatest OH HELL YES Moments in Pop Culture</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0a0812; color: #f8f0ff; font-family: Georgia, 'Times New Roman', serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
+  #app { width: 100%; max-width: 560px; min-height: 100vh; display: flex; flex-direction: column; }
+  header { padding: 18px 20px 14px; border-bottom: 1px solid #1a1428; display: flex; align-items: center; justify-content: space-between; }
+  .title { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; }
+  .subtitle { font-size: 9px; color: #f0a030; letter-spacing: 2px; text-transform: uppercase; margin-top: 2px; }
+  .counter { font-size: 10px; color: #1a1428; background: #100c1c; border: 1px solid #1a1428; border-radius: 16px; padding: 4px 10px; }
+  .back-btn { background: transparent; border: 1px solid #1a1428; border-radius: 8px; padding: 5px 10px; color: #2a2038; font-size: 11px; cursor: pointer; font-family: Georgia, serif; }
+  #main { flex: 1; padding: 14px 0; }
+  .div-labels { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px; margin: 0 10px 8px; }
+  .div-label { font-size: 7px; color: #2a2038; text-align: center; padding: 3px 2px; background: #100c1c; border-radius: 4px; }
+  .bracket-cols { display: flex; gap: 3px; padding: 0 10px; }
+  .bracket-col { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+  .col-label { font-size: 7px; letter-spacing: 1.5px; text-transform: uppercase; text-align: center; margin-bottom: 5px; }
+  .col-matches { display: flex; flex-direction: column; justify-content: space-around; height: 380px; }
+  .match-cell { border-radius: 5px; overflow: hidden; cursor: default; flex: 1; transition: border-color 0.2s; }
+  .match-cell.active { border: 1px solid #f0a030 !important; background: #120e20 !important; cursor: pointer; }
+  .match-cell.done { border: 1px solid #1e1830 !important; background: #0e0a1a !important; cursor: pointer; }
+  .match-cell.empty { border: 1px solid #100c1c; background: #0a0812; }
+  .match-row { display: flex; align-items: center; gap: 2px; padding: 2px 3px; transition: opacity 0.3s; }
+  .match-row.loser { opacity: 0.22; }
+  .match-row.winner { background: rgba(240,160,48,0.12); }
+  .match-row .em { font-size: 8px; }
+  .match-row .nm { font-size: 7px; color: #2a2038; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 400; }
+  .match-row.winner .nm { color: #f0a030; font-weight: 700; }
+  .match-divider { border: none; border-top: 1px solid #14101e; margin: 0; }
+  .tbd { padding: 2px 3px; font-size: 6px; color: #14101e; }
+  .vote-btn { width: 100%; padding: 14px; background: linear-gradient(135deg, #f0a030, #c06010); border: none; border-radius: 12px; color: #0a0812; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; margin-top: 14px; }
+  .vote-hint { font-size: 10px; color: #1a1428; text-align: center; margin-top: 6px; }
+  #vote-screen { padding: 0 16px; animation: fadeUp 0.3s ease; }
+  .vote-header { text-align: center; margin-bottom: 16px; }
+  .round-label { font-size: 10px; letter-spacing: 3px; color: #f0a030; text-transform: uppercase; margin-bottom: 3px; }
+  .vote-hint-text { font-size: 11px; color: #2a2038; letter-spacing: 1px; }
+  .card { display: block; width: 100%; margin-bottom: 10px; border-radius: 14px; padding: 16px 18px; cursor: pointer; text-align: left; transition: all 0.25s; position: relative; overflow: hidden; border: 2px solid #1a1428; background: #0e0a1a; }
+  .card.selected { border-color: #f0a030 !important; background: #1a1228 !important; transform: scale(1.01); }
+  .card-inner { position: relative; z-index: 1; }
+  .card-top { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 8px; }
+  .card-emoji { font-size: 28px; margin-top: 2px; flex-shrink: 0; }
+  .card-meta { font-size: 9px; color: #f0a030; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 2px; }
+  .card-name { font-size: 16px; font-weight: 700; color: #3a3050; line-height: 1.2; margin-bottom: 2px; transition: color 0.2s; }
+  .card.selected .card-name { color: #f8f0ff; }
+  .card-from { font-size: 10px; color: #1e1830; font-style: italic; transition: color 0.2s; }
+  .card.selected .card-from { color: #806040; }
+  .card-fact { font-size: 12px; color: #1e1830; line-height: 1.75; transition: color 0.2s; }
+  .card.selected .card-fact { color: #907060; }
+  .card-arrow { font-size: 16px; color: #f0a030; margin-left: auto; flex-shrink: 0; }
+  .card-pct { font-size: 18px; font-weight: 700; color: #f0a030; margin-top: 10px; }
+  .card-pct span { font-size: 12px; font-weight: 400; color: #3a3050; margin-left: 6px; }
+  .card-pct .check { color: #f0a030; margin-left: 8px; }
+  .pct-bar { position: absolute; top: 0; left: 0; height: 100%; background: rgba(240,160,48,0.06); transition: width 0.9s cubic-bezier(.4,0,.2,1); z-index: 0; }
+  .commit-box { padding: 14px 18px; background: #0e0a1a; border: 1px solid #1a1428; border-radius: 12px; text-align: center; animation: fadeUp 0.3s ease; }
+  .commit-hint { font-size: 11px; color: #2a2038; margin-bottom: 10px; font-style: italic; }
+  .commit-btn { padding: 12px 32px; background: linear-gradient(135deg, #f0a030, #c06010); border: none; border-radius: 10px; color: #0a0812; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+  .result-box { padding: 14px 18px; background: #0e0a1a; border: 1px solid #1a1428; border-radius: 12px; text-align: center; }
+  .result-text { font-size: 12px; letter-spacing: 2px; text-transform: uppercase; }
+  .majority { color: #7ec8a0; }
+  .minority { color: #f0a030; }
+  #champion-screen { text-align: center; padding: 36px 24px; animation: fadeUp 0.5s ease; }
+  .champ-emoji { font-size: 64px; margin-bottom: 12px; }
+  .champ-label { font-size: 10px; letter-spacing: 4px; color: #f0a030; text-transform: uppercase; margin-bottom: 8px; }
+  .champ-name { font-size: 22px; font-weight: 700; color: #f8f0ff; margin-bottom: 4px; line-height: 1.2; }
+  .champ-from { font-size: 12px; color: #f0a030; font-style: italic; margin-bottom: 4px; }
+  .champ-meta { font-size: 11px; color: #2a2038; margin-bottom: 16px; }
+  .champ-fact { font-size: 13px; color: #4a4060; font-style: italic; max-width: 310px; margin: 0 auto 28px; line-height: 1.8; }
+  .reset-btn { padding: 12px 28px; background: linear-gradient(135deg, #f0a030, #c06010); border: none; border-radius: 10px; color: #0a0812; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  button:active { filter: brightness(0.9); }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div>
+      <a href="index.html" class="title" style="text-decoration:none;cursor:pointer" title="All brackets">VERDICT</a>
+      <div class="subtitle">The 32 Greatest OH HELL YES Moments</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="back-btn" id="back-btn" style="display:none" onclick="showBracket()">← Bracket</button>
+      <div class="counter" id="counter">0/31</div>
+    </div>
+  </header>
+  <div id="main"></div>
+</div>
+
+<script>
+const ALL = [
+  // MOVIE MOMENTS
+  {id:0, name:"The T-Rex Reveal", from:"Jurassic Park · 1993", emoji:"🦕", div:"Movie Moments", seed:1, year:1993, fact:"The cup of water rippling. The footsteps. The goat leg falling from above. Then the head coming down through the rain. John Williams' theme swells. Steven Spielberg made a practical effect so perfect that 30 years of CGI still hasn't topped it. Every person in that theater in 1993 forgot to breathe for thirty seconds."},
+  {id:1, name:"The Avengers Assemble", from:"Avengers: Endgame · 2019", emoji:"🛡", div:"Movie Moments", seed:2, year:2019, fact:"Portals opening. One by one. Every hero who ever appeared in an MCU film stepping through. Then Cap picks up Mjolnir. Then the charge. Theaters erupted in ways that hadn't been heard since the original Star Wars. Twenty-two films of buildup paying off in three minutes of pure cinema joy."},
+  {id:2, name:"The Darth Vader Reveal", from:"The Empire Strikes Back · 1980", emoji:"⬛", div:"Movie Moments", seed:3, year:1980, fact:"I am your father. Four words that rewrote the entire first film in an instant and made every kid in every theater feel the floor disappear beneath them. Nobody knew. It wasn't in the script given to the actors. James Earl Jones recorded it separately. The secret held. The world was never the same."},
+  {id:3, name:"The Chest-Burster Scene", from:"Alien · 1979", emoji:"👾", div:"Movie Moments", seed:4, year:1979, fact:"The cast didn't know what was going to happen. Ridley Scott kept it secret so their reactions would be real. John Hurt starts convulsing. Something tears through his chest. Veronica Cartwright genuinely faints. The audience screamed. Nobody had ever seen anything like it. Nobody has forgotten it since."},
+
+  // MUSIC MOMENTS
+  {id:4, name:"Bohemian Rhapsody Guitar Solo", from:"Queen · 1975", emoji:"🎸", div:"Music Moments", seed:1, year:1975, fact:"Six minutes of complete genre anarchy — operatic section, ballad, hard rock — and then at 3:03 Brian May's guitar solo kicks in and the song becomes something else entirely. Freddie Mercury and Brian May recorded it in multiple layers over weeks. It sounds like one impossible performance. People still pull over their cars when it comes on."},
+  {id:5, name:"Purple Rain Live at First Avenue", from:"Prince · 1984", emoji:"🟣", div:"Music Moments", seed:2, year:1984, fact:"Prince filmed the Purple Rain concert sequence in one night at First Avenue in Minneapolis with a live audience who didn't know they were being filmed for a movie. He played for four hours. The title track alone runs eight minutes live and the guitar solo at the end is the single most devastating musical performance captured on film."},
+  {id:6, name:"Nirvana's Smells Like Teen Spirit Debut", from:"MTV VMAs · 1992", emoji:"🎤", div:"Music Moments", seed:3, year:1992, fact:"Nirvana played the VMAs and when they finished Kurt Cobain grabbed the mic and said something no one could hear. He'd changed the words to Teen Spirit — deliberately. The performance was so chaotic and alive that the entire room understood something had shifted. Hair metal was over. It just didn't know it yet."},
+  {id:7, name:"Michael Jackson Moonwalks for First Time", from:"Motown 25 · 1983", emoji:"🕺", div:"Music Moments", seed:4, year:1983, fact:"March 25, 1983. Motown 25th anniversary special. Michael Jackson performs Billie Jean, reaches the bridge, and slides backward while appearing to walk forward. Fred Astaire called him the next morning to say it was the greatest thing he had ever seen. Jeffrey Daniel had invented the move. Michael made it immortal in one television performance."},
+
+  // TV MOMENTS
+  {id:8, name:"The Wire — Omar's Entrance", from:"The Wire · 2002", emoji:"🚬", div:"TV Moments", seed:1, year:2002, fact:"Drug dealers on a Baltimore corner hear a whistle. One of them says it softly: Omar coming. Everyone scatters. Omar Little walks down the middle of the street in his duster coat, shotgun out, heading to rob a stash house. Michael K. Williams made an entrance so iconic that the show's creator David Simon said Omar was the greatest character he ever wrote."},
+  {id:9, name:"Breaking Bad — Hank Finds the Book", from:"Breaking Bad · 2012", emoji:"🧪", div:"TV Moments", seed:2, year:2012, fact:"Hank is sitting on the toilet reading Walt Whitman. He looks at the inscription. He looks at the name. He realizes. The entire series — five seasons of watching Walter White stay one step ahead — collapses in one bathroom. Dean Norris sits there for thirty seconds doing nothing but thinking and it is the finest piece of acting in the entire run of the show."},
+  {id:10, name:"Game of Thrones — The Red Wedding", from:"Game of Thrones · 2013", emoji:"🐺", div:"TV Moments", seed:3, year:2013, fact:"The showrunners filmed people watching the Red Wedding and uploaded the reactions to YouTube. Grown adults sobbing. Mouths open. Controllers thrown. George R.R. Martin proved that no one is safe — a rule that changed how television audiences engage with every show that followed. Robb Stark is dead. The world is different now."},
+  {id:11, name:"The Sopranos — Don't Stop Believin'", from:"The Sopranos · 2007", emoji:"🍝", div:"TV Moments", seed:4, year:2007, fact:"The diner. Tony. Meadow parking. The man in the Members Only jacket. Don't Stop Believin' on the jukebox. Cut to black. Ten million people thought their cable went out simultaneously. David Chase gave the greatest ending in television history and then refused to explain it for fifteen years. He still hasn't. Good."},
+
+  // COMEDY & QUOTES
+  {id:12, name:"You Can't Handle the Truth", from:"A Few Good Men · 1992", emoji:"🎖", div:"Comedy & Quotes", seed:1, year:1992, fact:"Tom Cruise sets it up perfectly. Jack Nicholson leans forward. You can't handle the truth. The speech that follows is four minutes of pure controlled fury from the greatest actor of his generation at the absolute peak of his powers. Nicholson improvised parts of it. The veins in his neck are real. The entire courtroom believed him."},
+  {id:13, name:"I'll Have What She's Having", from:"When Harry Met Sally · 1989", emoji:"🥗", div:"Comedy & Quotes", seed:2, year:1989, fact:"Meg Ryan fakes an orgasm in a deli. Every man in the room stares. An elderly woman at the next table — Rob Reiner's actual mother — delivers the greatest punchline in romantic comedy history. One line. One old lady. The entire movie earns its place in cinema. Nora Ephron wrote it in twenty minutes."},
+  {id:14, name:"Excuse Me While I Whip This Out", from:"Blazing Saddles · 1974", emoji:"🤠", div:"Comedy & Quotes", seed:3, year:1974, fact:"Mel Brooks made a western that was simultaneously a perfect western and a complete destruction of every western ever made. Cleavon Little rides into town and the crowd prepares to be outraged and then Brooks pulls the rug perfectly. Blazing Saddles could not be made today and that fact itself is the best argument for why it needed to be made then."},
+  {id:15, name:"That's Not a Knife", from:"Crocodile Dundee · 1986", emoji:"🔪", div:"Comedy & Quotes", seed:4, year:1986, fact:"A mugger pulls a knife in New York City. Paul Hogan looks at it mildly and says that's not a knife. Then he pulls out something extraordinary. That's a knife. An entire generation of children quoted this line incorrectly for thirty years — the accent is wrong, the timing is wrong, none of it matters. Pure joy in two sentences."},
+
+  // SPORTS & SPECTACLE
+  {id:16, name:"Rocky Runs Up the Steps", from:"Rocky · 1976", emoji:"🥊", div:"Sports & Spectacle", seed:1, year:1976, fact:"Gonna Fly Now kicks in. Rocky starts running. The city of Philadelphia falls in behind him. He reaches the top of the Art Museum steps, arms raised, jumping, the entire score swelling underneath. Sylvester Stallone wrote the script in three days. The shot cost almost nothing. It is the most purely joyful thirty seconds in sports movie history and it makes grown men cry every single time."},
+  {id:17, name:"Rudy Gets Carried Off the Field", from:"Rudy · 1993", emoji:"🏈", div:"Sports & Spectacle", seed:2, year:1993, fact:"One play. One sack. One walk-off by teammates who'd never done it before or since. Rudy Ruettiger stood in the tunnel at Notre Dame Stadium and heard his name chanted and ran onto the field and the entire movie paid off in sixty seconds. Sean Astin made you believe every single moment. The only film to make Notre Dame fans cry and feel good about it."},
+  {id:18, name:"The Natural's Home Run", from:"The Natural · 1984", emoji:"⚾", div:"Sports & Spectacle", seed:3, year:1984, fact:"Roy Hobbs hits the light tower in the final at-bat and the stadium explodes into sparks and fireworks and Randy Newman's score rises and it is the most gloriously over-the-top ending in baseball movie history. None of it happened in the book — the book ends in tragedy. Robert Redford said no. He chose joy. He was right."},
+  {id:19, name:"Space Jam Finale Dunk", from:"Space Jam · 1996", emoji:"🏀", div:"Sports & Spectacle", seed:4, year:1996, fact:"Michael Jordan stretches his arm from half court and dunks over the Monstars and every child who saw it in 1996 believed completely that Michael Jordan could literally stretch his arm. The movie is objectively absurd. The finale works anyway because for one generation Michael Jordan could do literally anything and this was the proof."},
+
+  // GEEK GLORY
+  {id:20, name:"Star Wars Opening Crawl", from:"Star Wars · 1977", emoji:"⭐", div:"Geek Glory", seed:1, year:1977, fact:"A long time ago in a galaxy far far away. Then silence. Then the fanfare. Then the crawl. Then the Star Destroyer coming overhead and never stopping coming and the entire audience realizing they had never seen anything like this. George Lucas changed movies in the first thirty seconds. Everything that follows is bonus."},
+  {id:21, name:"The Ending of The Usual Suspects", from:"The Usual Suspects · 1995", emoji:"♟", div:"Geek Glory", seed:2, year:1995, fact:"The coffee cup. The bulletin board. Verbal Kint's limp disappearing on the street. Kevin Spacey getting into that car. The entire film reassembling itself in your mind in real time. Audiences sat in silence, then started talking immediately as they left, then called their friends to tell them to go. Bryan Singer made the perfect twist ending and nobody has beaten it since."},
+  {id:22, name:"Indy Shoots the Swordsman", from:"Raiders of the Lost Ark · 1981", emoji:"🎩", div:"Geek Glory", seed:3, year:1981, fact:"Harrison Ford had dysentery on set. The scripted scene involved a long, elaborate whip-fight. Ford asked Spielberg if he could just shoot the guy. Spielberg said sure. The audience laughed for thirty seconds. The greatest improvised scene in action movie history happened because a man had food poisoning and didn't feel like doing a stunt."},
+  {id:23, name:"The Wilhelm Scream", from:"Charge at Feather River · 1951", emoji:"😱", div:"Geek Glory", seed:4, year:1951, fact:"One voice actor screamed in a 1951 western. Sound editors started using it as an in-joke. Then Spielberg and Lucas used it in every film. Then everyone did. The Wilhelm scream has appeared in over 400 films and TV shows. When you hear it you can't unhear it. It is the secret handshake of everyone who has ever loved movies."},
+
+  // PURE JOY
+  {id:24, name:"Ferris Bueller's Parade", from:"Ferris Bueller's Day Off · 1986", emoji:"🎶", div:"Pure Joy", seed:1, year:1986, fact:"Twist and Shout. A parade in downtown Chicago. Matthew Broderick on a float lip-syncing with the full force of his being while the entire city dances below him. John Hughes shot it with real parade crowds who had no idea they were in a movie. The joy on their faces is completely real. It is the single most purely fun sequence in 1980s cinema."},
+  {id:25, name:"Bill Murray in Groundhog Day", from:"Groundhog Day · 1993", emoji:"🦡", div:"Pure Joy", seed:2, year:1993, fact:"The moment Phil Connors stops fighting his situation and starts spending eternity learning piano, ice sculpting, and memorizing every person in Punxsutawney to help them — and you realize the movie you thought was a comedy is actually the most optimistic film ever made about what a human being could become with enough time and intention. Bill Murray made a metaphysics lecture feel like a party."},
+  {id:26, name:"The Princess Bride Sword Fight", from:"The Princess Bride · 1987", emoji:"🤺", div:"Pure Joy", seed:3, year:1987, fact:"Inigo Montoya and the Man in Black talk through an entire sword fight. They switch hands. They discuss technique. They compliment each other. Cary Elwes and Mandy Patinkin trained for months and did most of their own stunts. The result is the most delightful action sequence in movie history — a fight where both combatants are clearly having the time of their lives."},
+  {id:27, name:"Elf's Cotton-Headed Ninny Muggins", from:"Elf · 2003", emoji:"🎄", div:"Pure Joy", seed:4, year:2003, fact:"Will Ferrell was 36 years old when he played a human raised as an elf in the North Pole and committed to it with the absolute sincerity of a man who believes every word he is saying. Buddy the Elf has no irony in him whatsoever. That complete lack of cynicism in a cynical genre made Elf the Christmas movie that every other Christmas movie since has been trying to equal."},
+
+  // WILD CARDS
+  {id:28, name:"Risky Business Slide", from:"Risky Business · 1983", emoji:"🎵", div:"Wild Cards", seed:1, year:1983, fact:"Old Time Rock and Roll kicks in. Tom Cruise slides across the hardwood floor in his socks, white shirt, and Ray-Bans. His parents are gone. The house is his. Every teenager who ever watched that film felt the exact same thing simultaneously. Paul Brickman directed a thirty-second sequence that defined a generation's idea of freedom. Tom Cruise hasn't stopped running since."},
+  {id:29, name:"Jurassic Park Kitchen Raptors", from:"Jurassic Park · 1993", emoji:"🦖", div:"Wild Cards", seed:2, year:1993, fact:"Two children. Two raptors. A commercial kitchen. Lex and Tim hiding under counters, behind shelves, their reflections in stainless steel giving them away. Spielberg built the single greatest suspense sequence of the 1990s out of twelve-year-olds and rubber dinosaur suits. The door handle turning is still one of the most terrifying images in blockbuster history."},
+  {id:30, name:"The Price Is Right Losing Horn", from:"The Price Is Right · 1972", emoji:"📺", div:"Wild Cards", seed:3, year:1972, fact:"Wah wah wah wahhh. The sound of losing on The Price Is Right became the universal human signal for failure and disappointment. It has appeared in more contexts than any other piece of television audio in history. A trombone player in 1972 accidentally created the sound of failure itself. Every comedian, every meme, every moment of public embarrassment has that horn underneath it."},
+  {id:31, name:"Wayne's World — Bohemian Rhapsody", from:"Wayne's World · 1992", emoji:"🤘", div:"Wild Cards", seed:4, year:1992, fact:"Wayne, Garth, and the gang driving in the Mirthmobile when Bohemian Rhapsody comes on. The headbanging. The synchronized 'Galileo.' Mike Myers said the studio wanted to use a Guns N' Roses song instead. He threatened to quit. He was right. The scene revived Bohemian Rhapsody on the charts 17 years after it was released and introduced it to an entirely new generation. Worth the fight."},
+];
+
+const R16=[[0,3],[1,2],[4,7],[5,6],[8,11],[9,10],[12,15],[13,14],[16,19],[17,18],[20,23],[21,22],[24,27],[25,26],[28,31],[29,30]];
+const COUNTS=[16,8,4,2,1];
+const RLABELS=["Round of 32","Round of 16","Quarterfinals","Semifinals","The Final"];
+
+let results=[Array(16).fill(null),Array(8).fill(null),Array(4).fill(null),Array(2).fill(null),Array(1).fill(null)];
+let currentVote=null,selected=null,locked=false;
+
+function getC(round,mi,slot){if(round===0)return ALL[R16[mi][slot]];const prev=mi*2+slot;const wid=results[round-1][prev];return wid!=null?ALL[wid]:null;}
+function getCurrentRound(){for(let r=0;r<5;r++)if(results[r].some(w=>w===null))return r;return 5;}
+function getNextActive(){const cr=getCurrentRound();if(cr>=5)return null;for(let mi=0;mi<COUNTS[cr];mi++){if(results[cr][mi]===null){const a=getC(cr,mi,0),b=getC(cr,mi,1);if(a&&b)return{round:cr,mi};}}return null;}
+function totalVotes(){return results.flat().filter(v=>v!==null).length;}
+function fakeA(a,b){return Math.min(88,Math.max(18,50+(b.id-a.id)%17+(a.seed===1?9:a.seed===2?4:0)));}
+
+function render(){
+  document.getElementById('counter').textContent=totalVotes()+'/31';
+  const cr=getCurrentRound();
+  if(cr===5&&results[4][0]!==null)renderChampion(ALL[results[4][0]]);
+  else if(currentVote)renderVote();
+  else renderBracket();
+}
+
+function renderBracket(){
+  document.getElementById('back-btn').style.display='none';
+  const cr=getCurrentRound(),next=getNextActive();
+  const divNames=["Movie Moments","Music Moments","TV Moments","Comedy & Quotes","Sports","Geek Glory","Pure Joy","Wild Cards"];
+  let html='<div class="div-labels">';
+  divNames.forEach(d=>{html+=`<div class="div-label">${d}</div>`;});
+  html+='</div><div class="bracket-cols">';
+  for(let r=0;r<5;r++){
+    const count=COUNTS[r],maxH=[22,30,44,70,100][r],gap=[2,5,12,28,0][r];
+    html+=`<div class="bracket-col"><div class="col-label" style="color:${r===cr?'#f0a030':'#1a1428'}">${["R32","R16","QF","SF","Final"][r]}</div><div class="col-matches" style="gap:${gap}px">`;
+    for(let mi=0;mi<count;mi++){
+      const a=getC(r,mi,0),b=getC(r,mi,1),winner=results[r][mi];
+      const active=r===cr&&winner===null&&a&&b,done=winner!==null;
+      const cls=active?'active':done?'done':'empty';
+      const onclick=(active||done)?`onclick="startVote(${r},${mi})"`:'';
+      html+=`<div class="match-cell ${cls}" style="max-height:${maxH}px;${!active&&!done?'border:1px solid #100c1c':''}" ${onclick}>`;
+      [a,b].forEach((c,si)=>{
+        if(!c){html+=`<div class="tbd">—</div>`;return;}
+        const isW=winner===c.id,isL=done&&!isW;
+        const nm=c.name.split(' ').slice(0,r===0?3:4).join(' ');
+        html+=`${si===1?'<hr class="match-divider">':''}<div class="match-row ${isW?'winner':isL?'loser':''}"><span class="em">${c.emoji}</span><span class="nm">${nm}</span></div>`;
+      });
+      html+='</div>';
+    }
+    html+='</div></div>';
+  }
+  html+='</div>';
+  if(next)html+=`<div style="padding:14px 16px 0"><button class="vote-btn" onclick="startVote(${next.round},${next.mi})">Vote Next Moment →</button><div class="vote-hint">Tap any gold-bordered match to vote</div></div>`;
+  document.getElementById('main').innerHTML=html;
+}
+
+function startVote(round,mi){currentVote={round,mi};selected=null;locked=false;const w=results[round][mi];if(w!==null){const a=getC(round,mi,0);selected=(a&&a.id===w)?'a':'b';}render();}
+
+function renderVote(){
+  document.getElementById('back-btn').style.display='block';
+  const{round,mi}=currentVote,a=getC(round,mi,0),b=getC(round,mi,1);
+  if(!a||!b){showBracket();return;}
+  const pA=fakeA(a,b),pB=100-pA,majority=selected?(selected==='a'?pA:pB)>=50:false;
+  const hint=!selected?"— Which made you feel more alive. —":locked?"— Verdict locked —":"— Tap to switch. Button to commit. —";
+  let html=`<div id="vote-screen"><div class="vote-header"><div class="round-label">${RLABELS[round]}</div><div class="vote-hint-text">${hint}</div></div>`;
+  [{side:'a',c:a,pct:pA},{side:'b',c:b,pct:pB}].forEach(({side,c,pct})=>{
+    const isSel=selected===side;
+    html+=`<div class="card${isSel?' selected':''}" onclick="selectCard('${side}')">`;
+    if(locked&&isSel)html+=`<div class="pct-bar" style="width:${pct}%"></div>`;
+    html+=`<div class="card-inner"><div class="card-top"><div class="card-emoji">${c.emoji}</div><div style="flex:1;min-width:0"><div class="card-meta">${c.div} · #${c.seed}</div><div class="card-name">${c.name}</div><div class="card-from">${c.from}</div></div>${isSel&&!locked?'<div class="card-arrow">◀</div>':''}</div><div class="card-fact">${c.fact}</div>${locked&&isSel?`<div class="card-pct">${pct}%<span>felt this moment</span><span class="check">· Your verdict ✓</span></div>`:''}</div></div>`;
+  });
+  if(selected&&!locked)html+=`<div class="commit-box"><div class="commit-hint">Changed your mind? Tap the other. Ready?</div><button class="commit-btn" onclick="commitVote()">Lock In Verdict →</button></div>`;
+  if(locked)html+=`<div class="result-box"><div class="result-text ${majority?'majority':'minority'}">${majority?'✓ With the majority':'🔥 You picked different'}</div></div>`;
+  html+='</div>';
+  document.getElementById('main').innerHTML=html;
+}
+
+function selectCard(side){if(locked)return;selected=side;renderVote();}
+function commitVote(){
+  if(!selected||locked)return;
+  locked=true;
+  const{round,mi}=currentVote,a=getC(round,mi,0),b=getC(round,mi,1);
+  results[round][mi]=selected==='a'?a.id:b.id;
+  renderVote();
+  document.getElementById('counter').textContent=totalVotes()+'/31';
+  setTimeout(()=>{currentVote=null;locked=false;selected=null;render();},800);
+}
+function showBracket(){currentVote=null;selected=null;locked=false;render();}
+function renderChampion(c){
+  document.getElementById('back-btn').style.display='none';
+  document.getElementById('main').innerHTML=`<div id="champion-screen"><div class="champ-emoji">${c.emoji}</div><div class="champ-label">The Greatest OH HELL YES Moment of All Time</div><div class="champ-name">${c.name}</div><div class="champ-from">${c.from}</div><div class="champ-meta">${c.div}</div><div class="champ-fact">${c.fact}</div><button class="reset-btn" onclick="resetGame()">Run It Back</button></div>`;
+}
+function resetGame(){results=[Array(16).fill(null),Array(8).fill(null),Array(4).fill(null),Array(2).fill(null),Array(1).fill(null)];currentVote=null;selected=null;locked=false;render();}
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VERDICT — The 32 Greatest Pro Wrestlers of All Time</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0c0808; color: #f8efe6; font-family: Georgia, 'Times New Roman', serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
+  #app { width: 100%; max-width: 560px; min-height: 100vh; display: flex; flex-direction: column; }
+  header { padding: 16px 20px 12px; border-bottom: 1px solid #2a1410; display: flex; align-items: center; justify-content: space-between; background: #160c0a; }
+  .title { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; color: #e8b830; }
+  .subtitle { font-size: 9px; color: #d04428; letter-spacing: 2px; text-transform: uppercase; margin-top: 2px; }
+  .counter { font-size: 10px; color: #3a1c14; background: #1a0e0a; border: 1px solid #2a1410; border-radius: 16px; padding: 4px 10px; }
+  .back-btn { background: transparent; border: 1px solid #2a1410; border-radius: 8px; padding: 5px 10px; color: #3a1c14; font-size: 11px; cursor: pointer; font-family: Georgia, serif; }
+  #main { flex: 1; padding: 14px 0; }
+  .core-q { text-align: center; font-size: 12px; color: #d04428; font-style: italic; padding: 4px 20px 0; line-height: 1.4; }
+  .div-labels { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px; margin: 10px 10px 8px; }
+  .div-label { font-size: 7px; color: #3a1c14; text-align: center; padding: 3px 2px; background: #1a0e0a; border-radius: 4px; }
+  .bracket-cols { display: flex; gap: 3px; padding: 0 10px; }
+  .bracket-col { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+  .col-label { font-size: 7px; letter-spacing: 1.5px; text-transform: uppercase; text-align: center; margin-bottom: 5px; }
+  .col-matches { display: flex; flex-direction: column; justify-content: space-around; height: 380px; }
+  .match-cell { border-radius: 5px; overflow: hidden; cursor: default; flex: 1; transition: border-color 0.2s; }
+  .match-cell.active { border: 1px solid #e8b830 !important; background: #1a0e0a !important; cursor: pointer; }
+  .match-cell.done { border: 1px solid #2a1a0a !important; background: #160c0a !important; cursor: pointer; }
+  .match-cell.empty { border: 1px solid #1a0e0a; background: #0c0808; }
+  .match-row { display: flex; align-items: center; gap: 2px; padding: 2px 3px; transition: opacity 0.3s; }
+  .match-row.loser { opacity: 0.22; }
+  .match-row.winner { background: rgba(232,184,48,0.12); }
+  .match-row .em { font-size: 8px; }
+  .match-row .nm { font-size: 7px; color: #3a1c14; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 400; }
+  .match-row.winner .nm { color: #e8b830; font-weight: 700; }
+  .match-divider { border: none; border-top: 1px solid #1e1008; margin: 0; }
+  .tbd { padding: 2px 3px; font-size: 6px; color: #221208; }
+  .vote-btn { width: 100%; padding: 14px; background: linear-gradient(135deg, #e8b830, #d04428); border: none; border-radius: 12px; color: #0c0808; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; margin-top: 14px; }
+  .vote-hint { font-size: 10px; color: #2a1410; text-align: center; margin-top: 6px; }
+  #vote-screen { padding: 0 16px; animation: fadeUp 0.3s ease; }
+  .vote-header { text-align: center; margin-bottom: 16px; }
+  .round-label { font-size: 10px; letter-spacing: 3px; color: #e8b830; text-transform: uppercase; margin-bottom: 3px; }
+  .vote-hint-text { font-size: 11px; color: #3a1c14; letter-spacing: 1px; }
+  .card { display: block; width: 100%; margin-bottom: 10px; border-radius: 14px; padding: 16px 18px; cursor: pointer; text-align: left; transition: all 0.25s; position: relative; overflow: hidden; border: 2px solid #2a1410; background: #160c0a; }
+  .card.selected { border-color: #e8b830 !important; background: #20120c !important; transform: scale(1.01); }
+  .card-inner { position: relative; z-index: 1; }
+  .card-top { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 8px; }
+  .card-emoji { font-size: 34px; margin-top: 2px; flex-shrink: 0; }
+  .card-meta { font-size: 9px; color: #d04428; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 2px; }
+  .card-name { font-size: 18px; font-weight: 700; color: #3a2418; line-height: 1.2; margin-bottom: 2px; transition: color 0.2s; }
+  .card.selected .card-name { color: #f8efe6; }
+  .card-from { font-size: 10px; color: #221208; font-style: italic; transition: color 0.2s; }
+  .card.selected .card-from { color: #b06030; }
+  .card-tag { display: inline-block; margin-top: 8px; padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 700; background: #2a1410; color: #e8b830; letter-spacing: 1px; }
+  .card.selected .card-tag { background: #e8b830; color: #0c0808; }
+  .card-stats { margin-top: 8px; font-size: 9px; color: #5a3020; letter-spacing: 0.5px; }
+  .card.selected .card-stats { color: #c08850; }
+  .card-fact { font-size: 12px; color: #221208; line-height: 1.75; transition: color 0.2s; margin-top: 8px; }
+  .card.selected .card-fact { color: #a07858; }
+  .card-arrow { font-size: 16px; color: #e8b830; margin-left: auto; flex-shrink: 0; }
+  .card-pct { font-size: 20px; font-weight: 700; color: #e8b830; margin-top: 10px; }
+  .card-pct span { font-size: 12px; font-weight: 400; color: #3a2418; margin-left: 6px; }
+  .card-pct .check { color: #e8b830; margin-left: 8px; }
+  .pct-bar { position: absolute; top: 0; left: 0; height: 100%; background: rgba(232,184,48,0.06); transition: width 0.9s cubic-bezier(.4,0,.2,1); z-index: 0; }
+  .commit-box { padding: 14px 18px; background: #160c0a; border: 1px solid #2a1410; border-radius: 12px; text-align: center; animation: fadeUp 0.3s ease; }
+  .commit-hint { font-size: 11px; color: #3a1c14; margin-bottom: 10px; font-style: italic; }
+  .commit-btn { padding: 12px 32px; background: linear-gradient(135deg, #e8b830, #d04428); border: none; border-radius: 10px; color: #0c0808; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+  .result-box { padding: 16px 18px; background: #160c0a; border: 1px solid #2a1410; border-radius: 12px; text-align: center; margin-top: 2px; animation: fadeUp 0.3s ease; }
+  .result-majority { font-size: 13px; color: #7ec8a0; font-weight: 700; letter-spacing: 1px; }
+  .result-minority { font-size: 13px; color: #d04428; font-weight: 700; letter-spacing: 1px; }
+  .ask-room { margin-top: 14px; padding-top: 14px; border-top: 1px dashed #3a1c14; }
+  .ask-room-label { font-size: 9px; letter-spacing: 3px; color: #d04428; text-transform: uppercase; margin-bottom: 6px; }
+  .ask-room-prompt { font-size: 15px; color: #e8d0c0; font-style: italic; line-height: 1.4; }
+  .next-btn { width: 100%; margin-top: 14px; padding: 14px; background: linear-gradient(135deg, #e8b830, #d04428); border: none; border-radius: 12px; color: #0c0808; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+  #champion-screen { text-align: center; padding: 36px 24px; animation: fadeUp 0.5s ease; }
+  .champ-emoji { font-size: 76px; margin-bottom: 8px; }
+  .champ-trophy { font-size: 11px; letter-spacing: 4px; color: #e8b830; text-transform: uppercase; margin-bottom: 8px; }
+  .champ-name { font-size: 26px; font-weight: 700; color: #f8efe6; margin-bottom: 4px; }
+  .champ-from { font-size: 13px; color: #d04428; font-style: italic; margin-bottom: 4px; }
+  .champ-fact { font-size: 13px; color: #6a4030; font-style: italic; max-width: 310px; margin: 14px auto 28px; line-height: 1.8; }
+  .reset-btn { padding: 14px 32px; background: linear-gradient(135deg, #e8b830, #d04428); border: none; border-radius: 12px; color: #0c0808; font-size: 14px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  button:active { filter: brightness(0.88); }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div>
+      <a href="index.html" class="title" style="text-decoration:none;cursor:pointer" title="All brackets">VERDICT</a>
+      <div class="subtitle">Greatest Pro Wrestlers Ever</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="back-btn" id="back-btn" style="display:none" onclick="showBracket()">← Bracket</button>
+      <div class="counter" id="counter">0/31</div>
+    </div>
+  </header>
+  <div id="main"></div>
+</div>
+
+<script>
+const ALL = [
+  // DIVISION 1 — THE MAIN EVENTERS
+  {id:0, name:"Stone Cold Steve Austin", from:"WWF/WWE", emoji:"🍺", div:"The Main Eventers", tag:"AUSTIN 3:16", stats:"6× World Champ · Best-selling merch in history", fact:"The biggest draw the business has ever seen. Austin 3:16 launched the Attitude Era and the most profitable period in wrestling history. He sold more t-shirts than anyone before or since and his feud with Mr. McMahon is the template every promotion still copies. The beer-drinking, boss-stunning anti-hero who carried an entire industry on his back."},
+  {id:1, name:"Hulk Hogan", from:"WWF / WCW", emoji:"🤙", div:"The Main Eventers", tag:"HULKAMANIA", stats:"12× World Champ · Mainstream crossover king", fact:"Whether you love or hate him, Hulk Hogan made professional wrestling a global mainstream phenomenon. Hulkamania filled stadiums in the 80s and then his shocking heel turn to form the nWo in WCW reinvented him and nearly killed WWF. Two separate eras, two separate runs at the absolute top. Nobody moved more merchandise to children in the 1980s."},
+  {id:2, name:"Bret Hart", from:"WWF / WCW", emoji:"🕶", div:"The Main Eventers", tag:"BEST THERE IS", stats:"5× WWF Champ · Technical gold standard", fact:"The Excellence of Execution. Bret Hart called himself the best there is, the best there was, and the best there ever will be — and for in-ring technical wrestling he had the resume to back it. The Montreal Screwjob involving Bret is the single most infamous real-life moment in wrestling history and it changed the business forever."},
+  {id:3, name:"Randy Savage", from:"WWF / WCW", emoji:"💪", div:"The Main Eventers", tag:"OOH YEAH", stats:"2× WWF Champ · Greatest match at WM3", fact:"Macho Man Randy Savage delivered promos like nobody before or since — intense, unpredictable, electric. His match with Ricky Steamboat at WrestleMania III is still studied as one of the greatest ever. The voice, the robes, the Slim Jim ads, the energy. Savage was a once-in-a-generation performer who made everything feel like life or death."},
+  // DIVISION 2 — THE ICONS
+  {id:4, name:"The Undertaker", from:"WWF/WWE", emoji:"⚰", div:"The Icons", tag:"THE STREAK", stats:"7× World Champ · 21-0 WrestleMania streak", fact:"Thirty years as the same character without ever breaking the illusion. The Undertaker's WrestleMania streak — 21 straight victories before it finally ended — became the most anticipated annual attraction in the sport. The Deadman is the most respected locker-room leader of his generation and the longest sustained character commitment in wrestling history."},
+  {id:5, name:"Ric Flair", from:"NWA / WCW / WWF", emoji:"🐍", div:"The Icons", tag:"WOOO", stats:"16× World Champ · The blueprint", fact:"To be the man, you gotta beat the man. Ric Flair held a world title 16 times across multiple decades and promotions, wrestled hour-long classics night after night, and created the blueprint for the charismatic, limousine-riding, jet-flying champion that every heel since has borrowed from. The styling and profiling never stopped. WOOO."},
+  {id:6, name:"Shawn Michaels", from:"WWF/WWE", emoji:"💔", div:"The Icons", tag:"MR WRESTLEMANIA", stats:"4× World Champ · Greatest in-ring performer", fact:"The Heartbreak Kid. Many wrestlers and historians simply call Shawn Michaels the greatest in-ring performer of all time. His ladder matches, his Iron Man match, his WrestleMania classics with Undertaker — Mr. WrestleMania delivered show-stealing performances for two decades across two separate career runs after a four-year retirement."},
+  {id:7, name:"Sting", from:"WCW / TNA / WWE / AEW", emoji:"🦂", div:"The Icons", tag:"THE FRANCHISE", stats:"6× World Champ · WCW's loyal soul", fact:"The Franchise of WCW. Sting stayed loyal to WCW through its entire run when others jumped ship, then reinvented himself as the silent, face-painted Crow vigilante during the nWo war. He finally wrestled in WWE decades later and even closed his career in AEW. The most beloved company-loyal star the business ever produced."},
+  // DIVISION 3 — THE CROSSOVER STARS
+  {id:8, name:"The Rock", from:"WWF/WWE", emoji:"👁", div:"Crossover Stars", tag:"THE PEOPLE'S CHAMP", stats:"10× World Champ · Biggest movie star alive", fact:"The most electrifying man in sports entertainment became the biggest movie star on the planet. The Rock's promos are still quoted decades later — finest mic worker the business may have ever seen. He sold out arenas, sold endless merchandise, and then translated all of it into a Hollywood career bigger than any wrestler before him. If you smell what The Rock is cooking."},
+  {id:9, name:"John Cena", from:"WWE", emoji:"🎽", div:"Crossover Stars", tag:"NEVER GIVE UP", stats:"16× World Champ · Most merch sold in WWE history", fact:"Sixteen world championships — tied for the most in history. John Cena sold more merchandise than anyone in WWE history during his peak, granted more Make-A-Wish wishes than any individual ever, and carried the company as its top star for over a decade. Loved and booed in equal measure, he became a genuine Hollywood crossover star. You can't see him, but everyone did."},
+  {id:10, name:"Andre the Giant", from:"WWF", emoji:"🗻", div:"Crossover Stars", tag:"THE EIGHTH WONDER", stats:"Undefeated for 15 years · WM3 main event", fact:"The Eighth Wonder of the World. Andre the Giant was a global attraction before Hogan, billed as undefeated for fifteen years, drawing crowds on pure spectacle and presence. His WrestleMania III showdown with Hogan in front of 93,000 fans is one of the most important matches ever. The Princess Bride made him beloved beyond wrestling entirely."},
+  {id:11, name:"Roman Reigns", from:"WWE", emoji:"☝", div:"Crossover Stars", tag:"THE TRIBAL CHIEF", stats:"Longest modern title reign · Acknowledge me", fact:"Roman Reigns' Tribal Chief run is widely considered the best long-term character work of the modern era. After years of being forced as a hero, he turned heel, demanded everyone acknowledge him, and held the championship for over 1,300 days — the longest reign in 30 years. He rebuilt main-event storytelling for an entire generation."},
+  // DIVISION 4 — THE TECHNICIANS & WORKHORSES
+  {id:12, name:"Kurt Angle", from:"WWE / TNA", emoji:"🥇", div:"Technicians", tag:"OLYMPIC GOLD", stats:"Real Olympic gold · Multi-time World Champ", fact:"An actual Olympic gold medalist who became one of the greatest in-ring performers the business ever saw. Kurt Angle won Olympic gold with a broken neck and then translated that intensity into a wrestling career full of five-star classics. The rare athlete who was elite in both the real sport and the worked one."},
+  {id:13, name:"Eddie Guerrero", from:"WCW / WWE", emoji:"🚗", div:"Technicians", tag:"LIE CHEAT STEAL", stats:"WWE Champ · Beloved across generations", fact:"Lie, cheat, and steal. Eddie Guerrero was so charismatic that the crowd cheered him for being a lovable cheater. His technical ability, his storytelling, and his emotional connection with fans made his world title win one of the most beloved moments in modern wrestling. His tragic early death only deepened how much the business reveres him."},
+  {id:14, name:"Chris Jericho", from:"WCW / WWE / AEW", emoji:"🎸", div:"Technicians", tag:"LE CHAMPION", stats:"First Undisputed Champ · 6 decades relevant", fact:"The first ever Undisputed WWF Champion and the man who has reinvented himself more times than anyone in history. Chris Jericho stayed elite across WCW, WWE, and then became the very first World Champion of AEW — legitimizing a brand new promotion with his star power. Nobody has stayed relevant across more eras and companies than Y2J."},
+  {id:15, name:"Rey Mysterio", from:"WCW / WWE / AEW", emoji:"🎭", div:"Technicians", tag:"619", stats:"World Champ despite size · Mask icon", fact:"The greatest underdog in wrestling history. Rey Mysterio overcame every size disadvantage to become a world champion and one of the best-selling merchandise stars in the business — especially among children and the Latino community who saw themselves in him. The 619 and the masks made him a global icon for over 25 years."},
+  // DIVISION 5 — THE ATTITUDE ERA
+  {id:16, name:"Mick Foley", from:"WCW / ECW / WWF", emoji:"🧦", div:"Attitude Era", tag:"HAVE A NICE DAY", stats:"3× World Champ · Hell in a Cell legend", fact:"Three personas — Cactus Jack, Mankind, Dude Love — one unbreakable man. Mick Foley's fall off the top of Hell in a Cell is the single most replayed moment of physical sacrifice in wrestling history. He gave his body to the business and then wrote multiple best-selling books. The hardcore legend with the biggest heart in the locker room."},
+  {id:17, name:"Triple H", from:"WWF/WWE", emoji:"🔨", div:"Attitude Era", tag:"THE GAME", stats:"14× World Champ · Architect of modern WWE", fact:"The Cerebral Assassin became one of the most decorated champions ever and then transitioned into running WWE's entire creative and developmental system. Triple H built NXT into a global brand and now leads WWE creatively. Few people have shaped the modern business more both in front of and behind the curtain."},
+  {id:18, name:"Edge", from:"WWE", emoji:"⚡", div:"Attitude Era", tag:"RATED R", stats:"11× World Champ · TLC innovator", fact:"The Rated-R Superstar helped invent the TLC match, became an 11-time world champion, retired due to a career-ending injury, and then made one of the greatest comebacks in history nine years later. Edge cashed in Money in the Bank to perfection and turned opportunism into an art form. The ultimate main-event survivor."},
+  {id:19, name:"Trish Stratus", from:"WWE", emoji:"⭐", div:"Attitude Era", tag:"QUEEN OF THE RING", stats:"7× Women's Champ · Built women's wrestling", fact:"Seven-time Women's Champion who transformed how the business treated women's wrestling. Trish Stratus went from valet to one of the most accomplished and respected in-ring performers of her era, headlining and proving women could main event. The foundation the entire modern women's revolution was built upon."},
+  // DIVISION 6 — THE GAME CHANGERS
+  {id:20, name:"CM Punk", from:"WWE / AEW", emoji:"🎤", div:"Game Changers", tag:"PIPE BOMB", stats:"434-day title reign · Voice of the voiceless", fact:"The Pipe Bomb promo broke the fourth wall and changed wrestling promos forever. CM Punk held the WWE Championship for 434 days — the longest reign in decades at the time — as a genuine anti-authority counterculture hero. His every move between WWE and AEW makes global headlines. The most authentically rebellious star of his generation."},
+  {id:21, name:"Goldberg", from:"WCW / WWE", emoji:"🔥", div:"Game Changers", tag:"WHO'S NEXT", stats:"173-0 streak · WCW's biggest homegrown star", fact:"Goldberg's undefeated streak — billed at 173-0 — was the hottest act in wrestling at the absolute peak of the Monday Night Wars. WCW's biggest homegrown creation, the Jackhammer and Spear made him an unstoppable force who could fill an arena on raw intensity alone. Who's next was the most feared question in the business."},
+  {id:22, name:"Batista", from:"WWE", emoji:"💥", div:"Game Changers", tag:"THE ANIMAL", stats:"6× World Champ · Evolution to Hollywood", fact:"The Animal rose out of Evolution to become a six-time world champion and then walked into Hollywood as a genuine blockbuster movie star in Guardians of the Galaxy and beyond. Batista's power, presence, and main-event runs made him one of the defining stars of the Ruthless Aggression era. Another wrestler who conquered both worlds."},
+  {id:23, name:"Brock Lesnar", from:"WWE", emoji:"🐂", div:"Game Changers", tag:"THE BEAST", stats:"Ended the Streak · UFC + WWE champion", fact:"The Beast Incarnate is the only man to hold both the WWE Championship and the UFC Heavyweight Championship. Brock Lesnar ended the Undertaker's WrestleMania streak — a moment that left an entire arena in stunned silence — and dominated as the most legitimately intimidating physical presence the business has had in decades."},
+  // DIVISION 7 — THE LEGENDS OF THE PAST
+  {id:24, name:"Dusty Rhodes", from:"NWA / WCW", emoji:"💎", div:"Legends of the Past", tag:"THE DREAM", stats:"3× World Champ · Hard Times promo", fact:"The American Dream. Dusty Rhodes was the son of a plumber who became the people's champion through the most heartfelt promos the business ever produced. His Hard Times speech is the gold standard of connecting with a working-class audience. He later became one of the most influential bookers and trainers in history."},
+  {id:25, name:"Harley Race", from:"NWA", emoji:"👑", div:"Legends of the Past", tag:"KING HARLEY", stats:"8× World Champ · The toughest of all", fact:"Eight-time NWA World Champion and widely regarded as the toughest man to ever lace up boots. Harley Race was the traveling champion who defended the title in territory after territory, earning the respect of every locker room through sheer legitimacy. The wrestlers' wrestler who younger stars were genuinely afraid of."},
+  {id:26, name:"Ricky Steamboat", from:"NWA / WCW / WWF", emoji:"🐉", div:"Legends of the Past", tag:"THE DRAGON", stats:"NWA World Champ · Greatest babyface worker", fact:"The Dragon. Ricky Steamboat is considered one of the purest in-ring performers ever and the perfect babyface — his trilogy of matches with Ric Flair in 1989 is among the greatest series of matches in wrestling history. He almost never wrestled as a villain because audiences simply refused to boo him."},
+  {id:27, name:"Bruno Sammartino", from:"WWWF", emoji:"🏛", div:"Legends of the Past", tag:"THE LIVING LEGEND", stats:"11-year title reign · Sold out MSG 187 times", fact:"Bruno Sammartino held the WWWF Championship for over 11 years across two reigns and sold out Madison Square Garden an astonishing 187 times. He was the foundation the entire northeastern wrestling business was built on for two decades. Before Hogan, before everyone, there was Bruno drawing the biggest crowds in the country."},
+  // DIVISION 8 — THE NEW SCHOOL & WILD CARDS
+  {id:28, name:"AJ Styles", from:"TNA / WWE / AEW", emoji:"🌟", div:"New School & Wild Cards", tag:"PHENOMENAL", stats:"Multi-promotion World Champ · Best in the world", fact:"The Phenomenal One built his legend across TNA, New Japan, WWE, and the independents before becoming a multi-time WWE Champion. For years AJ Styles was genuinely considered the best in-ring wrestler in the world by people who watched every promotion. The traveling ace who proved you didn't need WWE to become a legend."},
+  {id:29, name:"Kenny Omega", from:"AEW / NJPW", emoji:"🧹", div:"New School & Wild Cards", tag:"THE CLEANER", stats:"AEW + NJPW Champion · 6-star matches", fact:"The Cleaner is the face of AEW and the man whose New Japan matches earned ratings beyond the traditional five-star scale. Kenny Omega helped build AEW into a genuine competitor and is widely considered the best pure in-ring wrestler of the modern era. The figurehead of the entire alternative-promotion movement."},
+  {id:30, name:"Kane", from:"WWE", emoji:"🔴", div:"New School & Wild Cards", tag:"BIG RED MACHINE", stats:"Longest tenure · World Champ + real mayor", fact:"The Big Red Machine had one of the longest continuous tenures in WWE history, an iconic debut tearing the Hell in a Cell door off its hinges, and a brotherhood storyline with the Undertaker that spanned decades. Then he became an actual elected mayor in Tennessee. Few characters have been this durable for this long."},
+  {id:31, name:"Booker T", from:"WCW / WWE", emoji:"✊", div:"New School & Wild Cards", tag:"CAN YOU DIG IT", stats:"6× WCW Champ · 5-time Tag legend", fact:"A six-time WCW Champion and one of the most decorated tag team wrestlers of all time alongside his brother in Harlem Heat. Booker T successfully crossed from WCW into a major WWE singles run, won King of the Ring, and remained a beloved figure for decades. Can you dig it, sucka."},
+];
+
+const ASK_ROOM = [
+  "Career legacy or in-ring ability — which did you just pick?",
+  "Who sold more merch, and does that even matter to you?",
+  "Was that a storyline pick or a workrate pick?",
+  "Who would headline the bigger WrestleMania?",
+  "Promo skills or pure wrestling — which won that for you?",
+  "Who does the room think is overrated?",
+  "Would your answer change if titles didn't count?",
+];
+
+const R16=[[0,3],[1,2],[4,7],[5,6],[8,11],[9,10],[12,15],[13,14],[16,19],[17,18],[20,23],[21,22],[24,27],[25,26],[28,31],[29,30]];
+const COUNTS=[16,8,4,2,1];
+const RLABELS=["Round of 32","Round of 16","Quarterfinals","Semifinals","The Final"];
+
+let results=[Array(16).fill(null),Array(8).fill(null),Array(4).fill(null),Array(2).fill(null),Array(1).fill(null)];
+let currentVote=null,selected=null,locked=false,askPrompt="";
+
+function getC(r,mi,slot){if(r===0)return ALL[R16[mi][slot]];const prev=mi*2+slot;const wid=results[r-1][prev];return wid!=null?ALL[wid]:null;}
+function getCurrentRound(){for(let r=0;r<5;r++)if(results[r].some(w=>w===null))return r;return 5;}
+function getNextActive(){const cr=getCurrentRound();if(cr>=5)return null;for(let mi=0;mi<COUNTS[cr];mi++){if(results[cr][mi]===null){const a=getC(cr,mi,0),b=getC(cr,mi,1);if(a&&b)return{round:cr,mi};}}return null;}
+function totalVotes(){return results.flat().filter(v=>v!==null).length;}
+function fakeA(a,b){return Math.min(86,Math.max(20,50+(b.id-a.id)%17+(a.id%4)*2));}
+
+function render(){
+  document.getElementById('counter').textContent=totalVotes()+'/31';
+  const cr=getCurrentRound();
+  if(cr===5&&results[4][0]!==null)renderChampion(ALL[results[4][0]]);
+  else if(currentVote)renderVote();
+  else renderBracket();
+}
+
+function renderBracket(){
+  document.getElementById('back-btn').style.display='none';
+  const cr=getCurrentRound(),next=getNextActive();
+  const divNames=["Main Event","Icons","Crossover","Technicians","Attitude","Game Changers","Legends","New School"];
+  let html='<div class="core-q">Who is the greatest professional wrestler of all time?</div>';
+  html+='<div class="div-labels">';
+  divNames.forEach(d=>{html+=`<div class="div-label">${d}</div>`;});
+  html+='</div><div class="bracket-cols">';
+  for(let r=0;r<5;r++){
+    const count=COUNTS[r],maxH=[22,30,44,70,100][r],gap=[2,5,12,28,0][r];
+    html+=`<div class="bracket-col"><div class="col-label" style="color:${r===cr?'#e8b830':'#2a1410'}">${["R32","R16","QF","SF","Final"][r]}</div><div class="col-matches" style="gap:${gap}px">`;
+    for(let mi=0;mi<count;mi++){
+      const a=getC(r,mi,0),b=getC(r,mi,1),winner=results[r][mi];
+      const active=r===cr&&winner===null&&a&&b,done=winner!==null;
+      const cls=active?'active':done?'done':'empty';
+      const onclick=(active||done)?`onclick="startVote(${r},${mi})"`:'';
+      html+=`<div class="match-cell ${cls}" style="max-height:${maxH}px;${!active&&!done?'border:1px solid #1a0e0a':''}" ${onclick}>`;
+      [a,b].forEach((c,si)=>{
+        if(!c){html+=`<div class="tbd">—</div>`;return;}
+        const isW=winner===c.id,isL=done&&!isW;
+        const nm=c.name.split(' ').slice(0,r===0?2:3).join(' ');
+        html+=`${si===1?'<hr class="match-divider">':''}<div class="match-row ${isW?'winner':isL?'loser':''}"><span class="em">${c.emoji}</span><span class="nm">${nm}</span></div>`;
+      });
+      html+='</div>';
+    }
+    html+='</div></div>';
+  }
+  html+='</div>';
+  if(next)html+=`<div style="padding:14px 16px 0"><button class="vote-btn" onclick="startVote(${next.round},${next.mi})">Vote Next Matchup →</button><div class="vote-hint">Tap any gold-bordered match to vote</div></div>`;
+  document.getElementById('main').innerHTML=html;
+}
+
+function startVote(round,mi){currentVote={round,mi};selected=null;locked=false;const w=results[round][mi];if(w!==null){const a=getC(round,mi,0);selected=(a&&a.id===w)?'a':'b';}render();}
+
+function renderVote(){
+  document.getElementById('back-btn').style.display='block';
+  const{round,mi}=currentVote,a=getC(round,mi,0),b=getC(round,mi,1);
+  if(!a||!b){showBracket();return;}
+  const pA=fakeA(a,b),pB=100-pA,majority=selected?(selected==='a'?pA:pB)>=50:false;
+  const hint=!selected?"— Who's the greater legend? —":locked?"— Verdict locked! —":"— Tap to switch. Button to commit. —";
+  let html=`<div id="vote-screen"><div class="vote-header"><div class="round-label">${RLABELS[round]}</div><div class="vote-hint-text">${hint}</div></div>`;
+  [{side:'a',c:a,pct:pA},{side:'b',c:b,pct:pB}].forEach(({side,c,pct})=>{
+    const isSel=selected===side;
+    html+=`<div class="card${isSel?' selected':''}" onclick="selectCard('${side}')">`;
+    if(locked&&isSel)html+=`<div class="pct-bar" style="width:${pct}%"></div>`;
+    html+=`<div class="card-inner">
+      <div class="card-top">
+        <div class="card-emoji">${c.emoji}</div>
+        <div style="flex:1;min-width:0">
+          <div class="card-meta">${c.div} · ${c.from}</div>
+          <div class="card-name">${c.name}</div>
+        </div>
+        ${isSel&&!locked?'<div class="card-arrow">◀</div>':''}
+      </div>
+      <div class="card-tag">${c.tag}</div>
+      <div class="card-stats">📊 ${c.stats}</div>
+      <div class="card-fact">${c.fact}</div>
+      ${locked&&isSel?`<div class="card-pct">${pct}%<span>picked this legend</span><span class="check">✓</span></div>`:''}
+    </div></div>`;
+  });
+  if(selected&&!locked)html+=`<div class="commit-box"><div class="commit-hint">Still deciding? Tap the other one to compare.</div><button class="commit-btn" onclick="commitVote()">Lock In Verdict →</button></div>`;
+  if(locked){
+    html+=`<div class="result-box"><div class="${majority?'result-majority':'result-minority'}">${majority?'✓ With the majority':'🔥 Against the crowd'}</div>
+      <div class="ask-room"><div class="ask-room-label">🗣 Ask the Room</div><div class="ask-room-prompt">${askPrompt}</div></div>
+    </div>
+    <button class="next-btn" onclick="advance()">Vote Next Matchup →</button>`;
+  }
+  html+='</div>';
+  document.getElementById('main').innerHTML=html;
+}
+
+function selectCard(side){if(locked)return;selected=side;renderVote();}
+function commitVote(){
+  if(!selected||locked)return;
+  locked=true;
+  askPrompt=ASK_ROOM[Math.floor(Math.random()*ASK_ROOM.length)];
+  const{round,mi}=currentVote,a=getC(round,mi,0),b=getC(round,mi,1);
+  results[round][mi]=selected==='a'?a.id:b.id;
+  renderVote();
+  document.getElementById('counter').textContent=totalVotes()+'/31';
+}
+function advance(){currentVote=null;locked=false;selected=null;render();}
+function showBracket(){currentVote=null;selected=null;locked=false;render();}
+function renderChampion(c){
+  document.getElementById('back-btn').style.display='none';
+  document.getElementById('main').innerHTML=`
+    <div id="champion-screen">
+      <div style="font-size:44px;margin-bottom:6px">🏆</div>
+      <div class="champ-emoji">${c.emoji}</div>
+      <div class="champ-trophy">Greatest Wrestler of All Time</div>
+      <div class="champ-name">${c.name}</div>
+      <div class="champ-from">${c.from}</div>
+      <div style="display:inline-block;margin:10px 0 6px;padding:4px 16px;border-radius:20px;background:#e8b830;color:#0c0808;font-size:11px;font-weight:700;letter-spacing:1px">${c.tag}</div>
+      <div class="champ-fact">${c.fact}</div>
+      <button class="reset-btn" onclick="resetGame()">Run It Back</button>
+    </div>`;
+}
+function resetGame(){results=[Array(16).fill(null),Array(8).fill(null),Array(4).fill(null),Array(2).fill(null),Array(1).fill(null)];currentVote=null;selected=null;locked=false;render();}
+render();
+</script>
+</body>
+</html>

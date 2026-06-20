@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VERDICT — The 32 Greatest NFL Players of All Time</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #09080a; color: #f0eaf8; font-family: Georgia, 'Times New Roman', serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
+  #app { width: 100%; max-width: 560px; min-height: 100vh; display: flex; flex-direction: column; }
+  header { padding: 16px 20px 12px; border-bottom: 1px solid #22182a; display: flex; align-items: center; justify-content: space-between; background: #0e0b14; }
+  .title { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; color: #f5a623; }
+  .subtitle { font-size: 9px; color: #c97a10; letter-spacing: 2px; text-transform: uppercase; margin-top: 2px; }
+  .counter { font-size: 10px; color: #2e2040; background: #14101c; border: 1px solid #22182a; border-radius: 16px; padding: 4px 10px; }
+  .back-btn { background: transparent; border: 1px solid #22182a; border-radius: 8px; padding: 5px 10px; color: #3a2850; font-size: 11px; cursor: pointer; font-family: Georgia, serif; }
+  #main { flex: 1; padding: 14px 0; }
+  .core-q { text-align: center; font-size: 12px; color: #f5a623; font-style: italic; padding: 4px 20px 0; line-height: 1.4; }
+  .div-labels { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px; margin: 10px 10px 8px; }
+  .div-label { font-size: 7px; color: #3a2850; text-align: center; padding: 3px 2px; background: #14101c; border-radius: 4px; }
+  .bracket-cols { display: flex; gap: 3px; padding: 0 10px; }
+  .bracket-col { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+  .col-label { font-size: 7px; letter-spacing: 1.5px; text-transform: uppercase; text-align: center; margin-bottom: 5px; }
+  .col-matches { display: flex; flex-direction: column; justify-content: space-around; height: 380px; }
+  .match-cell { border-radius: 5px; overflow: hidden; cursor: default; flex: 1; transition: border-color 0.2s; }
+  .match-cell.active { border: 1px solid #f5a623 !important; background: #14101c !important; cursor: pointer; }
+  .match-cell.done { border: 1px solid #2e1e0a !important; background: #0e0b14 !important; cursor: pointer; }
+  .match-cell.empty { border: 1px solid #14101c; background: #09080a; }
+  .match-row { display: flex; align-items: center; gap: 2px; padding: 2px 3px; transition: opacity 0.3s; }
+  .match-row.loser { opacity: 0.22; }
+  .match-row.winner { background: rgba(245,166,35,0.12); }
+  .match-row .em { font-size: 8px; }
+  .match-row .nm { font-size: 7px; color: #3a2850; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 400; }
+  .match-row.winner .nm { color: #f5a623; font-weight: 700; }
+  .match-divider { border: none; border-top: 1px solid #1e1428; margin: 0; }
+  .tbd { padding: 2px 3px; font-size: 6px; color: #221830; }
+  .vote-btn { width: 100%; padding: 14px; background: linear-gradient(135deg, #f5a623, #c05a08); border: none; border-radius: 12px; color: #09080a; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; margin-top: 14px; }
+  .vote-hint { font-size: 10px; color: #2e2040; text-align: center; margin-top: 6px; }
+  #vote-screen { padding: 0 16px; animation: fadeUp 0.3s ease; }
+  .vote-header { text-align: center; margin-bottom: 16px; }
+  .round-label { font-size: 10px; letter-spacing: 3px; color: #f5a623; text-transform: uppercase; margin-bottom: 3px; }
+  .vote-hint-text { font-size: 11px; color: #3a2850; letter-spacing: 1px; }
+  .card { display: block; width: 100%; margin-bottom: 10px; border-radius: 14px; padding: 16px 18px; cursor: pointer; text-align: left; transition: all 0.25s; position: relative; overflow: hidden; border: 2px solid #22182a; background: #0e0b14; }
+  .card.selected { border-color: #f5a623 !important; background: #1a1020 !important; transform: scale(1.01); }
+  .card-inner { position: relative; z-index: 1; }
+  .card-top { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 8px; }
+  .card-emoji { font-size: 34px; margin-top: 2px; flex-shrink: 0; }
+  .card-meta { font-size: 9px; color: #c05a08; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 2px; }
+  .card-name { font-size: 18px; font-weight: 700; color: #3a2850; line-height: 1.2; margin-bottom: 2px; transition: color 0.2s; }
+  .card.selected .card-name { color: #f0eaf8; }
+  .card-from { font-size: 10px; color: #2e2040; font-style: italic; transition: color 0.2s; }
+  .card.selected .card-from { color: #a07878; }
+  .card-tag { display: inline-block; margin-top: 8px; padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 700; background: #22182a; color: #f5a623; letter-spacing: 1px; }
+  .card.selected .card-tag { background: #f5a623; color: #09080a; }
+  .card-stats { margin-top: 8px; font-size: 9px; color: #4a3060; letter-spacing: 0.5px; }
+  .card.selected .card-stats { color: #c09040; }
+  .card-fact { font-size: 12px; color: #2e2040; line-height: 1.75; transition: color 0.2s; margin-top: 8px; }
+  .card.selected .card-fact { color: #907888; }
+  .card-arrow { font-size: 16px; color: #f5a623; margin-left: auto; flex-shrink: 0; }
+  .card-pct { font-size: 20px; font-weight: 700; color: #f5a623; margin-top: 10px; }
+  .card-pct span { font-size: 12px; font-weight: 400; color: #3a2850; margin-left: 6px; }
+  .card-pct .check { color: #f5a623; margin-left: 8px; }
+  .pct-bar { position: absolute; top: 0; left: 0; height: 100%; background: rgba(245,166,35,0.06); transition: width 0.9s cubic-bezier(.4,0,.2,1); z-index: 0; }
+  .commit-box { padding: 14px 18px; background: #0e0b14; border: 1px solid #22182a; border-radius: 12px; text-align: center; animation: fadeUp 0.3s ease; }
+  .commit-hint { font-size: 11px; color: #3a2850; margin-bottom: 10px; font-style: italic; }
+  .commit-btn { padding: 12px 32px; background: linear-gradient(135deg, #f5a623, #c05a08); border: none; border-radius: 10px; color: #09080a; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+  .result-box { padding: 16px 18px; background: #0e0b14; border: 1px solid #22182a; border-radius: 12px; text-align: center; margin-top: 2px; animation: fadeUp 0.3s ease; }
+  .result-majority { font-size: 13px; color: #7ec8a0; font-weight: 700; letter-spacing: 1px; }
+  .result-minority { font-size: 13px; color: #c05a08; font-weight: 700; letter-spacing: 1px; }
+  .next-btn { width: 100%; margin-top: 14px; padding: 14px; background: linear-gradient(135deg, #f5a623, #c05a08); border: none; border-radius: 12px; color: #09080a; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+  #champion-screen { text-align: center; padding: 36px 24px; animation: fadeUp 0.5s ease; }
+  .champ-emoji { font-size: 76px; margin-bottom: 8px; }
+  .champ-trophy { font-size: 11px; letter-spacing: 4px; color: #f5a623; text-transform: uppercase; margin-bottom: 8px; }
+  .champ-name { font-size: 26px; font-weight: 700; color: #f0eaf8; margin-bottom: 4px; }
+  .champ-from { font-size: 13px; color: #c05a08; font-style: italic; margin-bottom: 4px; }
+  .champ-fact { font-size: 13px; color: #4a3060; font-style: italic; max-width: 310px; margin: 14px auto 28px; line-height: 1.8; }
+  .reset-btn { padding: 14px 32px; background: linear-gradient(135deg, #f5a623, #c05a08); border: none; border-radius: 12px; color: #09080a; font-size: 14px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  button:active { filter: brightness(0.88); }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div>
+      <a href="index.html" class="title" style="text-decoration:none;cursor:pointer" title="All brackets">VERDICT</a>
+      <div class="subtitle">Greatest NFL Player of All Time</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="back-btn" id="back-btn" style="display:none" onclick="showBracket()">← Bracket</button>
+      <div class="counter" id="counter">0/31</div>
+    </div>
+  </header>
+  <div id="main"></div>
+</div>
+
+<script>
+const ALL = [
+  // DIVISION 1 — THE QUARTERBACKS
+  {id:0,  name:"Jerry Rice",        from:"WR · SF 49ers / Raiders",    emoji:"🏆", div:"The Receivers",    seed:1, stats:"1,549 rec · 22,895 yds · 197 TD · 3× SB Champ",        fact:"The most statistically dominant player in NFL history by almost any receiving measure. 197 career touchdowns. His closest competitor isn't even close. Rice played at an elite level until he was 40 and still ran routes that made defensive backs look like they were asleep. The only debate about Jerry Rice is whether 'greatest receiver' undersells him."},
+  {id:1,  name:"Jim Brown",         from:"RB · Cleveland Browns",       emoji:"🔥", div:"The Receivers",    seed:2, stats:"12,312 yds · 106 TD · 8× rushing title · Never missed a game",fact:"Never missed a game in 9 seasons. Led the league in rushing 8 times. Averaged 5.2 yards per carry for his entire career — a number modern backs chase in their best season. Brown retired at 29, in his prime, to make movies. We never saw his decline because there wasn't one. The floor argument for the greatest football player ever played."},
+  {id:2,  name:"Barry Sanders",     from:"RB · Detroit Lions",          emoji:"⚡", div:"The Receivers",    seed:3, stats:"15,269 yds · 99 TD · 10× Pro Bowl · 1 MVP",              fact:"He made defenders fall down without touching them. Barry Sanders retired abruptly at 30 with 15,269 yards — 1,457 short of Walter Payton's all-time record — citing a loss of joy. He spent his entire career on bad Lions teams and still went to 10 Pro Bowls. The most purely watchable player in football history."},
+  {id:3,  name:"Randy Moss",        from:"WR · Vikings / Patriots",     emoji:"🚀", div:"The Receivers",    seed:4, stats:"156 TD · 23 rec TDs (2007 record) · 4× All-Pro",         fact:"In 2007, Randy Moss caught 23 touchdown passes in a regular season. That record still stands. He was so physically dominant that defenses had to scheme around his presence on every snap, which made everyone else better. The most dangerous deep threat the game has ever produced, and he barely had to try for half his career."},
+
+  // DIVISION 2 — THE QUARTERBACKS
+  {id:4,  name:"Tom Brady",         from:"QB · Patriots / Buccaneers",  emoji:"7⃣", div:"The Quarterbacks",  seed:1, stats:"7× SB Champ · 5× SB MVP · 89,214 pass yds · 649 TD",     fact:"7 Super Bowls. The conversation ends and starts there. Brady won championships across three different decades with different teams, different coaches, and different supporting casts. He was a 6th-round pick nobody wanted. The most decorated winner in team sports history, and he did it by eliminating everything from his game that could cause a loss."},
+  {id:5,  name:"Joe Montana",       from:"QB · SF 49ers / Chiefs",      emoji:"🎯", div:"The Quarterbacks",  seed:2, stats:"4× SB Champ · 3× SB MVP · 63.2% comp · 0 INT in SB",    fact:"Joe Montana never threw an interception in four Super Bowl appearances. Never. 83 attempts, zero picks, four rings, three MVP trophies. His two-minute drill in Super Bowl XXIII is still the standard for clutch performance. Montana's composure under pressure was so legendary that his nickname, Joe Cool, was barely an exaggeration."},
+  {id:6,  name:"Johnny Unitas",     from:"QB · Baltimore Colts",        emoji:"🏈", div:"The Quarterbacks",  seed:3, stats:"47 straight games with TD pass · 40,239 yds · 290 TD",   fact:"Johnny Unitas threw a touchdown pass in 47 consecutive games — a record that stood for 52 years and may never be broken again. He invented modern quarterback play: the no-huddle, the audible at the line, the two-minute offense. Before Unitas, quarterbacks handed off. After Unitas, they were the engine of the franchise. Every QB in history is playing the game he designed."},
+  {id:7,  name:"Peyton Manning",    from:"QB · Colts / Broncos",        emoji:"🧠", div:"The Quarterbacks",  seed:4, stats:"2× SB Champ · 5× MVP · 71,940 pass yds · 539 TD",       fact:"Five MVP awards. No quarterback in history has won more. Manning pre-snap was an entirely different sport — he essentially called the defense's play before they ran it, then called the correct counter. He revolutionized the audible into a whole language. His 2013 season — 55 touchdowns, 5,477 yards — was the most statistically dominant single QB season in NFL history at the time."},
+
+  // DIVISION 3 — THE PASS RUSHERS
+  {id:8,  name:"Lawrence Taylor",   from:"LB · NY Giants",              emoji:"5⃣", div:"The Pass Rushers",  seed:1, stats:"132.5 sacks · 2× DPOY · 1× MVP · 3× All-Decade",       fact:"Lawrence Taylor is the only defensive player to win the NFL MVP award in the modern era. He didn't just dominate games — he forced the entire league to change its rules and personnel packages. The left tackle became the second-highest paid position in football because of LT. Defenses had to adjust their base formations around one man. That's not a player. That's a geological event."},
+  {id:9,  name:"Reggie White",      from:"DE · Eagles / Packers",       emoji:"👋", div:"The Pass Rushers",  seed:2, stats:"198 sacks · 2× DPOY · 13× Pro Bowl · SB Champ",         fact:"198 career sacks, the second-most all-time, and many scouts believe he was better than that number suggests because teams game-planned around him so aggressively. White had the rip, the hump move, and the swim — three moves so polished they became required teaching in every defensive line coaching tree. Called the Minister of Defense. The greatest defensive end in the history of the game."},
+  {id:10, name:"Deacon Jones",      from:"DE · LA Rams / Chargers",     emoji:"👊", div:"The Pass Rushers",  seed:3, stats:"Unofficially 170+ sacks · 5× All-Pro · Invented the term 'sack'",fact:"Deacon Jones literally invented the word 'sack' for tackling the quarterback. He played before sacks were officially counted, and conservative modern estimates credit him with 170+, which would be the all-time record. He was the most feared defensive player of his era and ran a 4.6 forty as a defensive end. His head-slap move was eventually banned by the league — because it was too effective."},
+  {id:11, name:"Bruce Smith",       from:"DE · Buffalo Bills / Redskins",emoji:"💪", div:"The Pass Rushers",  seed:4, stats:"200 sacks · All-time sack record · 11× Pro Bowl",        fact:"Bruce Smith holds the all-time official sack record at 200. He anchored the Buffalo Bills defense during their four consecutive Super Bowl runs — a feat no franchise has matched. Smith had elite first-step quickness and the strongest hands of any pass rusher of his era. He made the Pro Bowl in four different decades. Four. The official record-holder who somehow still gets underrated in GOAT conversations."},
+
+  // DIVISION 4 — THE RUNNERS
+  {id:12, name:"Walter Payton",     from:"RB · Chicago Bears",          emoji:"34", div:"The Runners",       seed:1, stats:"16,726 yds · 110 TD · 9× Pro Bowl · SB Champ · 1 MVP",  fact:"Sweetness. Walter Payton holds the record that Barry Sanders retired to avoid — and he did it while blocking, catching, passing, and willing the ball forward after contact better than anyone at the position. He never missed a game in 13 seasons. Payton was the first back the league recognized as truly complete: runner, receiver, blocker, leader. The humanitarian award the NFL gives annually bears his name."},
+  {id:13, name:"Emmitt Smith",      from:"RB · Dallas Cowboys / Cards", emoji:"🏃", div:"The Runners",       seed:2, stats:"18,355 yds (all-time record) · 164 TD · 3× SB Champ · 1 MVP", fact:"The all-time rushing yards leader. 18,355 yards. Three Super Bowl rings. One MVP. Emmitt Smith ran for 168 yards and a touchdown the day after separating his shoulder in a game the Cowboys had to win to make the playoffs. The knock on Smith — that he benefited from the Dallas offensive line — was always unfair. Great offensive lines make good backs. Great backs make themselves."},
+  {id:14, name:"Eric Dickerson",    from:"RB · Rams / Colts / Raiders", emoji:"33", div:"The Runners",       seed:3, stats:"13,259 yds · 2,105 yds in 1984 (season record) · 6× Pro Bowl",fact:"Eric Dickerson ran for 2,105 yards in 1984. That season record still stands 40 years later and shows no signs of falling. He ran upright with goggles and a neck roll and somehow looked like he was floating. Dickerson had the most elegant running style the game has ever produced — and behind it, enough power to run through arm tackles like they weren't there."},
+  {id:15, name:"Marshall Faulk",    from:"RB · Colts / St. Louis Rams", emoji:"🎯", div:"The Runners",       seed:4, stats:"12,279 rush yds · 6,875 rec yds · 136 TD · 3× OPOY · MVP",fact:"Marshall Faulk was the first back the league recognized as genuinely impossible to stop in the passing game as well as the running game. His 2000 season — MVP, Offensive Player of the Year, 2,189 yards from scrimmage — remains a benchmark. He was the engine of The Greatest Show on Turf. Faulk could line up at receiver and be a matchup nightmare. The complete back."},
+
+  // DIVISION 5 — THE SECONDARY
+  {id:16, name:"Ronnie Lott",       from:"S · SF 49ers / Raiders",      emoji:"42", div:"The Secondary",     seed:1, stats:"63 INT · 4× SB Champ · 10× Pro Bowl · 4× All-Pro",       fact:"Ronnie Lott had part of his pinky finger amputated rather than miss games for surgery. That is who he was. Four Super Bowl rings. 63 interceptions. The most ferocious hitter to ever play safety who also had the technique to play cornerback at an All-Pro level. He didn't just tackle receivers — he removed their willingness to go over the middle. The most complete defensive back in NFL history."},
+  {id:17, name:"Deion Sanders",     from:"CB · Falcons / Cowboys / etc.",emoji:"💎", div:"The Secondary",     seed:2, stats:"53 INT · 2× SB Champ · 8× Pro Bowl · Highest-paid DB ever",fact:"Prime Time was so dominant that offenses stopped throwing to his side of the field. Not occasionally — for entire games. He essentially played 11-on-10 football for most of his career because the opposing quarterback refused to test him. Sanders also played professional baseball simultaneously. He is the only player to hit an MLB home run and score an NFL touchdown in the same week."},
+  {id:18, name:"Dick Night Train Lane", from:"CB · Rams / Cardinals / Lions", emoji:"81", div:"The Secondary", seed:3, stats:"68 INT (all-time record) · 14 INT in single season (record) · Never punted away from",fact:"Dick 'Night Train' Lane holds the all-time interception record at 68 — without benefit of the illegal contact rules that make it easier for modern corners. In his rookie season he had 14 interceptions, a single-season record that still stands. He signed as a walk-in off the street with no college football experience. His nickname came from Buddy Morrow's song playing in the locker room. He became the most feared cornerback of his era from scratch."},
+  {id:19, name:"Rod Woodson",       from:"CB/S · Steelers / Ravens",    emoji:"26", div:"The Secondary",      seed:4, stats:"71 INT (all-time incl. playoffs) · SB Champ · DPOY · HOF",fact:"Rod Woodson was a cornerback who reinvented himself as a safety at 34 and went to a Super Bowl. He returned an interception 101 yards for a touchdown in that Super Bowl. His 71 career playoff-included interceptions are the most ever. Woodson was also a world-class sprinter — he ran the 60-yard dash in 6.4 seconds, faster than most wide receivers. The most physically gifted defensive back in the game's history."},
+
+  // DIVISION 6 — THE OFFENSIVE LINE
+  {id:20, name:"Jerry Kramer",      from:"G · Green Bay Packers",       emoji:"64", div:"The Trenches",       seed:1, stats:"5× NFL Champ · 2× SB Champ · The Block of the Century",  fact:"Jerry Kramer was kept out of the Hall of Fame for 50 years despite being named to the NFL's 50th Anniversary All-Time Team. His pulling block on the Packers' ice field in the 1967 NFL Championship — the Ice Bowl — is the most replicated guard technique in football history. He was finally inducted in 2018. The most famous offensive lineman in NFL history, and probably the most undervalued player on this entire bracket."},
+  {id:21, name:"Anthony Munoz",     from:"OT · Cincinnati Bengals",     emoji:"78", div:"The Trenches",       seed:2, stats:"11× Pro Bowl · 3× All-Pro · 0 holding calls in final 3 seasons",fact:"Anthony Munoz was so technically flawless in his final three seasons that he was flagged for holding zero times. He went to the Pro Bowl 11 consecutive times and was a consensus All-Pro six times. For two decades, he was the standard every offensive tackle was measured against. He played for Cincinnati teams that never won a Super Bowl, which may be the only reason he's not universally recognized as the greatest lineman who ever lived."},
+  {id:22, name:"Jim Parker",        from:"G/T · Baltimore Colts",       emoji:"77", div:"The Trenches",       seed:3, stats:"First lineman in HOF · Unitas' blindside for 11 years",    fact:"Jim Parker was the first pure offensive lineman inducted into the Hall of Fame. His job, as he described it, was to keep Johnny Unitas alive. He did it for 11 years without a significant injury to his quarterback. Parker revolutionized pass-protection technique — before him, linemen stood up to block. He invented the kick-slide step that every offensive tackle in the game uses today."},
+  {id:23, name:"Gene Upshaw",       from:"G · Oakland Raiders",         emoji:"63", div:"The Trenches",       seed:4, stats:"3× All-Decade · 2× SB Champ · HOF · NFLPA Executive Dir.",fact:"Gene Upshaw was the enforcer of the most feared offensive line in football — the Oakland Raiders' teams of the 70s. He was the most dominant pulling guard of his era and the only player to appear in the Super Bowl in three different decades. After retiring, he became executive director of the NFLPA and fundamentally changed the economics of professional football. Two careers, both Hall of Fame quality."},
+
+  // DIVISION 7 — THE LINEBACKERS
+  {id:24, name:"Ray Lewis",         from:"LB · Baltimore Ravens",       emoji:"52", div:"The Linebackers",    seed:1, stats:"2× DPOY · 2× SB Champ · 1× SB MVP · 13× Pro Bowl",      fact:"Ray Lewis changed the way linebackers were valued in the modern game. He read offenses with a quarterback's eye, communicated the entire defense pre-snap, and then somehow also made the physical play at the point of attack. His 2000 season — 17 regular season sacks for a linebacker, 6 postseason sacks, Super Bowl MVP — is one of the greatest individual playoff runs in NFL history. His pre-game ritual alone made the other team nervous."},
+  {id:25, name:"Dick Butkus",       from:"LB · Chicago Bears",          emoji:"51", div:"The Linebackers",    seed:2, stats:"22 fumble recoveries · 2× DPOY · Voted scariest NFL player ever",fact:"Dick Butkus played with a knee so destroyed that he could barely walk to practice — and he was still the most feared middle linebacker in football. Opponents said tackling him was like hitting a wall that hit back. He caused 25 turnovers in his career despite playing only 9 seasons before the knee gave out. In a league vote asking who the scariest player in history was, Butkus won by a wide margin. Some records don't appear in statistics."},
+  {id:26, name:"Jack Lambert",      from:"LB · Pittsburgh Steelers",    emoji:"58", div:"The Linebackers",    seed:3, stats:"4× SB Champ · 1× DPOY · 9× Pro Bowl · No front teeth",    fact:"Jack Lambert anchored four Pittsburgh Steelers Super Bowl defenses. He played middle linebacker at 220 pounds in an era when the position was considered a 240-pound minimum — and was so violent and fast that nobody could run at him. Lambert famously knocked out his front teeth in a college game and refused to wear a bridge. The gap-toothed snarl became the face of one of the great dynasties in professional sports."},
+  {id:27, name:"Chuck Bednarik",    from:"LB/C · Philadelphia Eagles",  emoji:"60", div:"The Linebackers",    seed:4, stats:"Last 60-minute player · 2× All-Decade · WWII combat vet",  fact:"Chuck Bednarik was the last player to play both ways for a full season in professional football. In 1960 he played center on offense and linebacker on defense for almost the entire campaign, including the championship game. He was also a WWII combat veteran who flew 30 bombing missions over Germany. His tackle of Frank Gifford — photographed as Gifford lay unconscious — is the most iconic defensive moment of the pre-Super Bowl era."},
+
+  // DIVISION 8 — THE LEGENDS
+  {id:28, name:"Don Hutson",        from:"WR/S · Green Bay Packers",    emoji:"14", div:"The Legends",        seed:1, stats:"Retired with 488 rec — 2nd place had 190 · 8× scoring title · 11× All-Pro", fact:"Don Hutson led the NFL in receiving 8 times and retired with 488 catches at a time when second place had 190. He also played safety. In 1942, he scored 29 points in one quarter — a record that stood until 2007. He invented every pass route that receivers run today. The game before Hutson was a running game. He didn't just change it — he made the receiver the most important offensive position in the sport."},
+  {id:29, name:"Otto Graham",       from:"QB · Cleveland Browns",       emoji:"14", div:"The Legends",        seed:2, stats:"10 title game appearances in 10 seasons · 4 AAFC titles · 3 NFL titles", fact:"Otto Graham appeared in the championship game in every single season of his professional career — 10 years, 10 title games, 7 championships. That winning percentage has never been approached by any quarterback since. His coach Paul Brown said he was the greatest player he ever coached. Graham was also an accomplished basketball player and musician. The argument for his placement: if winning is the only metric, he wins."},
+  {id:30, name:"Sammy Baugh",       from:"QB/P/S · Washington",         emoji:"33", div:"The Legends",        seed:3, stats:"3-way player · Led NFL in passing, punting, and INTs in same season", fact:"In 1943, Sammy Baugh led the NFL in passing, punting, and interceptions in the same season. As a triple-threat. He was the first franchise quarterback in NFL history, the man who proved the position could carry a team. His completion percentage records stood for decades in an era of leather helmets and minimal forward pass usage. Nobody has ever done what Baugh did in 1943. Nobody has ever come close."},
+  {id:31, name:"Gale Sayers",       from:"RB · Chicago Bears",          emoji:"40", div:"The Legends",        seed:4, stats:"6 TD in single game (rookie record) · 4× All-Pro · HOF at 34",fact:"Gale Sayers scored 6 touchdowns in a single game as a rookie — a record that still stands. He was voted into the Hall of Fame at age 34, the youngest inductee ever, because his career was cut short by knee injuries. In his prime, writers said watching him run was like watching a poem move. His friendship with Brian Piccolo — a teammate dying of cancer — became the most famous personal story in NFL history. The game's most beautiful footnote."}
+];
+
+const R16=[[0,3],[1,2],[4,7],[5,6],[8,11],[9,10],[12,15],[13,14],[16,19],[17,18],[20,23],[21,22],[24,27],[25,26],[28,31],[29,30]];
+const COUNTS=[16,8,4,2,1];
+const RLABELS=["Round of 32","Round of 16","Quarterfinal","Semifinal","The Final"];
+let results=[Array(16).fill(null),Array(8).fill(null),Array(4).fill(null),Array(2).fill(null),Array(1).fill(null)];
+let currentVote=null,selected=null,locked=false,askPrompt='';
+
+const ASK_ROOM=[
+  "Era or stats — which one actually matters more?",
+  "Could this player win in today's game, or does it not translate?",
+  "Heart pick or resume pick?",
+  "Who on the losing side doesn't belong in this bracket at all?",
+  "If your team needed one play to win the Super Bowl, who do you call?"
+];
+
+function getC(r,mi,slot){
+  if(r===0){const idx=R16[mi][slot];return ALL[idx];}
+  const prevMi=mi*2+slot,prevW=results[r-1][prevMi];
+  if(prevW===null)return null;
+  return ALL.find(c=>c.id===prevW);
+}
+function getCurrentRound(){for(let r=0;r<5;r++){for(let mi=0;mi<COUNTS[r];mi++){if(results[r][mi]===null){const a=getC(r,mi,0),b=getC(r,mi,1);if(a&&b)return r;}}};return 4;}
+function getNextActive(){const cr=getCurrentRound();for(let mi=0;mi<COUNTS[cr];mi++){if(results[cr][mi]===null){const a=getC(cr,mi,0),b=getC(cr,mi,1);if(a&&b)return{round:cr,mi};}}return null;}
+function totalVotes(){return results.flat().filter(v=>v!==null).length;}
+function fakeA(a,b){return Math.min(86,Math.max(20,50+(b.id-a.id)%17+(a.id%4)*2));}
+
+function render(){
+  const done=results[4][0]!==null;
+  if(done){const w=ALL.find(c=>c.id===results[4][0]);renderChampion(w);return;}
+  if(currentVote!==null){renderVote();return;}
+  renderBracket();
+}
+
+function renderBracket(){
+  document.getElementById('back-btn').style.display='none';
+  const cr=getCurrentRound(),next=getNextActive();
+  const divNames=["Receivers","Quarterbacks","Pass Rushers","Runners","Secondary","Trenches","Linebackers","Legends"];
+  let html='<div class="core-q">Who is the greatest NFL player of all time?</div>';
+  html+='<div class="div-labels">';
+  divNames.forEach(d=>{html+=`<div class="div-label">${d}</div>`;});
+  html+='</div><div class="bracket-cols">';
+  for(let r=0;r<5;r++){
+    const count=COUNTS[r],maxH=[22,30,44,70,100][r],gap=[2,5,12,28,0][r];
+    html+=`<div class="bracket-col"><div class="col-label" style="color:${r===cr?'#f5a623':'#2e2040'}">${["R32","R16","QF","SF","Final"][r]}</div><div class="col-matches" style="gap:${gap}px">`;
+    for(let mi=0;mi<count;mi++){
+      const a=getC(r,mi,0),b=getC(r,mi,1),winner=results[r][mi];
+      const active=r===cr&&winner===null&&a&&b,done=winner!==null;
+      const cls=active?'active':done?'done':'empty';
+      const onclick=(active||done)?`onclick="startVote(${r},${mi})"`:'';
+      html+=`<div class="match-cell ${cls}" style="max-height:${maxH}px;${!active&&!done?'border:1px solid #14101c':''}" ${onclick}>`;
+      [a,b].forEach((c,si)=>{
+        if(!c){html+=`<div class="tbd">—</div>`;return;}
+        const isW=winner===c.id,isL=done&&!isW;
+        const nm=c.name.split(' ').slice(0,r===0?2:3).join(' ');
+        html+=`${si===1?'<hr class="match-divider">':''}<div class="match-row ${isW?'winner':isL?'loser':''}"><span class="em">${c.emoji}</span><span class="nm">${nm}</span></div>`;
+      });
+      html+='</div>';
+    }
+    html+='</div></div>';
+  }
+  html+='</div>';
+  if(next)html+=`<div style="padding:14px 16px 0"><button class="vote-btn" onclick="startVote(${next.round},${next.mi})">Vote Next Matchup →</button><div class="vote-hint">Tap any gold-bordered match to vote</div></div>`;
+  document.getElementById('main').innerHTML=html;
+}
+
+function startVote(round,mi){currentVote={round,mi};selected=null;locked=false;const w=results[round][mi];if(w!==null){const a=getC(round,mi,0);selected=(a&&a.id===w)?'a':'b';}render();}
+
+function renderVote(){
+  document.getElementById('back-btn').style.display='block';
+  const{round,mi}=currentVote,a=getC(round,mi,0),b=getC(round,mi,1);
+  if(!a||!b){showBracket();return;}
+  const pA=fakeA(a,b),pB=100-pA,majority=selected?(selected==='a'?pA:pB)>=50:false;
+  const hint=!selected?"— Who is the greatest? —":locked?"— Verdict locked! —":"— Tap to switch. Button to commit. —";
+  let html=`<div id="vote-screen"><div class="vote-header"><div class="round-label">${RLABELS[round]}</div><div class="vote-hint-text">${hint}</div></div>`;
+  [{side:'a',c:a,pct:pA},{side:'b',c:b,pct:pB}].forEach(({side,c,pct})=>{
+    const isSel=selected===side;
+    html+=`<div class="card${isSel?' selected':''}" onclick="selectCard('${side}')">`;
+    if(locked&&isSel)html+=`<div class="pct-bar" style="width:${pct}%"></div>`;
+    html+=`<div class="card-inner">
+      <div class="card-top">
+        <div class="card-emoji">${c.emoji}</div>
+        <div style="flex:1;min-width:0">
+          <div class="card-meta">${c.div} · ${c.from}</div>
+          <div class="card-name">${c.name}</div>
+        </div>
+        ${isSel&&!locked?'<div class="card-arrow">◀</div>':''}
+      </div>
+      <div class="card-tag">${c.seed === 1 ? '#1 SEED' : c.seed === 2 ? '#2 SEED' : c.seed === 3 ? '#3 SEED' : '#4 SEED'}</div>
+      <div class="card-stats">📊 ${c.stats}</div>
+      <div class="card-fact">${c.fact}</div>
+      ${locked&&isSel?`<div class="card-pct">${pct}%<span>voted this GOAT</span><span class="check">✓</span></div>`:''}
+    </div></div>`;
+  });
+  if(selected&&!locked)html+=`<div class="commit-box"><div class="commit-hint">Still deciding? Tap the other card to compare.</div><button class="commit-btn" onclick="commitVote()">Lock In Verdict →</button></div>`;
+  if(locked){
+    html+=`<div class="result-box"><div class="${majority?'result-majority':'result-minority'}">${majority?'✓ With the majority':'🔥 Against the crowd'}</div>
+      <div class="ask-room" style="margin-top:14px;padding-top:14px;border-top:1px dashed #3a2850"><div style="font-size:9px;letter-spacing:3px;color:#c05a08;text-transform:uppercase;margin-bottom:6px">Ask the Room</div><div style="font-size:15px;color:#e8d8f0;font-style:italic;line-height:1.4">${askPrompt}</div></div>
+    </div>
+    <button class="next-btn" onclick="advance()">Vote Next Matchup →</button>`;
+  }
+  html+='</div>';
+  document.getElementById('main').innerHTML=html;
+}
+
+function selectCard(side){if(locked)return;selected=side;renderVote();}
+function commitVote(){
+  if(!selected||locked)return;
+  locked=true;
+  askPrompt=ASK_ROOM[Math.floor(Math.random()*ASK_ROOM.length)];
+  const{round,mi}=currentVote,a=getC(round,mi,0),b=getC(round,mi,1);
+  results[round][mi]=selected==='a'?a.id:b.id;
+  renderVote();
+  document.getElementById('counter').textContent=totalVotes()+'/31';
+}
+function advance(){currentVote=null;locked=false;selected=null;render();}
+function showBracket(){currentVote=null;selected=null;locked=false;render();}
+function renderChampion(c){
+  document.getElementById('back-btn').style.display='none';
+  document.getElementById('main').innerHTML=`
+    <div id="champion-screen">
+      <div style="font-size:44px;margin-bottom:6px">🏆</div>
+      <div class="champ-emoji">${c.emoji}</div>
+      <div class="champ-trophy">Greatest NFL Player of All Time</div>
+      <div class="champ-name">${c.name}</div>
+      <div class="champ-from">${c.from}</div>
+      <div style="display:inline-block;margin:10px 0 6px;padding:4px 16px;border-radius:20px;background:#f5a623;color:#09080a;font-size:11px;font-weight:700;letter-spacing:1px">YOUR VERDICT</div>
+      <div class="champ-fact">${c.fact}</div>
+      <button class="reset-btn" onclick="resetGame()">Run It Back</button>
+    </div>`;
+}
+function resetGame(){results=[Array(16).fill(null),Array(8).fill(null),Array(4).fill(null),Array(2).fill(null),Array(1).fill(null)];currentVote=null;selected=null;locked=false;render();}
+render();
+</script>
+</body>
+</html>

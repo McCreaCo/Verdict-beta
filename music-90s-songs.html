@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VERDICT — The 32 Greatest 90s Songs of All Time</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0a0610; color: #f8e8f2; font-family: Georgia, 'Times New Roman', serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
+  #app { width: 100%; max-width: 560px; min-height: 100vh; display: flex; flex-direction: column; }
+  header { padding: 16px 20px 12px; border-bottom: 1px solid #2a1428; display: flex; align-items: center; justify-content: space-between; background: #160a16; }
+  .title { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; color: #e0408a; }
+  .subtitle { font-size: 9px; color: #d04a90; letter-spacing: 2px; text-transform: uppercase; margin-top: 2px; }
+  .counter { font-size: 10px; color: #3a2040; background: #1c0c1a; border: 1px solid #2a1428; border-radius: 16px; padding: 4px 10px; }
+  .back-btn { background: transparent; border: 1px solid #2a1428; border-radius: 8px; padding: 5px 10px; color: #4a2850; font-size: 11px; cursor: pointer; font-family: Georgia, serif; }
+  #main { flex: 1; padding: 14px 0; }
+  .core-q { text-align: center; font-size: 12px; color: #e0408a; font-style: italic; padding: 4px 20px 0; line-height: 1.4; }
+  .div-labels { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px; margin: 10px 10px 8px; }
+  .div-label { font-size: 7px; color: #4a2850; text-align: center; padding: 3px 2px; background: #1c0c1a; border-radius: 4px; }
+  .bracket-cols { display: flex; gap: 3px; padding: 0 10px; }
+  .bracket-col { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+  .col-label { font-size: 7px; letter-spacing: 1.5px; text-transform: uppercase; text-align: center; margin-bottom: 5px; }
+  .col-matches { display: flex; flex-direction: column; justify-content: space-around; height: 380px; }
+  .match-cell { border-radius: 5px; overflow: hidden; cursor: default; flex: 1; transition: border-color 0.2s; }
+  .match-cell.active { border: 1px solid #e0408a !important; background: #1c0c1a !important; cursor: pointer; }
+  .match-cell.done { border: 1px solid #2e0a22 !important; background: #160a16 !important; cursor: pointer; }
+  .match-cell.empty { border: 1px solid #1c0c1a; background: #0a0610; }
+  .match-row { display: flex; align-items: center; gap: 2px; padding: 2px 3px; transition: opacity 0.3s; }
+  .match-row.loser { opacity: 0.22; }
+  .match-row.winner { background: rgba(224,64,138,0.12); }
+  .match-row .em { font-size: 8px; }
+  .match-row .nm { font-size: 7px; color: #4a2850; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 400; }
+  .match-row.winner .nm { color: #e0408a; font-weight: 700; }
+  .match-divider { border: none; border-top: 1px solid #281430; margin: 0; }
+  .tbd { padding: 2px 3px; font-size: 6px; color: #281828; }
+  .vote-btn { width: 100%; padding: 14px; background: linear-gradient(135deg, #e0408a, #a01860); border: none; border-radius: 12px; color: #0a0610; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; margin-top: 14px; }
+  .vote-hint { font-size: 10px; color: #3a2040; text-align: center; margin-top: 6px; }
+  #vote-screen { padding: 0 16px; animation: fadeUp 0.3s ease; }
+  .vote-header { text-align: center; margin-bottom: 16px; }
+  .round-label { font-size: 10px; letter-spacing: 3px; color: #e0408a; text-transform: uppercase; margin-bottom: 3px; }
+  .vote-hint-text { font-size: 11px; color: #4a2850; letter-spacing: 1px; }
+  .card { display: block; width: 100%; margin-bottom: 10px; border-radius: 14px; padding: 16px 18px; cursor: pointer; text-align: left; transition: all 0.25s; position: relative; overflow: hidden; border: 2px solid #2a1428; background: #160a16; }
+  .card.selected { border-color: #e0408a !important; background: #240e22 !important; transform: scale(1.01); }
+  .card-inner { position: relative; z-index: 1; }
+  .card-top { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 8px; }
+  .card-emoji { font-size: 34px; margin-top: 2px; flex-shrink: 0; }
+  .card-meta { font-size: 9px; color: #a01860; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 2px; }
+  .card-name { font-size: 18px; font-weight: 700; color: #4a2850; line-height: 1.2; margin-bottom: 2px; transition: color 0.2s; }
+  .card.selected .card-name { color: #f8e8f2; }
+  .card-from { font-size: 10px; color: #3a2040; font-style: italic; transition: color 0.2s; }
+  .card.selected .card-from { color: #c068a0; }
+  .card-tag { display: inline-block; margin-top: 8px; padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 700; background: #2a1428; color: #e0408a; letter-spacing: 1px; }
+  .card.selected .card-tag { background: #e0408a; color: #0a0610; }
+  .card-stats { margin-top: 8px; font-size: 9px; color: #5a2a52; letter-spacing: 0.5px; }
+  .card.selected .card-stats { color: #d060a0; }
+  .card-fact { font-size: 12px; color: #3a2040; line-height: 1.75; transition: color 0.2s; margin-top: 8px; }
+  .card.selected .card-fact { color: #b06890; }
+  .card-arrow { font-size: 16px; color: #e0408a; margin-left: auto; flex-shrink: 0; }
+  .card-pct { font-size: 20px; font-weight: 700; color: #e0408a; margin-top: 10px; }
+  .card-pct span { font-size: 12px; font-weight: 400; color: #4a2850; margin-left: 6px; }
+  .card-pct .check { color: #e0408a; margin-left: 8px; }
+  .pct-bar { position: absolute; top: 0; left: 0; height: 100%; background: rgba(224,64,138,0.06); transition: width 0.9s cubic-bezier(.4,0,.2,1); z-index: 0; }
+  .commit-box { padding: 14px 18px; background: #160a16; border: 1px solid #2a1428; border-radius: 12px; text-align: center; animation: fadeUp 0.3s ease; }
+  .commit-hint { font-size: 11px; color: #4a2850; margin-bottom: 10px; font-style: italic; }
+  .commit-btn { padding: 12px 32px; background: linear-gradient(135deg, #e0408a, #a01860); border: none; border-radius: 10px; color: #0a0610; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+  .result-box { padding: 16px 18px; background: #160a16; border: 1px solid #2a1428; border-radius: 12px; text-align: center; margin-top: 2px; animation: fadeUp 0.3s ease; }
+  .result-majority { font-size: 13px; color: #7ec8a0; font-weight: 700; letter-spacing: 1px; }
+  .result-minority { font-size: 13px; color: #a01860; font-weight: 700; letter-spacing: 1px; }
+  .next-btn { width: 100%; margin-top: 14px; padding: 14px; background: linear-gradient(135deg, #e0408a, #a01860); border: none; border-radius: 12px; color: #0a0610; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+  #champion-screen { text-align: center; padding: 36px 24px; animation: fadeUp 0.5s ease; }
+  .champ-emoji { font-size: 76px; margin-bottom: 8px; }
+  .champ-trophy { font-size: 11px; letter-spacing: 4px; color: #e0408a; text-transform: uppercase; margin-bottom: 8px; }
+  .champ-name { font-size: 26px; font-weight: 700; color: #f8e8f2; margin-bottom: 4px; }
+  .champ-from { font-size: 13px; color: #a01860; font-style: italic; margin-bottom: 4px; }
+  .champ-fact { font-size: 13px; color: #5a2a52; font-style: italic; max-width: 310px; margin: 14px auto 28px; line-height: 1.8; }
+  .reset-btn { padding: 14px 32px; background: linear-gradient(135deg, #e0408a, #a01860); border: none; border-radius: 12px; color: #0a0610; font-size: 14px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  button:active { filter: brightness(0.88); }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div>
+      <a href="index.html" class="title" style="text-decoration:none;cursor:pointer" title="All brackets">VERDICT</a>
+      <div class="subtitle">Greatest 90s Song Ever</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="back-btn" id="back-btn" style="display:none" onclick="showBracket()">← Bracket</button>
+      <div class="counter" id="counter">0/31</div>
+    </div>
+  </header>
+  <div id="main"></div>
+</div>
+
+<script>
+const ALL = [
+  {id:0,  name:"Smells Like Teen Spirit", from:"Nirvana \u00b7 1991",        emoji:"\ud83c\udfb8", div:"Grunge", seed:1, stats:"Killed hair metal overnight", fact:"The song that ended the hair-metal era almost the moment it hit MTV. Kurt Cobain reportedly set out to write something in the spirit of the Pixies and accidentally produced the defining anthem of a generation. The quiet-loud dynamic became the blueprint every alt-rock band chased for the rest of the decade."},
+  {id:1,  name:"Black",                   from:"Pearl Jam \u00b7 1992",       emoji:"\ud83d\udda4", div:"Grunge", seed:2, stats:"Never a single \u00b7 fan-beloved", fact:"Eddie Vedder at his most raw and wounded. The band refused to release it as a single, believing some songs are too personal to be packaged \u2014 and it became one of their most cherished tracks anyway. A slow-burning ache that grew bigger by being kept off the radio."},
+  {id:2,  name:"Creep",                   from:"Radiohead \u00b7 1992",       emoji:"\ud83d\udc7d", div:"Grunge", seed:3, stats:"The band grew to resent it", fact:"Radiohead came to resent it almost immediately; the world refused to let it go. It became the unlikely anthem for anyone who ever felt like an outsider, and the gap between how much the band disliked it and how deeply listeners loved it is part of its strange legend."},
+  {id:3,  name:"Black Hole Sun",          from:"Soundgarden \u00b7 1994",     emoji:"\u2600", div:"Grunge", seed:4, stats:"That warped, dreamlike video", fact:"Chris Cornell's voice draped over a dreamy, slightly menacing melody, paired with one of the most surreal music videos of the decade. Nothing else in the 90s sounded quite like it \u2014 psychedelic and heavy at once, and impossible to mistake for any other band."},
+  {id:4,  name:"Juicy",                   from:"The Notorious B.I.G. \u00b7 1994", emoji:"\ud83d\udc51", div:"Hip-Hop East", seed:1, stats:"Biggie's debut single", fact:"Biggie's debut single and a masterclass in rags-to-riches storytelling \u2014 the rise from Brooklyn struggle to the top of the world told in a few effortless minutes. The warmth and detail in his delivery made it feel less like a brag and more like an invitation."},
+  {id:5,  name:"N.Y. State of Mind",      from:"Nas \u00b7 1994",             emoji:"\ud83d\uddfd", div:"Hip-Hop East", seed:2, stats:"From Illmatic \u00b7 raised the bar", fact:"From Illmatic, the album that reset the standard for lyricism. Nas painted the Queensbridge projects with a novelist's eye for detail, and the density of his writing forced every East Coast rapper who followed to level up or get left behind."},
+  {id:6,  name:"Mo Money Mo Problems",    from:"Notorious B.I.G. \u00b7 1997", emoji:"\ud83d\udcb0", div:"Hip-Hop East", seed:3, stats:"#1 after Biggie's death", fact:"Released after Biggie's murder and rode straight to number one \u2014 a glossy, irresistible hit haunted by the absence of the man at its center. Puff and Mase carry the celebration while the ghost of the greatest rapper of his era looms over every bar."},
+  {id:7,  name:"Lose Yourself",           from:"Eminem \u00b7 2002",          emoji:"\ud83c\udfa4", div:"Hip-Hop East", seed:4, stats:"Born from 90s Eminem \u00b7 won an Oscar", fact:"Technically 2002, but the product of the 90s Detroit grind that made Eminem. A white-knuckle performance about seizing a single chance, it became the first rap song to win the Academy Award for Best Original Song \u2014 the defining motivational anthem of its era."},
+  {id:8,  name:"...Baby One More Time",   from:"Britney Spears \u00b7 1998",  emoji:"\ud83d\udc67", div:"Pop", seed:1, stats:"A 16-year-old reset pop", fact:"A teenager from Louisiana rewrote what pop music could be. The schoolgirl video, the breathy hook, the unstoppable chorus \u2014 it launched the late-90s teen-pop explosion and made Britney an instant global icon before she could legally vote."},
+  {id:9,  name:"I Want It That Way",      from:"Backstreet Boys \u00b7 1999", emoji:"\ud83d\udc99", div:"Pop", seed:2, stats:"The harmonies are undefeated", fact:"The Backstreet Boys at their absolute peak, and a candidate for the most perfectly constructed pop song of the decade. The lyrics famously don't quite make literal sense, and absolutely nobody cares \u2014 the harmonies and that soaring chorus settle the argument instantly."},
+  {id:10, name:"Waterfalls",              from:"TLC \u00b7 1995",             emoji:"\ud83d\udca7", div:"Pop", seed:3, stats:"AIDS + addiction \u2192 most-played on MTV", fact:"TLC's masterpiece tackled AIDS and the drug trade and somehow became the most-played song on MTV that year. A genuine message record dressed in an irresistible groove, proving that pop could carry real weight without losing the radio."},
+  {id:11, name:"Wannabe",                 from:"Spice Girls \u00b7 1996",     emoji:"\ud83d\udc83", div:"Pop", seed:4, stats:"Introduced Girl Power worldwide", fact:"Five strangers introduced Girl Power to a billion people in under three minutes. Loud, chaotic, and impossible to dislodge from your head, it kicked off a global phenomenon and remains one of the most recognizable opening seconds in pop history."},
+  {id:12, name:"End of the Road",         from:"Boyz II Men \u00b7 1992",     emoji:"\ud83c\udfb5", div:"R&B/Soul", seed:1, stats:"13 weeks at #1", fact:"Sat at number one for thirteen weeks, the longest chart run in Billboard history at the time. Four voices and a devastating ballad that flattened the competition and defined the early-90s R&B vocal group at its most powerful."},
+  {id:13, name:"I Will Always Love You",  from:"Whitney Houston \u00b7 1992", emoji:"\ud83c\udf39", div:"R&B/Soul", seed:2, stats:"That note \u00b7 from The Bodyguard", fact:"Whitney took Dolly Parton's quiet country song and launched it into another dimension. The a cappella opening and the famous key change turned it into the definitive vocal performance of the decade \u2014 a display of raw power nobody has matched since."},
+  {id:14, name:"No Scrubs",               from:"TLC \u00b7 1999",             emoji:"\ud83d\ude45", div:"R&B/Soul", seed:3, stats:"An anthem of standards", fact:"A full-throated declaration of self-worth that became a generational anthem, with Left Eye at her sharpest. It set a tone for late-90s R&B that was confident, funny, and unbothered \u2014 and spawned an entire conversation it still owns the vocabulary for."},
+  {id:15, name:"Killing Me Softly",       from:"Fugees \u00b7 1996",          emoji:"\ud83d\udd25", div:"R&B/Soul", seed:4, stats:"A cover that became definitive", fact:"Lauryn Hill's voice over that hip-hop beat turned a decades-old standard into something brand new. A cover of a cover that somehow became the version most listeners now think of first \u2014 the centerpiece of one of the best-selling albums of the era."},
+  {id:16, name:"California Love",         from:"2Pac ft. Dr. Dre \u00b7 1995", emoji:"\u2600", div:"West Coast", seed:1, stats:"#1 two weeks after Pac's release", fact:"Two weeks after Tupac got out of prison, this hit number one. The West Coast's defining anthem and summer itself in song form \u2014 Dre's production and Pac's swagger combining into something that still sounds like a victory lap decades later."},
+  {id:17, name:"Nuthin' But a G Thang",   from:"Dr. Dre ft. Snoop \u00b7 1992", emoji:"\ud83c\udfd6", div:"West Coast", seed:2, stats:"G-funk was born here", fact:"The Chronic changed hip-hop's sound forever, and this was its perfect introduction. The laid-back G-funk groove and Snoop's effortless debut flow defined the West Coast for years and made Dre the most influential producer alive."},
+  {id:18, name:"Gangsta's Paradise",      from:"Coolio ft. L.V. \u00b7 1995", emoji:"\ud83d\udd6f", div:"West Coast", seed:3, stats:"#1 of 1995 \u00b7 Grammy winner", fact:"Coolio built it on a Stevie Wonder sample and produced the most unlikely number-one song of 1995. It won a Grammy and lodged itself permanently in the culture \u2014 a brooding, cinematic record that crossed over to absolutely everyone."},
+  {id:19, name:"The Next Episode",        from:"Dr. Dre ft. Snoop \u00b7 1999", emoji:"\ud83c\udf3f", div:"West Coast", seed:4, stats:"From 2001 \u00b7 still a party staple", fact:"From the album 2001, the West Coast's last great stand of the decade. The beat is so iconic it still detonates at every party, sounding as fresh as the day it dropped \u2014 the reunion of Dre and Snoop at the height of their powers."},
+  {id:20, name:"Losing My Religion",      from:"R.E.M. \u00b7 1991",          emoji:"\ud83c\udf42", div:"Rock", seed:1, stats:"A mandolin song hit #4", fact:"R.E.M. sent a mandolin-driven song with no traditional chorus to number four on the Hot 100 \u2014 the most non-commercial track imaginable becoming completely inescapable. The video and that aching melody made it the band's signature moment."},
+  {id:21, name:"Smooth",                  from:"Santana ft. Rob Thomas \u00b7 1999", emoji:"\ud83d\udd25", div:"Rock", seed:2, stats:"#2 all-time Hot 100", fact:"It ranks number two on Billboard's all-time Hot 100. Santana's comeback was so enormous it barely felt real, and Rob Thomas delivered the performance of his career on top of it \u2014 a late-90s juggernaut that refused to leave the radio for a year."},
+  {id:22, name:"Under the Bridge",        from:"Red Hot Chili Peppers \u00b7 1992", emoji:"\ud83c\udf09", div:"Rock", seed:3, stats:"Kiedis wrote it about addiction", fact:"Anthony Kiedis wrote it about loneliness and addiction in Los Angeles, and the band that built its name on funk-punk chaos produced the most tender song of the alt-rock era. The unexpected vulnerability is exactly what made it a massive crossover hit."},
+  {id:23, name:"Wonderwall",              from:"Oasis \u00b7 1995",           emoji:"\ud83e\uddf1", div:"Rock", seed:4, stats:"Noel wrote it in 15 minutes", fact:"Noel Gallagher reportedly wrote it in fifteen minutes, and it became the song every beginner guitarist learns first. Nobody quite agrees what a wonderwall is, and it hasn't mattered for thirty years \u2014 it's the Britpop anthem that conquered the world."},
+  {id:24, name:"Rhythm Is a Dancer",      from:"Snap! \u00b7 1992",           emoji:"\ud83d\udc83", div:"Dance", seed:1, stats:"Eurodance at its peak", fact:"One of the most recognizable openings in dance music, and Eurodance at its absolute commercial peak. A massive international hit built for the floor, it defined the sound of early-90s clubs across Europe and beyond."},
+  {id:25, name:"Vogue",                   from:"Madonna \u00b7 1990",         emoji:"\ud83d\udc8b", div:"Dance", seed:2, stats:"Brought ballroom culture mainstream", fact:"Madonna took Harlem ballroom culture and taught it to the entire world in a single three-minute lesson. The black-and-white video and that spoken breakdown made it one of her most iconic moments \u2014 a dance record that doubled as a cultural import."},
+  {id:26, name:"Believe",                 from:"Cher \u00b7 1998",            emoji:"\u2728", div:"Dance", seed:3, stats:"Auto-Tune's mainstream debut", fact:"The mainstream debut of the Auto-Tune effect, used as a deliberate creative choice rather than a fix. Cher's processed vocal changed pop production forever \u2014 for better or worse, nearly every hit that followed owes something to this one experiment."},
+  {id:27, name:"Macarena",               from:"Los Del Rio \u00b7 1996",      emoji:"\ud83d\ude4c", div:"Dance", seed:4, stats:"14 weeks at #1", fact:"Fourteen weeks at number one. A Spanish pop duo accidentally created the defining party-dance moment of the decade, complete with a routine that everyone from weddings to stadiums learned. Inescapable then, and nobody is truly immune now."},
+  {id:28, name:"Semi-Charmed Life",       from:"Third Eye Blind \u00b7 1997", emoji:"\ud83e\udd8b", div:"Alt Pop", seed:1, stats:"The sunniest dark song ever", fact:"The sunniest-sounding song ever written about hard drugs \u2014 a bright, breathless pop-rock hit whose subject matter sailed right past most of the people singing along. The contrast between the upbeat melody and the bleak lyric is the whole trick, and it still works."},
+  {id:29, name:"Don't Speak",             from:"No Doubt \u00b7 1996",        emoji:"\ud83d\udc94", div:"Alt Pop", seed:2, stats:"16 weeks at #1", fact:"Gwen Stefani wrote it about breaking up with her own bandmate, which gives the heartbreak a brutal real-life edge. It sat at number one for sixteen weeks and turned No Doubt from a ska-punk club act into international stars almost overnight."},
+  {id:30, name:"Bullet With Butterfly Wings", from:"Smashing Pumpkins \u00b7 1995", emoji:"\ud83d\udc1b", div:"Alt Pop", seed:3, stats:"The cry of mid-90s disillusion", fact:"Billy Corgan's snarling war cry became the defining sound of mid-90s disillusionment \u2014 huge, angry, and theatrical. From the sprawling double album Mellon Collie, it captured a very specific brand of 90s rage that a whole generation recognized instantly."},
+  {id:31, name:"What's Up?",              from:"4 Non Blondes \u00b7 1992",    emoji:"\ud83c\udf99", div:"Alt Pop", seed:4, stats:"Linda Perry's inescapable hit", fact:"Linda Perry reportedly wrote it crying in a closet, and it became one of the most inescapable songs of the era \u2014 belted at karaoke nights to this day. The raw, searching vocal turned a moment of private frustration into a universal sing-along."}
+];
+
+const R16=[[0,3],[1,2],[4,7],[5,6],[8,11],[9,10],[12,15],[13,14],[16,19],[17,18],[20,23],[21,22],[24,27],[25,26],[28,31],[29,30]];
+const COUNTS=[16,8,4,2,1];
+const RLABELS=["Round of 32","Round of 16","Quarterfinal","Semifinal","The Final"];
+let results=[Array(16).fill(null),Array(8).fill(null),Array(4).fill(null),Array(2).fill(null),Array(1).fill(null)];
+let currentVote=null,selected=null,locked=false,askPrompt='';
+
+const ASK_ROOM=[
+  "Best song, or just the one you heard the most?",
+  "Does this one still hold up, or is it pure nostalgia?",
+  "Which losing track got robbed?",
+  "Heard it first on radio, MTV, or a burned CD?",
+  "Which of these would clear a dance floor today \u2014 in a good way?"
+];
+
+function getC(r,mi,slot){
+  if(r===0){const idx=R16[mi][slot];return ALL[idx];}
+  const prevMi=mi*2+slot,prevW=results[r-1][prevMi];
+  if(prevW===null)return null;
+  return ALL.find(c=>c.id===prevW);
+}
+function getCurrentRound(){for(let r=0;r<5;r++){for(let mi=0;mi<COUNTS[r];mi++){if(results[r][mi]===null){const a=getC(r,mi,0),b=getC(r,mi,1);if(a&&b)return r;}}};return 4;}
+function getNextActive(){const cr=getCurrentRound();for(let mi=0;mi<COUNTS[cr];mi++){if(results[cr][mi]===null){const a=getC(cr,mi,0),b=getC(cr,mi,1);if(a&&b)return{round:cr,mi};}}return null;}
+function totalVotes(){return results.flat().filter(v=>v!==null).length;}
+function fakeA(a,b){return Math.min(86,Math.max(20,50+(b.id-a.id)%17+(a.id%4)*2));}
+
+function render(){
+  const done=results[4][0]!==null;
+  if(done){const w=ALL.find(c=>c.id===results[4][0]);renderChampion(w);return;}
+  if(currentVote!==null){renderVote();return;}
+  renderBracket();
+}
+
+function renderBracket(){
+  document.getElementById('back-btn').style.display='none';
+  const cr=getCurrentRound(),next=getNextActive();
+  const divNames=["Grunge","Hip-Hop East","Pop","R&B/Soul","West Coast","Rock","Dance","Alt Pop"];
+  let html='<div class="core-q">Which 90s song is the greatest of all time?</div>';
+  html+='<div class="div-labels">';
+  divNames.forEach(d=>{html+=`<div class="div-label">${d}</div>`;});
+  html+='</div><div class="bracket-cols">';
+  for(let r=0;r<5;r++){
+    const count=COUNTS[r],maxH=[22,30,44,70,100][r],gap=[2,5,12,28,0][r];
+    html+=`<div class="bracket-col"><div class="col-label" style="color:${r===cr?'#e0408a':'#3a2040'}">${["R32","R16","QF","SF","Final"][r]}</div><div class="col-matches" style="gap:${gap}px">`;
+    for(let mi=0;mi<count;mi++){
+      const a=getC(r,mi,0),b=getC(r,mi,1),winner=results[r][mi];
+      const active=r===cr&&winner===null&&a&&b,done=winner!==null;
+      const cls=active?'active':done?'done':'empty';
+      const onclick=(active||done)?`onclick="startVote(${r},${mi})"`:'';
+      html+=`<div class="match-cell ${cls}" style="max-height:${maxH}px;${!active&&!done?'border:1px solid #1c0c1a':''}" ${onclick}>`;
+      [a,b].forEach((c,si)=>{
+        if(!c){html+=`<div class="tbd">—</div>`;return;}
+        const isW=winner===c.id,isL=done&&!isW;
+        const nm=c.name.split(' ').slice(0,r===0?2:3).join(' ');
+        html+=`${si===1?'<hr class="match-divider">':''}<div class="match-row ${isW?'winner':isL?'loser':''}"><span class="em">${c.emoji}</span><span class="nm">${nm}</span></div>`;
+      });
+      html+='</div>';
+    }
+    html+='</div></div>';
+  }
+  html+='</div>';
+  if(next)html+=`<div style="padding:14px 16px 0"><button class="vote-btn" onclick="startVote(${next.round},${next.mi})">Vote Next Matchup →</button><div class="vote-hint">Tap any gold-bordered match to vote</div></div>`;
+  document.getElementById('main').innerHTML=html;
+}
+
+function startVote(round,mi){currentVote={round,mi};selected=null;locked=false;const w=results[round][mi];if(w!==null){const a=getC(round,mi,0);selected=(a&&a.id===w)?'a':'b';}render();}
+
+function renderVote(){
+  document.getElementById('back-btn').style.display='block';
+  const{round,mi}=currentVote,a=getC(round,mi,0),b=getC(round,mi,1);
+  if(!a||!b){showBracket();return;}
+  const pA=fakeA(a,b),pB=100-pA,majority=selected?(selected==='a'?pA:pB)>=50:false;
+  const hint=!selected?"— Which one is the greatest? —":locked?"— Verdict locked! —":"— Tap to switch. Button to commit. —";
+  let html=`<div id="vote-screen"><div class="vote-header"><div class="round-label">${RLABELS[round]}</div><div class="vote-hint-text">${hint}</div></div>`;
+  [{side:'a',c:a,pct:pA},{side:'b',c:b,pct:pB}].forEach(({side,c,pct})=>{
+    const isSel=selected===side;
+    html+=`<div class="card${isSel?' selected':''}" onclick="selectCard('${side}')">`;
+    if(locked&&isSel)html+=`<div class="pct-bar" style="width:${pct}%"></div>`;
+    html+=`<div class="card-inner">
+      <div class="card-top">
+        <div class="card-emoji">${c.emoji}</div>
+        <div style="flex:1;min-width:0">
+          <div class="card-meta">${c.div} · ${c.from}</div>
+          <div class="card-name">${c.name}</div>
+        </div>
+        ${isSel&&!locked?'<div class="card-arrow">◀</div>':''}
+      </div>
+      <div class="card-tag">${c.seed === 1 ? '#1 SEED' : c.seed === 2 ? '#2 SEED' : c.seed === 3 ? '#3 SEED' : '#4 SEED'}</div>
+      <div class="card-stats">📊 ${c.stats}</div>
+      <div class="card-fact">${c.fact}</div>
+      ${locked&&isSel?`<div class="card-pct">${pct}%<span>voted this track</span><span class="check">✓</span></div>`:''}
+    </div></div>`;
+  });
+  if(selected&&!locked)html+=`<div class="commit-box"><div class="commit-hint">Still deciding? Tap the other card to compare.</div><button class="commit-btn" onclick="commitVote()">Lock In Verdict →</button></div>`;
+  if(locked){
+    html+=`<div class="result-box"><div class="${majority?'result-majority':'result-minority'}">${majority?'✓ With the majority':'🔥 Against the crowd'}</div>
+      <div class="ask-room" style="margin-top:14px;padding-top:14px;border-top:1px dashed #4a2850"><div style="font-size:9px;letter-spacing:3px;color:#a01860;text-transform:uppercase;margin-bottom:6px">Ask the Room</div><div style="font-size:15px;color:#f8d8ec;font-style:italic;line-height:1.4">${askPrompt}</div></div>
+    </div>
+    <button class="next-btn" onclick="advance()">Vote Next Matchup →</button>`;
+  }
+  html+='</div>';
+  document.getElementById('main').innerHTML=html;
+}
+
+function selectCard(side){if(locked)return;selected=side;renderVote();}
+function commitVote(){
+  if(!selected||locked)return;
+  locked=true;
+  askPrompt=ASK_ROOM[Math.floor(Math.random()*ASK_ROOM.length)];
+  const{round,mi}=currentVote,a=getC(round,mi,0),b=getC(round,mi,1);
+  results[round][mi]=selected==='a'?a.id:b.id;
+  renderVote();
+  document.getElementById('counter').textContent=totalVotes()+'/31';
+}
+function advance(){currentVote=null;locked=false;selected=null;render();}
+function showBracket(){currentVote=null;selected=null;locked=false;render();}
+function renderChampion(c){
+  document.getElementById('back-btn').style.display='none';
+  document.getElementById('main').innerHTML=`
+    <div id="champion-screen">
+      <div style="font-size:44px;margin-bottom:6px">🏆</div>
+      <div class="champ-emoji">${c.emoji}</div>
+      <div class="champ-trophy">Greatest 90s Song of All Time</div>
+      <div class="champ-name">${c.name}</div>
+      <div class="champ-from">${c.from}</div>
+      <div style="display:inline-block;margin:10px 0 6px;padding:4px 16px;border-radius:20px;background:#e0408a;color:#0a0610;font-size:11px;font-weight:700;letter-spacing:1px">YOUR VERDICT</div>
+      <div class="champ-fact">${c.fact}</div>
+      <button class="reset-btn" onclick="resetGame()">Run It Back</button>
+    </div>`;
+}
+function resetGame(){results=[Array(16).fill(null),Array(8).fill(null),Array(4).fill(null),Array(2).fill(null),Array(1).fill(null)];currentVote=null;selected=null;locked=false;render();}
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VERDICT — 80s Kids Character Draft</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #08060f; color: #f4eaff; font-family: Georgia, 'Times New Roman', serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
+  #app { width: 100%; max-width: 560px; min-height: 100vh; display: flex; flex-direction: column; }
+  header { padding: 16px 20px 12px; border-bottom: 1px solid #1e0e2e; display: flex; align-items: center; justify-content: space-between; background: #0e0820; }
+  .title { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; color: #ff3ca6; }
+  .subtitle { font-size: 9px; color: #35c7ff; letter-spacing: 2px; text-transform: uppercase; margin-top: 2px; }
+  .counter { font-size: 10px; color: #2a1840; background: #140a28; border: 1px solid #1e0e2e; border-radius: 16px; padding: 4px 10px; }
+  .back-btn { background: transparent; border: 1px solid #1e0e2e; border-radius: 8px; padding: 5px 10px; color: #2a1840; font-size: 11px; cursor: pointer; font-family: Georgia, serif; }
+  #main { flex: 1; padding: 14px 0; }
+  .core-q { text-align: center; font-size: 12px; color: #35c7ff; font-style: italic; padding: 4px 20px 0; line-height: 1.4; }
+  .div-labels { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px; margin: 10px 10px 8px; }
+  .div-label { font-size: 6.5px; color: #2a1840; text-align: center; padding: 3px 2px; background: #140a28; border-radius: 4px; }
+  .bracket-cols { display: flex; gap: 3px; padding: 0 10px; }
+  .bracket-col { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+  .col-label { font-size: 7px; letter-spacing: 1.5px; text-transform: uppercase; text-align: center; margin-bottom: 5px; }
+  .col-matches { display: flex; flex-direction: column; justify-content: space-around; height: 380px; }
+  .match-cell { border-radius: 5px; overflow: hidden; cursor: default; flex: 1; transition: border-color 0.2s; }
+  .match-cell.active { border: 1px solid #ff3ca6 !important; background: #160a26 !important; cursor: pointer; }
+  .match-cell.done { border: 1px solid #2a1238 !important; background: #100820 !important; cursor: pointer; }
+  .match-cell.empty { border: 1px solid #140a28; background: #08060f; }
+  .match-row { display: flex; align-items: center; gap: 2px; padding: 2px 3px; transition: opacity 0.3s; }
+  .match-row.loser { opacity: 0.22; }
+  .match-row.winner { background: rgba(255,60,166,0.14); }
+  .match-row .em { font-size: 8px; }
+  .match-row .nm { font-size: 7px; color: #2a1840; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 400; }
+  .match-row.winner .nm { color: #ff3ca6; font-weight: 700; }
+  .match-divider { border: none; border-top: 1px solid #160a26; margin: 0; }
+  .tbd { padding: 2px 3px; font-size: 6px; color: #1a1028; }
+  .vote-btn { width: 100%; padding: 14px; background: linear-gradient(135deg, #ff3ca6, #8f5cff); border: none; border-radius: 12px; color: #08060f; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; margin-top: 14px; }
+  .vote-hint { font-size: 10px; color: #2a1840; text-align: center; margin-top: 6px; }
+  #vote-screen { padding: 0 16px; animation: fadeUp 0.3s ease; }
+  .vote-header { text-align: center; margin-bottom: 16px; }
+  .round-label { font-size: 10px; letter-spacing: 3px; color: #ff3ca6; text-transform: uppercase; margin-bottom: 3px; }
+  .vote-hint-text { font-size: 11px; color: #2a1840; letter-spacing: 1px; }
+  .card { display: block; width: 100%; margin-bottom: 10px; border-radius: 14px; padding: 16px 18px; cursor: pointer; text-align: left; transition: all 0.25s; position: relative; overflow: hidden; border: 2px solid #1e0e2e; background: #100820; }
+  .card.selected { border-color: #ff3ca6 !important; background: #1a0e30 !important; transform: scale(1.01); }
+  .card-inner { position: relative; z-index: 1; }
+  .card-top { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 8px; }
+  .card-emoji { font-size: 34px; margin-top: 2px; flex-shrink: 0; }
+  .card-meta { font-size: 9px; color: #35c7ff; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 2px; }
+  .card-name { font-size: 18px; font-weight: 700; color: #2a1c40; line-height: 1.2; margin-bottom: 2px; transition: color 0.2s; }
+  .card.selected .card-name { color: #f4eaff; }
+  .card-from { font-size: 10px; color: #1c1230; font-style: italic; transition: color 0.2s; }
+  .card.selected .card-from { color: #8f5cff; }
+  .card-tag { display: inline-block; margin-top: 8px; padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 700; background: #1e0e2e; color: #35c7ff; letter-spacing: 1px; }
+  .card.selected .card-tag { background: #35c7ff; color: #08060f; }
+  .card-fact { font-size: 12px; color: #1c1230; line-height: 1.75; transition: color 0.2s; margin-top: 10px; }
+  .card.selected .card-fact { color: #9070c0; }
+  .card-arrow { font-size: 16px; color: #ff3ca6; margin-left: auto; flex-shrink: 0; }
+  .card-pct { font-size: 20px; font-weight: 700; color: #ff3ca6; margin-top: 10px; }
+  .card-pct span { font-size: 12px; font-weight: 400; color: #2a1c40; margin-left: 6px; }
+  .card-pct .check { color: #ff3ca6; margin-left: 8px; }
+  .pct-bar { position: absolute; top: 0; left: 0; height: 100%; background: rgba(255,60,166,0.06); transition: width 0.9s cubic-bezier(.4,0,.2,1); z-index: 0; }
+  .commit-box { padding: 14px 18px; background: #100820; border: 1px solid #1e0e2e; border-radius: 12px; text-align: center; animation: fadeUp 0.3s ease; }
+  .commit-hint { font-size: 11px; color: #2a1840; margin-bottom: 10px; font-style: italic; }
+  .commit-btn { padding: 12px 32px; background: linear-gradient(135deg, #ff3ca6, #8f5cff); border: none; border-radius: 10px; color: #08060f; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+  .result-box { padding: 16px 18px; background: #100820; border: 1px solid #1e0e2e; border-radius: 12px; text-align: center; margin-top: 2px; animation: fadeUp 0.3s ease; }
+  .result-majority { font-size: 13px; color: #7ec8a0; font-weight: 700; letter-spacing: 1px; }
+  .result-minority { font-size: 13px; color: #35c7ff; font-weight: 700; letter-spacing: 1px; }
+  .ask-room { margin-top: 14px; padding-top: 14px; border-top: 1px dashed #2a1840; }
+  .ask-room-label { font-size: 9px; letter-spacing: 3px; color: #35c7ff; text-transform: uppercase; margin-bottom: 6px; }
+  .ask-room-prompt { font-size: 15px; color: #e0d0f4; font-style: italic; line-height: 1.4; }
+  .next-btn { width: 100%; margin-top: 14px; padding: 14px; background: linear-gradient(135deg, #ff3ca6, #8f5cff); border: none; border-radius: 12px; color: #08060f; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+  #champion-screen { text-align: center; padding: 36px 24px; animation: fadeUp 0.5s ease; }
+  .champ-emoji { font-size: 76px; margin-bottom: 8px; }
+  .champ-trophy { font-size: 11px; letter-spacing: 4px; color: #ff3ca6; text-transform: uppercase; margin-bottom: 8px; }
+  .champ-name { font-size: 26px; font-weight: 700; color: #f4eaff; margin-bottom: 4px; }
+  .champ-from { font-size: 13px; color: #35c7ff; font-style: italic; margin-bottom: 4px; }
+  .champ-fact { font-size: 13px; color: #5a4070; font-style: italic; max-width: 310px; margin: 14px auto 28px; line-height: 1.8; }
+  .reset-btn { padding: 14px 32px; background: linear-gradient(135deg, #ff3ca6, #8f5cff); border: none; border-radius: 12px; color: #08060f; font-size: 14px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  button:active { filter: brightness(0.88); }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div>
+      <a href="index.html" class="title" style="text-decoration:none;cursor:pointer" title="All brackets">VERDICT</a>
+      <div class="subtitle">80s Kids Character Draft</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="back-btn" id="back-btn" style="display:none" onclick="showBracket()">← Bracket</button>
+      <div class="counter" id="counter">0/31</div>
+    </div>
+  </header>
+  <div id="main"></div>
+</div>
+
+<script>
+const ALL = [
+  // DIVISION 1 — SATURDAY MORNING HEROES
+  {id:0, name:"Leonardo", from:"Teenage Mutant Ninja Turtles", emoji:"🐢", div:"Saturday Morning Heroes", tag:"LEADER TURTLE", fact:"The responsible turtle with swords, discipline, and just enough big-brother energy to keep the chaos moving."},
+  {id:1, name:"Optimus Prime", from:"Transformers", emoji:"🚛", div:"Saturday Morning Heroes", tag:"AUTOBOT LEGEND", fact:"If your childhood needed one voice telling you to be brave and do the right thing, it was Optimus."},
+  {id:2, name:"He-Man", from:"Masters of the Universe", emoji:"⚔", div:"Saturday Morning Heroes", tag:"BY THE POWER", fact:"The haircut, the sword, the muscles, the tiger. Subtle? No. Iconic? Absolutely."},
+  {id:3, name:"Lion-O", from:"ThunderCats", emoji:"🦁", div:"Saturday Morning Heroes", tag:"SIGHT BEYOND SIGHT", fact:"Sword, claw shield, battle cry, and enough dramatic energy to make every living room feel like a quest."},
+  // DIVISION 2 — CARTOON CHAOS
+  {id:4, name:"Michelangelo", from:"Teenage Mutant Ninja Turtles", emoji:"🍕", div:"Cartoon Chaos", tag:"PARTY DUDE", fact:"Nunchucks, pizza, jokes, and the exact energy every kid wanted in their friend group."},
+  {id:5, name:"Garfield", from:"Garfield and Friends", emoji:"🐱", div:"Cartoon Chaos", tag:"LASAGNA KING", fact:"Lazy, sarcastic, food-motivated, and somehow still the most relatable creature on television."},
+  {id:6, name:"Scooby-Doo", from:"Scooby-Doo", emoji:"🐶", div:"Cartoon Chaos", tag:"RELUCTANT HERO", fact:"Terrified of everything, useful by accident, and loyal enough to run into danger for a sandwich."},
+  {id:7, name:"Inspector Gadget", from:"Inspector Gadget", emoji:"🕵", div:"Cartoon Chaos", tag:"GO GO CHAOS", fact:"Completely incompetent, endlessly equipped, and saved by everyone around him. Still unforgettable."},
+  // DIVISION 3 — MOVIE LEGENDS
+  {id:8, name:"Marty McFly", from:"Back to the Future", emoji:"🎸", div:"Movie Legends", tag:"TIMELINE TROUBLE", fact:"Denim jacket, skateboard, guitar, time machine. The whole childhood fantasy in one person."},
+  {id:9, name:"Indiana Jones", from:"Indiana Jones", emoji:"🤠", div:"Movie Legends", tag:"ADVENTURE MODE", fact:"Whip, hat, ancient traps, and the ability to make archaeology look like a contact sport."},
+  {id:10, name:"Elliott & E.T.", from:"E.T.", emoji:"🌕", div:"Movie Legends", tag:"PHONE HOME", fact:"Friendship, bicycles, glowing fingers, and the kind of childhood magic that still hits."},
+  {id:11, name:"The Goonies", from:"The Goonies", emoji:"🗺", div:"Movie Legends", tag:"NEVER SAY DIE", fact:"Not one hero — a whole squad of weird kids chasing treasure like summer vacation depended on it."},
+  // DIVISION 4 — TOY AISLE ROYALTY
+  {id:12, name:"Snake Eyes", from:"G.I. Joe", emoji:"🥷", div:"Toy Aisle Royalty", tag:"SILENT LEGEND", fact:"Ninja commando, black visor, zero wasted words. Every kid knew he was cooler than everyone else."},
+  {id:13, name:"Skeletor", from:"Masters of the Universe", emoji:"💀", div:"Toy Aisle Royalty", tag:"EVIL CACKLE", fact:"The villain voice, the skull face, the weird confidence. Terrible plans, elite presence."},
+  {id:14, name:"Grimlock", from:"Transformers", emoji:"🦖", div:"Toy Aisle Royalty", tag:"ME GRIMLOCK", fact:"Robot dinosaur. That is the argument. Everything else is paperwork."},
+  {id:15, name:"Cobra Commander", from:"G.I. Joe", emoji:"🐍", div:"Toy Aisle Royalty", tag:"GLORIOUS FAILURE", fact:"Somehow both threatening and ridiculous, which is exactly why he stuck in your brain."},
+  // DIVISION 5 — VIDEO GAME & ARCADE ICONS
+  {id:16, name:"Mario", from:"Super Mario Bros.", emoji:"🍄", div:"Arcade Icons", tag:"JUMP MAN", fact:"The plumber who turned every living room into a kingdom, one cartridge at a time."},
+  {id:17, name:"Link", from:"The Legend of Zelda", emoji:"🗡", div:"Arcade Icons", tag:"HYRULE HERO", fact:"Sword, shield, secrets, adventure — the kid who wanted a quest picked Link."},
+  {id:18, name:"Pac-Man", from:"Pac-Man", emoji:"🟡", div:"Arcade Icons", tag:"WAKA WAKA", fact:"Simple, weird, perfect. He ate dots and ghosts and somehow became immortal."},
+  {id:19, name:"Donkey Kong", from:"Donkey Kong", emoji:"🦍", div:"Arcade Icons", tag:"BARREL BOSS", fact:"Big, loud, impossible to ignore, and responsible for half the arcade rage of the decade."},
+  // DIVISION 6 — GIRL POWER & WILD CARDS
+  {id:20, name:"She-Ra", from:"She-Ra", emoji:"🗡", div:"Girl Power", tag:"PRINCESS OF POWER", fact:"She was not the side character. She had the sword, the power, and the whole kingdom watching."},
+  {id:21, name:"Jem", from:"Jem and the Holograms", emoji:"🎤", div:"Girl Power", tag:"TRULY OUTRAGEOUS", fact:"Rock star, secret identity, holograms, fashion, drama. Maximum '80s in one package."},
+  {id:22, name:"Rainbow Brite", from:"Rainbow Brite", emoji:"🌈", div:"Girl Power", tag:"COLOR POWER", fact:"Cute, bright, magical, and secretly carrying an entire universe's emotional lighting system."},
+  {id:23, name:"Punky Brewster", from:"Punky Brewster", emoji:"👟", div:"Girl Power", tag:"PURE SPUNK", fact:"Mismatched shoes, huge heart, and the kind of kid confidence adults wish they still had."},
+  // DIVISION 7 — CEREAL BOX & COMMERCIAL GODS
+  {id:24, name:"Tony the Tiger", from:"Frosted Flakes", emoji:"🐯", div:"Commercial Gods", tag:"THEY'RE GRRREAT", fact:"Not just a mascot. A motivational speaker with stripes."},
+  {id:25, name:"Kool-Aid Man", from:"Kool-Aid", emoji:"🧱", div:"Commercial Gods", tag:"OH YEAH", fact:"He solved every problem by exploding through a wall. Hard to argue with results."},
+  {id:26, name:"The Noid", from:"Domino's", emoji:"🍕", div:"Commercial Gods", tag:"AVOID HIM", fact:"Deeply weird, aggressively memorable, and proof the '80s let commercials get strange."},
+  {id:27, name:"California Raisins", from:"Commercials", emoji:"🎶", div:"Commercial Gods", tag:"CLAYMATION SOUL", fact:"Singing raisins should not have worked. They did anyway. The decade was not normal."},
+  // DIVISION 8 — DEEP CUTS & SLEEPER PICKS
+  {id:28, name:"MacGyver", from:"MacGyver", emoji:"🧷", div:"Deep Cuts", tag:"PAPERCLIP MIRACLE", fact:"Give him gum, string, and thirty seconds. Suddenly your garage is a helicopter."},
+  {id:29, name:"ALF", from:"ALF", emoji:"👽", div:"Deep Cuts", tag:"CAT PROBLEM", fact:"An alien puppet with sitcom timing and deeply questionable eating habits. Somehow beloved."},
+  {id:30, name:"Slimer", from:"Ghostbusters", emoji:"👻", div:"Deep Cuts", tag:"GREEN MENACE", fact:"Gross, chaotic, weirdly lovable, and impossible to keep off the lunchbox."},
+  {id:31, name:"Falkor", from:"The NeverEnding Story", emoji:"🐉", div:"Deep Cuts", tag:"LUCK DRAGON", fact:"Gentle, strange, majestic, and exactly the creature every kid wanted to ride through the clouds."},
+];
+
+const ASK_ROOM = [
+  "Was that nostalgia, usefulness, or pure playground loyalty?",
+  "Who would you have traded lunch for as a kid?",
+  "Defend your pick like it's recess and everyone is listening.",
+  "Who would your 10-year-old self choose without hesitation?",
+  "Did you pick the cooler character or the better teammate?",
+  "Who caused more bedroom-poster-level devotion?",
+  "Who would start the better Saturday morning adventure?",
+];
+
+const R16=[[0,3],[1,2],[4,7],[5,6],[8,11],[9,10],[12,15],[13,14],[16,19],[17,18],[20,23],[21,22],[24,27],[25,26],[28,31],[29,30]];
+const COUNTS=[16,8,4,2,1];
+const RLABELS=["Round of 32","Round of 16","Quarterfinals","Semifinals","The Final"];
+
+let results=[Array(16).fill(null),Array(8).fill(null),Array(4).fill(null),Array(2).fill(null),Array(1).fill(null)];
+let currentVote=null,selected=null,locked=false,askPrompt="";
+
+function getC(r,mi,slot){if(r===0)return ALL[R16[mi][slot]];const prev=mi*2+slot;const wid=results[r-1][prev];return wid!=null?ALL[wid]:null;}
+function getCurrentRound(){for(let r=0;r<5;r++)if(results[r].some(w=>w===null))return r;return 5;}
+function getNextActive(){const cr=getCurrentRound();if(cr>=5)return null;for(let mi=0;mi<COUNTS[cr];mi++){if(results[cr][mi]===null){const a=getC(cr,mi,0),b=getC(cr,mi,1);if(a&&b)return{round:cr,mi};}}return null;}
+function totalVotes(){return results.flat().filter(v=>v!==null).length;}
+function fakeA(a,b){return Math.min(86,Math.max(20,50+(b.id-a.id)%17+(a.id%4)*2));}
+
+function render(){
+  document.getElementById('counter').textContent=totalVotes()+'/31';
+  const cr=getCurrentRound();
+  if(cr===5&&results[4][0]!==null)renderChampion(ALL[results[4][0]]);
+  else if(currentVote)renderVote();
+  else renderBracket();
+}
+
+function renderBracket(){
+  document.getElementById('back-btn').style.display='none';
+  const cr=getCurrentRound(),next=getNextActive();
+  const divNames=["Sat. AM","Cartoon Chaos","Movies","Toy Aisle","Arcade","Girl Power","Commercials","Deep Cuts"];
+  let html='<div class="core-q">Who belongs on your ultimate \u201980s childhood dream team?</div>';
+  html+='<div class="div-labels">';
+  divNames.forEach(d=>{html+=`<div class="div-label">${d}</div>`;});
+  html+='</div><div class="bracket-cols">';
+  for(let r=0;r<5;r++){
+    const count=COUNTS[r],maxH=[22,30,44,70,100][r],gap=[2,5,12,28,0][r];
+    html+=`<div class="bracket-col"><div class="col-label" style="color:${r===cr?'#ff3ca6':'#1e0e2e'}">${["R32","R16","QF","SF","Final"][r]}</div><div class="col-matches" style="gap:${gap}px">`;
+    for(let mi=0;mi<count;mi++){
+      const a=getC(r,mi,0),b=getC(r,mi,1),winner=results[r][mi];
+      const active=r===cr&&winner===null&&a&&b,done=winner!==null;
+      const cls=active?'active':done?'done':'empty';
+      const onclick=(active||done)?`onclick="startVote(${r},${mi})"`:'';
+      html+=`<div class="match-cell ${cls}" style="max-height:${maxH}px;${!active&&!done?'border:1px solid #140a28':''}" ${onclick}>`;
+      [a,b].forEach((c,si)=>{
+        if(!c){html+=`<div class="tbd">—</div>`;return;}
+        const isW=winner===c.id,isL=done&&!isW;
+        const nm=c.name.split(' ').slice(0,r===0?2:3).join(' ');
+        html+=`${si===1?'<hr class="match-divider">':''}<div class="match-row ${isW?'winner':isL?'loser':''}"><span class="em">${c.emoji}</span><span class="nm">${nm}</span></div>`;
+      });
+      html+='</div>';
+    }
+    html+='</div></div>';
+  }
+  html+='</div>';
+  if(next)html+=`<div style="padding:14px 16px 0"><button class="vote-btn" onclick="startVote(${next.round},${next.mi})">Vote Next Matchup →</button><div class="vote-hint">Tap any pink-bordered match to vote</div></div>`;
+  document.getElementById('main').innerHTML=html;
+}
+
+function startVote(round,mi){currentVote={round,mi};selected=null;locked=false;const w=results[round][mi];if(w!==null){const a=getC(round,mi,0);selected=(a&&a.id===w)?'a':'b';}render();}
+
+function renderVote(){
+  document.getElementById('back-btn').style.display='block';
+  const{round,mi}=currentVote,a=getC(round,mi,0),b=getC(round,mi,1);
+  if(!a||!b){showBracket();return;}
+  const pA=fakeA(a,b),pB=100-pA,majority=selected?(selected==='a'?pA:pB)>=50:false;
+  const hint=!selected?"— Make your pick. —":locked?"— Pick locked! —":"— Tap to switch. Button to draft them. —";
+  let html=`<div id="vote-screen"><div class="vote-header"><div class="round-label">${RLABELS[round]}</div><div class="vote-hint-text">${hint}</div></div>`;
+  [{side:'a',c:a,pct:pA},{side:'b',c:b,pct:pB}].forEach(({side,c,pct})=>{
+    const isSel=selected===side;
+    html+=`<div class="card${isSel?' selected':''}" onclick="selectCard('${side}')">`;
+    if(locked&&isSel)html+=`<div class="pct-bar" style="width:${pct}%"></div>`;
+    html+=`<div class="card-inner">
+      <div class="card-top">
+        <div class="card-emoji">${c.emoji}</div>
+        <div style="flex:1;min-width:0">
+          <div class="card-meta">${c.div}</div>
+          <div class="card-name">${c.name}</div>
+          <div class="card-from">${c.from}</div>
+        </div>
+        ${isSel&&!locked?'<div class="card-arrow">◀</div>':''}
+      </div>
+      <div class="card-tag">${c.tag}</div>
+      <div class="card-fact">${c.fact}</div>
+      ${locked&&isSel?`<div class="card-pct">${pct}%<span>drafted this pick</span><span class="check">✓</span></div>`:''}
+    </div></div>`;
+  });
+  if(selected&&!locked)html+=`<div class="commit-box"><div class="commit-hint">Still deciding? Tap the other one to compare.</div><button class="commit-btn" onclick="commitVote()">Lock In Verdict →</button></div>`;
+  if(locked){
+    html+=`<div class="result-box"><div class="${majority?'result-majority':'result-minority'}">${majority?'✓ With the majority':'🔥 Against the crowd'}</div>
+      <div class="ask-room"><div class="ask-room-label">🗣 Ask the Room</div><div class="ask-room-prompt">${askPrompt}</div></div>
+    </div>
+    <button class="next-btn" onclick="advance()">Vote Next Matchup →</button>`;
+  }
+  html+='</div>';
+  document.getElementById('main').innerHTML=html;
+}
+
+function selectCard(side){if(locked)return;selected=side;renderVote();}
+function commitVote(){
+  if(!selected||locked)return;
+  locked=true;
+  askPrompt=ASK_ROOM[Math.floor(Math.random()*ASK_ROOM.length)];
+  const{round,mi}=currentVote,a=getC(round,mi,0),b=getC(round,mi,1);
+  results[round][mi]=selected==='a'?a.id:b.id;
+  renderVote();
+  document.getElementById('counter').textContent=totalVotes()+'/31';
+}
+function advance(){currentVote=null;locked=false;selected=null;render();}
+function showBracket(){currentVote=null;selected=null;locked=false;render();}
+function renderChampion(c){
+  document.getElementById('back-btn').style.display='none';
+  document.getElementById('main').innerHTML=`
+    <div id="champion-screen">
+      <div style="font-size:44px;margin-bottom:6px">🏆</div>
+      <div class="champ-emoji">${c.emoji}</div>
+      <div class="champ-trophy">Your '80s Dream Team Captain Is…</div>
+      <div class="champ-name">${c.name}</div>
+      <div class="champ-from">${c.from}</div>
+      <div style="display:inline-block;margin:10px 0 6px;padding:4px 16px;border-radius:20px;background:#35c7ff;color:#08060f;font-size:11px;font-weight:700;letter-spacing:1px">${c.tag}</div>
+      <div class="champ-fact">${c.fact}</div>
+      <button class="reset-btn" onclick="resetGame()">Draft Again</button>
+    </div>`;
+}
+function resetGame(){results=[Array(16).fill(null),Array(8).fill(null),Array(4).fill(null),Array(2).fill(null),Array(1).fill(null)];currentVote=null;selected=null;locked=false;render();}
+render();
+</script>
+</body>
+</html>

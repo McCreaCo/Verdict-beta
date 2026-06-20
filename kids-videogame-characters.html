@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VERDICT — The 32 Greatest Video Game Characters Ever</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0a0618; color: #f8f0ff; font-family: 'Georgia', 'Times New Roman', serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
+  #app { width: 100%; max-width: 560px; min-height: 100vh; display: flex; flex-direction: column; }
+  header { padding: 16px 20px 12px; border-bottom: 1px solid #1a0e30; display: flex; align-items: center; justify-content: space-between; background: #0c0820; }
+  .title { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; color: #f8d030; }
+  .subtitle { font-size: 9px; color: #a060ff; letter-spacing: 2px; text-transform: uppercase; margin-top: 2px; }
+  .counter { font-size: 10px; color: #2a1848; background: #100c28; border: 1px solid #1a0e30; border-radius: 16px; padding: 4px 10px; }
+  .back-btn { background: transparent; border: 1px solid #1a0e30; border-radius: 8px; padding: 5px 10px; color: #2a1848; font-size: 11px; cursor: pointer; font-family: Georgia, serif; }
+  #main { flex: 1; padding: 14px 0; }
+  .div-labels { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px; margin: 0 10px 8px; }
+  .div-label { font-size: 7px; color: #2a1848; text-align: center; padding: 3px 2px; background: #100c28; border-radius: 4px; }
+  .bracket-cols { display: flex; gap: 3px; padding: 0 10px; }
+  .bracket-col { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+  .col-label { font-size: 7px; letter-spacing: 1.5px; text-transform: uppercase; text-align: center; margin-bottom: 5px; }
+  .col-matches { display: flex; flex-direction: column; justify-content: space-around; height: 380px; }
+  .match-cell { border-radius: 5px; overflow: hidden; cursor: default; flex: 1; transition: border-color 0.2s; }
+  .match-cell.active { border: 1px solid #f8d030 !important; background: #100c28 !important; cursor: pointer; }
+  .match-cell.done { border: 1px solid #1e1040 !important; background: #0c0820 !important; cursor: pointer; }
+  .match-cell.empty { border: 1px solid #100c28; background: #0a0618; }
+  .match-row { display: flex; align-items: center; gap: 2px; padding: 2px 3px; transition: opacity 0.3s; }
+  .match-row.loser { opacity: 0.22; }
+  .match-row.winner { background: rgba(248,208,48,0.12); }
+  .match-row .em { font-size: 8px; }
+  .match-row .nm { font-size: 7px; color: #2a1848; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 400; }
+  .match-row.winner .nm { color: #f8d030; font-weight: 700; }
+  .match-divider { border: none; border-top: 1px solid #140a24; margin: 0; }
+  .tbd { padding: 2px 3px; font-size: 6px; color: #161028; }
+  .vote-btn { width: 100%; padding: 14px; background: linear-gradient(135deg, #f8d030, #e08000); border: none; border-radius: 12px; color: #0a0618; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; margin-top: 14px; }
+  .vote-hint { font-size: 10px; color: #1a0e30; text-align: center; margin-top: 6px; }
+  #vote-screen { padding: 0 16px; animation: fadeUp 0.3s ease; }
+  .vote-header { text-align: center; margin-bottom: 16px; }
+  .round-label { font-size: 10px; letter-spacing: 3px; color: #f8d030; text-transform: uppercase; margin-bottom: 3px; }
+  .vote-hint-text { font-size: 11px; color: #2a1848; letter-spacing: 1px; }
+  .card { display: block; width: 100%; margin-bottom: 10px; border-radius: 14px; padding: 16px 18px; cursor: pointer; text-align: left; transition: all 0.25s; position: relative; overflow: hidden; border: 2px solid #1a0e30; background: #0e0a20; }
+  .card.selected { border-color: #f8d030 !important; background: #1a1030 !important; transform: scale(1.01); }
+  .card-inner { position: relative; z-index: 1; }
+  .card-top { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 8px; }
+  .card-emoji { font-size: 34px; margin-top: 2px; flex-shrink: 0; }
+  .card-meta { font-size: 9px; color: #a060ff; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 2px; }
+  .card-name { font-size: 18px; font-weight: 700; color: #3a2860; line-height: 1.2; margin-bottom: 2px; transition: color 0.2s; }
+  .card.selected .card-name { color: #f8f0ff; }
+  .card-from { font-size: 10px; color: #201438; font-style: italic; transition: color 0.2s; }
+  .card.selected .card-from { color: #8050c0; }
+  .card-fact { font-size: 12px; color: #201438; line-height: 1.75; transition: color 0.2s; }
+  .card.selected .card-fact { color: #9070c0; }
+  .card-power { display: inline-block; margin-top: 8px; padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 700; background: #1a0e30; color: #a060ff; letter-spacing: 1px; }
+  .card.selected .card-power { background: #f8d030; color: #0a0618; }
+  .card-arrow { font-size: 16px; color: #f8d030; margin-left: auto; flex-shrink: 0; }
+  .card-pct { font-size: 20px; font-weight: 700; color: #f8d030; margin-top: 10px; }
+  .card-pct span { font-size: 12px; font-weight: 400; color: #3a2860; margin-left: 6px; }
+  .card-pct .check { color: #f8d030; margin-left: 8px; }
+  .pct-bar { position: absolute; top: 0; left: 0; height: 100%; background: rgba(248,208,48,0.06); transition: width 0.9s cubic-bezier(.4,0,.2,1); z-index: 0; }
+  .commit-box { padding: 14px 18px; background: #0e0a20; border: 1px solid #1a0e30; border-radius: 12px; text-align: center; animation: fadeUp 0.3s ease; }
+  .commit-hint { font-size: 11px; color: #2a1848; margin-bottom: 10px; font-style: italic; }
+  .commit-btn { padding: 12px 32px; background: linear-gradient(135deg, #f8d030, #e08000); border: none; border-radius: 10px; color: #0a0618; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+  .result-box { padding: 14px 18px; background: #0e0a20; border: 1px solid #1a0e30; border-radius: 12px; text-align: center; margin-top: 2px; }
+  .result-majority { font-size: 13px; letter-spacing: 1px; color: #7ec8a0; font-weight: 700; }
+  .result-minority { font-size: 13px; letter-spacing: 1px; color: #f0a030; font-weight: 700; }
+  #champion-screen { text-align: center; padding: 36px 24px; animation: fadeUp 0.5s ease; }
+  .champ-emoji { font-size: 72px; margin-bottom: 12px; }
+  .champ-trophy { font-size: 14px; letter-spacing: 4px; color: #f8d030; text-transform: uppercase; margin-bottom: 8px; }
+  .champ-name { font-size: 26px; font-weight: 700; color: #f8f0ff; margin-bottom: 4px; }
+  .champ-from { font-size: 13px; color: #a060ff; font-style: italic; margin-bottom: 4px; }
+  .champ-meta { font-size: 11px; color: #2a1848; margin-bottom: 16px; }
+  .champ-fact { font-size: 13px; color: #3a2860; font-style: italic; max-width: 310px; margin: 0 auto 28px; line-height: 1.8; }
+  .reset-btn { padding: 14px 32px; background: linear-gradient(135deg, #f8d030, #e08000); border: none; border-radius: 12px; color: #0a0618; font-size: 14px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  button:active { filter: brightness(0.88); }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div>
+      <a href="index.html" class="title" style="text-decoration:none;cursor:pointer" title="All brackets">VERDICT</a>
+      <div class="subtitle">Greatest Video Game Characters Ever</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="back-btn" id="back-btn" style="display:none" onclick="showBracket()">← Bracket</button>
+      <div class="counter" id="counter">0/31</div>
+    </div>
+  </header>
+  <div id="main"></div>
+</div>
+
+<script>
+const ALL = [
+  // NINTENDO LEGENDS
+  {id:0,  name:"Mario",           from:"Super Mario Bros · Nintendo",     emoji:"🍄", div:"Nintendo Legends",  seed:1, power:"JUMP MASTER",    fact:"Mario has appeared in over 200 video games — more than any character in history. He started as Jumpman in Donkey Kong in 1981. Nintendo's creator Shigeru Miyamoto named him after their warehouse landlord. The most recognizable video game character on Earth was named after a real person who just wanted his rent paid on time."},
+  {id:1,  name:"Link",            from:"The Legend of Zelda · Nintendo",  emoji:"🗡", div:"Nintendo Legends",  seed:2, power:"CHOSEN HERO",     fact:"Link has saved Hyrule across 19 different games spanning 40 years — and he never says a single word in any of them. His name is Link because he's meant to be the link between the player and the game. You aren't watching a hero. You are the hero. That idea changed how video games work forever."},
+  {id:2,  name:"Kirby",           from:"Kirby · Nintendo",                emoji:"🌸", div:"Nintendo Legends",  seed:3, power:"COPY ABILITY",    fact:"Kirby can swallow any enemy and copy their power. Fire, ice, sword, laser — Kirby absorbs it all. He was created by Masahiro Sakurai when he was just 19 years old. Kirby was meant to be a placeholder character that got replaced later. Nintendo kept him because he was too good. The most powerful stomach in gaming history belongs to a pink puffball from Dream Land."},
+  {id:3,  name:"Donkey Kong",     from:"Donkey Kong · Nintendo",          emoji:"🍌", div:"Nintendo Legends",  seed:4, power:"GROUND POUND",    fact:"Donkey Kong was the very first video game to have a story. Before DK, games just went forever. He was also the game that launched Mario — then called Jumpman — into history. DK started as the villain throwing barrels at a plumber. He eventually got his own franchise, his own island, and his own banana hoard. Best villain-to-hero glow-up in gaming."},
+
+  // SEGA & SONIC
+  {id:4,  name:"Sonic",           from:"Sonic the Hedgehog · Sega",       emoji:"💨", div:"Speed & Attitude",  seed:1, power:"SUPERSONIC SPEED", fact:"Sonic was created specifically to compete with Mario — Sega needed a mascot who felt faster and cooler. His original design had fangs and was playing in a rock band. They simplified him, kept the attitude, and created the second most recognizable video game character ever. Sonic runs faster than sound. That's not a superpower in the game — it's literally his name."},
+  {id:5,  name:"Knuckles",        from:"Sonic · Sega",                    emoji:"👊", div:"Speed & Attitude",  seed:2, power:"GLIDE & CLIMB",   fact:"Knuckles showed up as a villain in Sonic 3 — tricked by Eggman into fighting Sonic — and was so popular he became a permanent hero. He's the last guardian of the Master Emerald and the entire floating Angel Island. He's strong enough to punch through solid rock and stubborn enough to guard his island alone forever. Knuckles was right to be suspicious. He's just also wrong sometimes."},
+  {id:6,  name:"Tails",           from:"Sonic · Sega",                    emoji:"🦊", div:"Speed & Attitude",  seed:3, power:"TWIN TAILS FLY",  fact:"Miles 'Tails' Prower — say it out loud. Miles Per Hour. Tails was eight years old when he first appeared and immediately became Sonic's best friend by keeping up with him using two spinning tails as helicopter rotors. He's also a mechanical genius who builds planes, robots, and gadgets. The kid who can't stop spinning became the most loyal friend in Sega history."},
+  {id:7,  name:"Amy Rose",        from:"Sonic · Sega",                    emoji:"🔨", div:"Speed & Attitude",  seed:4, power:"PIKO PIKO HAMMER", fact:"Amy Rose carries a hammer bigger than she is and uses it to smash robots into scrap metal. She taught herself to run fast enough to keep up with Sonic just by chasing him. Amy started as a character who needed rescuing. She practiced until she didn't. Her Piko Piko Hammer has become one of the most iconic weapons in gaming and it started as a toy mallet she found in a toy store."},
+
+  // POKEMON
+  {id:8,  name:"Pikachu",         from:"Pokemon · Nintendo / Game Freak", emoji:"⚡", div:"Pokemon Division",  seed:1, power:"THUNDERBOLT",     fact:"Pikachu wasn't even meant to be the face of Pokemon — Clefairy was the original mascot. The anime changed everything. Ash chose Pikachu and the world followed. Pikachu is now the official mascot of Japan's national soccer team, has his own Hollywood movie, and has appeared in the Macy's Thanksgiving Day Parade. A small yellow mouse with lightning cheeks became one of the most recognized characters in the history of Earth."},
+  {id:9,  name:"Charizard",       from:"Pokemon · Nintendo / Game Freak", emoji:"🔥", div:"Pokemon Division",  seed:2, power:"FIRE BLAST",       fact:"Charizard is not a Dragon type. This makes people furious. He looks like a dragon, breathes fire like a dragon, flies like a dragon — and Nintendo classified him as Fire/Flying to make him weaker against Rock attacks. Despite this injustice Charizard remains the most popular Pokemon of all time across nearly every poll ever taken. He has two Mega Evolutions and a Gigantamax form. He perseveres."},
+  {id:10, name:"Mewtwo",          from:"Pokemon · Nintendo / Game Freak", emoji:"🧬", div:"Pokemon Division",  seed:3, power:"PSYCHIC MASTERY",  fact:"Mewtwo was created by scientists who cloned the DNA of the rarest Pokemon alive and then enhanced it into something that should not exist. He is the most powerful Pokemon ever created — not born, created — and he spent his entire first movie furious about it. Mewtwo asking why he exists and what he should do about it made a children's movie into something that hit harder than expected. He still has no good answer."},
+  {id:11, name:"Gengar",          from:"Pokemon · Nintendo / Game Freak", emoji:"👻", div:"Pokemon Division",  seed:4, power:"SHADOW BALL",      fact:"Gengar has been a fan favorite since Generation 1 because he always looks like he's having more fun than anyone else in the room. His Pokedex entry says he hides in the shadow of his trainer and mimics them. Some entries say he was once human. Nobody has confirmed this. Gengar doesn't care. He's already hiding in your shadow and grinning about it."},
+
+  // LEGENDS & ICONS
+  {id:12, name:"Master Chief",    from:"Halo · Microsoft / Bungie",       emoji:"🪖", div:"Legends & Icons",   seed:1, power:"SPARTAN ARMOR",   fact:"Master Chief is a genetically enhanced supersoldier in half-a-ton of Mjolnir armor who almost never takes his helmet off. His real name is John. He was kidnapped at age six to become a soldier. He saved humanity from alien extinction three separate times. His AI companion Cortana is the most advanced artificial intelligence ever created in the Halo universe. He calls her his lucky charm. She calls him her anchor."},
+  {id:13, name:"Kratos",          from:"God of War · Santa Monica Studio",emoji:"🪓", div:"Legends & Icons",   seed:2, power:"SPARTAN RAGE",     fact:"Kratos killed every god in Greek mythology across three games — Ares, Poseidon, Hermes, Zeus, all of them — and then moved to Norse mythology and started over. By the time his son Atreus meets him, Kratos is trying to be a better father than a warrior. The most violent character in PlayStation history chose fatherhood over war. He still carries his axes but now he also carries his son's weight. That's a different kind of strength."},
+  {id:14, name:"Lara Croft",      from:"Tomb Raider · Crystal Dynamics",  emoji:"🏹", div:"Legends & Icons",   seed:3, power:"SURVIVOR INSTINCT", fact:"Lara Croft was the first female video game character to headline her own franchise. She's an archaeologist, a linguist, a free climber, and the most dangerous person in any tomb she enters. The original Lara was designed to be a male character — the developers switched to a female lead because she'd stand out. She did. She became one of the most recognizable characters in gaming history and proved female protagonists could carry a blockbuster franchise."},
+  {id:15, name:"Samus Aran",      from:"Metroid · Nintendo",              emoji:"🚀", div:"Legends & Icons",   seed:4, power:"POWER SUIT",       fact:"Samus Aran is a bounty hunter in a power suit who hunts alien parasites across the galaxy. When Metroid was released in 1986 players finished the game and were shown Samus removing her helmet to reveal she was a woman — and the internet of 1986 lost its mind. She was the first major female protagonist in video game history. She has spoken almost no dialogue across 17 games. She doesn't need to."},
+
+  // MINECRAFT & MODERN
+  {id:16, name:"Steve",           from:"Minecraft · Mojang",              emoji:"🟫", div:"Minecraft & Modern", seed:1, power:"INFINITE BUILD",  fact:"Steve has no backstory, no dialogue, no explanation for why he's in a world full of blocks. He just wakes up and starts punching trees. Minecraft is the best-selling video game in history with over 300 million copies sold. Steve is so iconic that he was added to Super Smash Bros Ultimate — a game full of Nintendo's greatest characters. The developers had to redesign how arms work in Smash just to fit him in. He arrived and rearranged the room."},
+  {id:17, name:"Creeper",         from:"Minecraft · Mojang",              emoji:"💥", div:"Minecraft & Modern", seed:2, power:"SURPRISE EXPLOSION", fact:"The Creeper was created by accident. Notch was trying to make a pig and mixed up the height and width values. The result was a tall, silent, green creature that walks toward players and explodes. He kept it. The Creeper became the most recognizable enemy in the most popular game ever made — born from a coding mistake. Every Creeper that has ever destroyed your house came from one wrong number in 2009."},
+  {id:18, name:"Sans",            from:"Undertale · Toby Fox",            emoji:"💀", div:"Minecraft & Modern", seed:3, power:"KARMA DAMAGE",    fact:"Sans is a lazy skeleton who tells bad puns and sells hot dogs from a cart in Snowdin. He is also secretly the hardest boss fight in Undertale — a game about whether you have to fight at all. Sans judges you based on every choice you made in the game before you met him. If you hurt others to get there, he remembers. If you were kind, he lets you pass. A pun-telling skeleton turned into a moral philosophy test. Undertale was made by one person."},
+  {id:19, name:"Among Us Crewmate", from:"Among Us · InnerSloth",         emoji:"📮", div:"Minecraft & Modern", seed:4, power:"EMERGENCY MEETING", fact:"The Among Us crewmate has no name, no face, no story — just a colored bean-shaped body, a little backpack, and the constant fear of being thrown out of an airlock. Among Us was released in 2018 and almost nobody played it. In 2020, stuck-at-home streamers found it. Within weeks it was the most watched game on the internet. A nameless bean became a global phenomenon because humans needed a game about who to trust during a year when nobody knew who to trust."},
+
+  // CLASSIC ARCADE
+  {id:20, name:"Pac-Man",         from:"Pac-Man · Namco",                 emoji:"🟡", div:"Classic Arcade",    seed:1, power:"POWER PELLET",    fact:"Pac-Man was designed in 1980 by Toru Iwatani who wanted to create a game that women would enjoy playing — most arcade games at the time were about shooting. He got the idea for the character by looking at a pizza with one slice removed. Pac-Man became the highest-grossing arcade game of all time. A pizza missing a slice became the most recognized game character before Mario existed."},
+  {id:21, name:"Mega Man",        from:"Mega Man · Capcom",               emoji:"🤖", div:"Classic Arcade",    seed:2, power:"COPY WEAPON",     fact:"Mega Man is a robot boy built by Dr. Light to protect humanity from Dr. Wily's robot army. His special ability — like Kirby — is copying the weapon of every boss he defeats. He has starred in over 50 games. Capcom almost cancelled the original Mega Man before it launched because they thought it would fail. It didn't. Mega Man is now considered one of the greatest game series in history and almost didn't get a first game let alone fifty."},
+  {id:22, name:"Crash Bandicoot",  from:"Crash Bandicoot · Naughty Dog",  emoji:"🌀", div:"Classic Arcade",    seed:3, power:"SPIN ATTACK",     fact:"Crash Bandicoot was created specifically to be Sony PlayStation's answer to Mario and Sonic. He's a mutant bandicoot in jeans who spins through enemies and collects Wumpa fruit. He became PlayStation's mascot in the 1990s and Sony used him in billboard campaigns to mock Nintendo directly. Crash was so aggressively marketed as the PlayStation guy that when he showed up in Mario Kart-style games later it felt like a peace treaty between old enemies."},
+  {id:23, name:"Spyro",           from:"Spyro the Dragon · Insomniac",    emoji:"🐉", div:"Classic Arcade",    seed:4, power:"FIRE BREATH",     fact:"Spyro is a small purple dragon with a big attitude who glides across enormous colorful worlds breathing fire at enemies twice his size. He was designed specifically to show off the PlayStation's ability to render 3D landscapes — his world was built so far in every direction that players spent hours just exploring. Spyro proved that video game worlds could feel genuinely alive and open in 1998. He went away for 20 years and came back to a standing ovation."},
+
+  // WILD CARDS
+  {id:24, name:"Gordon Freeman",  from:"Half-Life · Valve",               emoji:"🔧", div:"Wild Cards",        seed:1, power:"GRAVITY GUN",     fact:"Gordon Freeman is a theoretical physicist with a crowbar and glasses who accidentally causes an alien invasion and then has to fix it. He never speaks. Ever. Not one word across multiple games spanning decades. Valve said players should project themselves onto Gordon — he speaks through actions. The most anticipated game sequel in history — Half-Life 3 — has never been released. Gordon Freeman is still waiting in a train. Fans are still waiting with him."},
+  {id:25, name:"Ratchet",         from:"Ratchet & Clank · Insomniac",     emoji:"🔩", div:"Wild Cards",        seed:2, power:"GROOVITRON",      fact:"Ratchet is a Lombax mechanic with enormous ears who teams up with a tiny robot named Clank to save the galaxy approximately every two years. The Groovitron — a weapon that makes enemies involuntarily start dancing — is one of the greatest video game weapons ever invented. Ratchet & Clank games are essentially about two friends who are completely different and completely inseparable. The series has been running for 20 years because that friendship never gets old."},
+  {id:26, name:"Banjo-Kazooie",   from:"Banjo-Kazooie · Rare",            emoji:"🐻", div:"Wild Cards",        seed:3, power:"WONDERWING",      fact:"Banjo is a bear. Kazooie is a bird who lives in his backpack. Together they are one of the greatest platformer heroes Nintendo 64 ever produced. Kazooie is rude, impatient, and sarcastic. Banjo is gentle, patient, and kind. Their dynamic is the entire personality of the game. Rare made something so beloved that fans campaigned for 20 years to get them into Super Smash Bros. They got in. The internet genuinely cried."},
+  {id:27, name:"Yoshi",           from:"Super Mario World · Nintendo",    emoji:"🦕", div:"Wild Cards",        seed:4, power:"EGG THROW",       fact:"Yoshi was originally designed for Super Mario Bros in 1985 but the hardware wasn't powerful enough to animate him correctly. Nintendo held him until Super Mario World in 1990. He eats anything — enemies, shells, fruit — and turns them into eggs he throws at other enemies. He has let Mario jump off his back mid-air in every game since and never complained once. Yoshi is the most patient creature in gaming history."},
+
+  // FINAL BOSSES TURNED HEROES
+  {id:28, name:"Bowser Jr.",      from:"Super Mario Sunshine · Nintendo", emoji:"👑", div:"Dark Horses",       seed:1, power:"MAGIC PAINTBRUSH", fact:"Bowser Jr. first appeared in Super Mario Sunshine, convinced by his father that Princess Peach was his mother. He caused chaos across an entire tropical island because he missed his mom. When he found out the truth he kept fighting anyway — out of loyalty to his dad. Bowser Jr. is the most complicated emotional character in the Mario universe. He's a villain who just wants his father to be proud of him. That's not evil. That's just being a kid."},
+  {id:29, name:"Shadow the Hedgehog", from:"Sonic Adventure 2 · Sega",   emoji:"🖤", div:"Dark Horses",       seed:2, power:"CHAOS CONTROL",   fact:"Shadow was created as the Ultimate Life Form — a perfect being engineered by a scientist who wanted to cure his granddaughter's fatal illness. His best friend Maria died to give him a chance at life. Shadow spent years trying to figure out whether his purpose was to destroy humanity or protect it. He chose protect. Shadow is the darkest character in Sonic history and also the most human. He grieves. Not many video game characters actually grieve."},
+  {id:30, name:"Villager",        from:"Animal Crossing · Nintendo",      emoji:"🌿", div:"Dark Horses",       seed:3, power:"POCKET",          fact:"The Animal Crossing Villager has no enemies, no bosses, no combat, and no way to lose. You just live in a small town, catch bugs, plant flowers, pay off your house loan, and make friends. During 2020 when the world shut down, Animal Crossing: New Horizons became the best-selling game of the year because millions of people desperately needed somewhere peaceful to exist. A game about doing nothing important became the most important game of the year."},
+  {id:31, name:"Glados",          from:"Portal · Valve",                  emoji:"🧠", div:"Dark Horses",       seed:4, power:"PORTAL GUN",      fact:"GLaDOS is an artificial intelligence that runs a test facility and promises cake to the human test subject navigating her increasingly dangerous puzzle chambers. The cake is a lie. GLaDOS is also funny, passive-aggressive, and occasionally sad in ways she doesn't fully understand. She is the greatest video game villain who makes you laugh. Still Alive — the song she sings over the credits — became one of the most beloved pieces of music in gaming history. She was dead at the time. She was still alive."},
+];
+
+const R16=[[0,3],[1,2],[4,7],[5,6],[8,11],[9,10],[12,15],[13,14],[16,19],[17,18],[20,23],[21,22],[24,27],[25,26],[28,31],[29,30]];
+const COUNTS=[16,8,4,2,1];
+const RLABELS=["Round of 32","Round of 16","Quarterfinals","Semifinals","The Final"];
+
+let results=[Array(16).fill(null),Array(8).fill(null),Array(4).fill(null),Array(2).fill(null),Array(1).fill(null)];
+let currentVote=null,selected=null,locked=false;
+
+function getC(r,mi,slot){if(r===0)return ALL[R16[mi][slot]];const prev=mi*2+slot;const wid=results[r-1][prev];return wid!=null?ALL[wid]:null;}
+function getCurrentRound(){for(let r=0;r<5;r++)if(results[r].some(w=>w===null))return r;return 5;}
+function getNextActive(){const cr=getCurrentRound();if(cr>=5)return null;for(let mi=0;mi<COUNTS[cr];mi++){if(results[cr][mi]===null){const a=getC(cr,mi,0),b=getC(cr,mi,1);if(a&&b)return{round:cr,mi};}}return null;}
+function totalVotes(){return results.flat().filter(v=>v!==null).length;}
+function fakeA(a,b){return Math.min(86,Math.max(20,50+(b.id-a.id)%17+(a.seed===1?8:a.seed===2?4:0)));}
+
+function render(){
+  document.getElementById('counter').textContent=totalVotes()+'/31';
+  const cr=getCurrentRound();
+  if(cr===5&&results[4][0]!==null)renderChampion(ALL[results[4][0]]);
+  else if(currentVote)renderVote();
+  else renderBracket();
+}
+
+function renderBracket(){
+  document.getElementById('back-btn').style.display='none';
+  const cr=getCurrentRound(),next=getNextActive();
+  const divNames=["Nintendo","Speed","Pokemon","Legends","Modern","Arcade","Wild Cards","Dark Horses"];
+  let html='<div class="div-labels">';
+  divNames.forEach(d=>{html+=`<div class="div-label">${d}</div>`;});
+  html+='</div><div class="bracket-cols">';
+  for(let r=0;r<5;r++){
+    const count=COUNTS[r],maxH=[22,30,44,70,100][r],gap=[2,5,12,28,0][r];
+    html+=`<div class="bracket-col"><div class="col-label" style="color:${r===cr?'#f8d030':'#1a0e30'}">${["R32","R16","QF","SF","Final"][r]}</div><div class="col-matches" style="gap:${gap}px">`;
+    for(let mi=0;mi<count;mi++){
+      const a=getC(r,mi,0),b=getC(r,mi,1),winner=results[r][mi];
+      const active=r===cr&&winner===null&&a&&b,done=winner!==null;
+      const cls=active?'active':done?'done':'empty';
+      const onclick=(active||done)?`onclick="startVote(${r},${mi})"`:'';
+      html+=`<div class="match-cell ${cls}" style="max-height:${maxH}px;${!active&&!done?'border:1px solid #100c28':''}" ${onclick}>`;
+      [a,b].forEach((c,si)=>{
+        if(!c){html+=`<div class="tbd">—</div>`;return;}
+        const isW=winner===c.id,isL=done&&!isW;
+        const nm=c.name.split(' ').slice(0,r===0?2:3).join(' ');
+        html+=`${si===1?'<hr class="match-divider">':''}<div class="match-row ${isW?'winner':isL?'loser':''}"><span class="em">${c.emoji}</span><span class="nm">${nm}</span></div>`;
+      });
+      html+='</div>';
+    }
+    html+='</div></div>';
+  }
+  html+='</div>';
+  if(next)html+=`<div style="padding:14px 16px 0"><button class="vote-btn" onclick="startVote(${next.round},${next.mi})">Vote Next Character →</button><div class="vote-hint">Tap any gold-bordered match to vote</div></div>`;
+  document.getElementById('main').innerHTML=html;
+}
+
+function startVote(round,mi){currentVote={round,mi};selected=null;locked=false;const w=results[round][mi];if(w!==null){const a=getC(round,mi,0);selected=(a&&a.id===w)?'a':'b';}render();}
+
+function renderVote(){
+  document.getElementById('back-btn').style.display='block';
+  const{round,mi}=currentVote,a=getC(round,mi,0),b=getC(round,mi,1);
+  if(!a||!b){showBracket();return;}
+  const pA=fakeA(a,b),pB=100-pA,majority=selected?(selected==='a'?pA:pB)>=50:false;
+  const hint=!selected?"— Who do you want on your team? —":locked?"— Verdict locked! —":"— Tap to switch. Button to lock it in. —";
+  let html=`<div id="vote-screen"><div class="vote-header"><div class="round-label">${RLABELS[round]}</div><div class="vote-hint-text">${hint}</div></div>`;
+  [{side:'a',c:a,pct:pA},{side:'b',c:b,pct:pB}].forEach(({side,c,pct})=>{
+    const isSel=selected===side;
+    html+=`<div class="card${isSel?' selected':''}" onclick="selectCard('${side}')">`;
+    if(locked&&isSel)html+=`<div class="pct-bar" style="width:${pct}%"></div>`;
+    html+=`<div class="card-inner">
+      <div class="card-top">
+        <div class="card-emoji">${c.emoji}</div>
+        <div style="flex:1;min-width:0">
+          <div class="card-meta">${c.div}</div>
+          <div class="card-name">${c.name}</div>
+          <div class="card-from">${c.from}</div>
+        </div>
+        ${isSel&&!locked?'<div class="card-arrow">◀</div>':''}
+      </div>
+      <div class="card-power">${c.power}</div>
+      <div class="card-fact" style="margin-top:10px">${c.fact}</div>
+      ${locked&&isSel?`<div class="card-pct">${pct}%<span>picked this character</span><span class="check">✓</span></div>`:''}
+    </div></div>`;
+  });
+  if(selected&&!locked)html+=`<div class="commit-box"><div class="commit-hint">Still deciding? Tap the other one to compare.</div><button class="commit-btn" onclick="commitVote()">Lock In My Pick →</button></div>`;
+  if(locked)html+=`<div class="result-box"><div class="${majority?'result-majority':'result-minority'}">${majority?'✓ You picked with the crowd!':'🔥 Bold choice — you picked different!'}</div></div>`;
+  html+='</div>';
+  document.getElementById('main').innerHTML=html;
+}
+
+function selectCard(side){if(locked)return;selected=side;renderVote();}
+function commitVote(){
+  if(!selected||locked)return;
+  locked=true;
+  const{round,mi}=currentVote,a=getC(round,mi,0),b=getC(round,mi,1);
+  results[round][mi]=selected==='a'?a.id:b.id;
+  renderVote();
+  document.getElementById('counter').textContent=totalVotes()+'/31';
+  setTimeout(()=>{currentVote=null;locked=false;selected=null;render();},800);
+}
+function showBracket(){currentVote=null;selected=null;locked=false;render();}
+function renderChampion(c){
+  document.getElementById('back-btn').style.display='none';
+  document.getElementById('main').innerHTML=`
+    <div id="champion-screen">
+      <div style="font-size:48px;margin-bottom:8px">🏆</div>
+      <div class="champ-emoji">${c.emoji}</div>
+      <div class="champ-trophy">Greatest Video Game Character Ever!</div>
+      <div class="champ-name">${c.name}</div>
+      <div class="champ-from">${c.from}</div>
+      <div style="display:inline-block;margin:8px 0 16px;padding:4px 16px;border-radius:20px;background:#f8d030;color:#0a0618;font-size:11px;font-weight:700">${c.power}</div>
+      <div class="champ-fact">${c.fact}</div>
+      <button class="reset-btn" onclick="resetGame()">Play Again!</button>
+    </div>`;
+}
+function resetGame(){results=[Array(16).fill(null),Array(8).fill(null),Array(4).fill(null),Array(2).fill(null),Array(1).fill(null)];currentVote=null;selected=null;locked=false;render();}
+render();
+</script>
+</body>
+</html>

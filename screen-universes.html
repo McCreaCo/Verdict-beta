@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VERDICT — The 32 Greatest Fictional Universes Ever Built</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #060810; color: #f0f4ff; font-family: Georgia, 'Times New Roman', serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
+  #app { width: 100%; max-width: 560px; min-height: 100vh; display: flex; flex-direction: column; }
+  header { padding: 18px 20px 14px; border-bottom: 1px solid #0e1220; display: flex; align-items: center; justify-content: space-between; }
+  .title { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; }
+  .subtitle { font-size: 9px; color: #8060df; letter-spacing: 2px; text-transform: uppercase; margin-top: 2px; }
+  .counter { font-size: 10px; color: #141828; background: #0a0c18; border: 1px solid #0e1220; border-radius: 16px; padding: 4px 10px; }
+  .back-btn { background: transparent; border: 1px solid #0e1220; border-radius: 8px; padding: 5px 10px; color: #1e2030; font-size: 11px; cursor: pointer; font-family: Georgia, serif; }
+  #main { flex: 1; padding: 14px 0; }
+  .div-labels { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px; margin: 0 10px 8px; }
+  .div-label { font-size: 7px; color: #1e2030; text-align: center; padding: 3px 2px; background: #0a0c18; border-radius: 4px; }
+  .bracket-cols { display: flex; gap: 3px; padding: 0 10px; }
+  .bracket-col { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+  .col-label { font-size: 7px; letter-spacing: 1.5px; text-transform: uppercase; text-align: center; margin-bottom: 5px; }
+  .col-matches { display: flex; flex-direction: column; justify-content: space-around; height: 380px; }
+  .match-cell { border-radius: 5px; overflow: hidden; cursor: default; flex: 1; transition: border-color 0.2s; }
+  .match-cell.active { border: 1px solid #8060df !important; background: #0c0e1c !important; cursor: pointer; }
+  .match-cell.done { border: 1px solid #141828 !important; background: #080a14 !important; cursor: pointer; }
+  .match-cell.empty { border: 1px solid #0a0c18; background: #060810; }
+  .match-row { display: flex; align-items: center; gap: 2px; padding: 2px 3px; transition: opacity 0.3s; }
+  .match-row.loser { opacity: 0.22; }
+  .match-row.winner { background: rgba(128,96,223,0.12); }
+  .match-row .em { font-size: 8px; }
+  .match-row .nm { font-size: 7px; color: #1e2030; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 400; }
+  .match-row.winner .nm { color: #8060df; font-weight: 700; }
+  .match-divider { border: none; border-top: 1px solid #0c0e1c; margin: 0; }
+  .tbd { padding: 2px 3px; font-size: 6px; color: #101420; }
+  .vote-btn { width: 100%; padding: 14px; background: linear-gradient(135deg, #8060df, #4030a0); border: none; border-radius: 12px; color: #f0f4ff; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; margin-top: 14px; }
+  .vote-hint { font-size: 10px; color: #141828; text-align: center; margin-top: 6px; }
+  #vote-screen { padding: 0 16px; animation: fadeUp 0.3s ease; }
+  .vote-header { text-align: center; margin-bottom: 16px; }
+  .round-label { font-size: 10px; letter-spacing: 3px; color: #8060df; text-transform: uppercase; margin-bottom: 3px; }
+  .vote-hint-text { font-size: 11px; color: #1e2030; letter-spacing: 1px; }
+  .card { display: block; width: 100%; margin-bottom: 10px; border-radius: 14px; padding: 16px 18px; cursor: pointer; text-align: left; transition: all 0.25s; position: relative; overflow: hidden; border: 2px solid #0e1220; background: #080a14; }
+  .card.selected { border-color: #8060df !important; background: #100e20 !important; transform: scale(1.01); }
+  .card-inner { position: relative; z-index: 1; }
+  .card-top { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 8px; }
+  .card-emoji { font-size: 28px; margin-top: 2px; flex-shrink: 0; }
+  .card-meta { font-size: 9px; color: #8060df; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 2px; }
+  .card-name { font-size: 16px; font-weight: 700; color: #2a2840; line-height: 1.2; margin-bottom: 2px; transition: color 0.2s; }
+  .card.selected .card-name { color: #f0f4ff; }
+  .card-from { font-size: 10px; color: #161828; font-style: italic; transition: color 0.2s; }
+  .card.selected .card-from { color: #6050a0; }
+  .card-fact { font-size: 12px; color: #161828; line-height: 1.75; transition: color 0.2s; }
+  .card.selected .card-fact { color: #7060a0; }
+  .card-arrow { font-size: 16px; color: #8060df; margin-left: auto; flex-shrink: 0; }
+  .card-pct { font-size: 18px; font-weight: 700; color: #8060df; margin-top: 10px; }
+  .card-pct span { font-size: 12px; font-weight: 400; color: #2a2840; margin-left: 6px; }
+  .card-pct .check { color: #8060df; margin-left: 8px; }
+  .pct-bar { position: absolute; top: 0; left: 0; height: 100%; background: rgba(128,96,223,0.06); transition: width 0.9s cubic-bezier(.4,0,.2,1); z-index: 0; }
+  .commit-box { padding: 14px 18px; background: #080a14; border: 1px solid #0e1220; border-radius: 12px; text-align: center; animation: fadeUp 0.3s ease; }
+  .commit-hint { font-size: 11px; color: #1e2030; margin-bottom: 10px; font-style: italic; }
+  .commit-btn { padding: 12px 32px; background: linear-gradient(135deg, #8060df, #4030a0); border: none; border-radius: 10px; color: #f0f4ff; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+  .result-box { padding: 14px 18px; background: #080a14; border: 1px solid #0e1220; border-radius: 12px; text-align: center; }
+  .result-text { font-size: 12px; letter-spacing: 2px; text-transform: uppercase; }
+  .majority { color: #7ec8a0; }
+  .minority { color: #df8060; }
+  #champion-screen { text-align: center; padding: 36px 24px; animation: fadeUp 0.5s ease; }
+  .champ-emoji { font-size: 64px; margin-bottom: 12px; }
+  .champ-label { font-size: 10px; letter-spacing: 4px; color: #8060df; text-transform: uppercase; margin-bottom: 8px; }
+  .champ-name { font-size: 22px; font-weight: 700; color: #f0f4ff; margin-bottom: 4px; line-height: 1.2; }
+  .champ-from { font-size: 12px; color: #8060df; font-style: italic; margin-bottom: 4px; }
+  .champ-meta { font-size: 11px; color: #1e2030; margin-bottom: 16px; }
+  .champ-fact { font-size: 13px; color: #3a3850; font-style: italic; max-width: 310px; margin: 0 auto 28px; line-height: 1.8; }
+  .reset-btn { padding: 12px 28px; background: linear-gradient(135deg, #8060df, #4030a0); border: none; border-radius: 10px; color: #f0f4ff; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  button:active { filter: brightness(0.88); }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div>
+      <a href="index.html" class="title" style="text-decoration:none;cursor:pointer" title="All brackets">VERDICT</a>
+      <div class="subtitle">The 32 Greatest Fictional Universes Ever Built</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="back-btn" id="back-btn" style="display:none" onclick="showBracket()">← Bracket</button>
+      <div class="counter" id="counter">0/31</div>
+    </div>
+  </header>
+  <div id="main"></div>
+</div>
+
+<script>
+const ALL = [
+  // FANTASY KINGDOMS
+  {id:0, name:"Middle-Earth", from:"Tolkien · The Lord of the Rings", emoji:"💍", div:"Fantasy Kingdoms", seed:1, year:1954, fact:"J.R.R. Tolkien spent 40 years building a world with its own languages, histories, calendars, and mythologies before a single reader arrived. Middle-Earth isn't a setting. It's a civilization. Every fantasy world built since 1954 is either borrowing from it or consciously running away from it. There is no neutral relationship with Tolkien's creation."},
+  {id:1, name:"Westeros", from:"George R.R. Martin · Game of Thrones", emoji:"🐉", div:"Fantasy Kingdoms", seed:2, year:1996, fact:"A world where winter literally lasts years, where every family has a sigil and a words and a reason to betray you, and where the map on the inside cover of the book rewards hours of study. George R.R. Martin built a world so fully realized that when the TV show ran out of his books the absence of his worldbuilding was immediately visible in every frame."},
+  {id:2, name:"The Wizarding World", from:"J.K. Rowling · Harry Potter", emoji:"🧙", div:"Fantasy Kingdoms", seed:3, year:1997, fact:"A parallel magical world hidden inside the ordinary one, accessible through platform nine and three quarters and the right bloodline. Rowling built Hogwarts so completely — every moving staircase, every portrait, every house ghost — that an entire generation grew up genuinely waiting for their letter. Theme parks. Merchandise. Spin-offs. The world outlasted the books."},
+  {id:3, name:"Discworld", from:"Terry Pratchett · Discworld", emoji:"🐢", div:"Fantasy Kingdoms", seed:4, year:1983, fact:"A flat world on the back of four elephants standing on a giant turtle swimming through space. Terry Pratchett built 41 novels in this universe and used every single one to say something true about the real world through the lens of the absurd. Douglas Adams gets the credit. Pratchett built the better universe. That's the debate and it deserves to be had."},
+
+  // SCI-FI GALAXIES
+  {id:4, name:"The Star Wars Galaxy", from:"George Lucas · Star Wars", emoji:"⭐", div:"Sci-Fi Galaxies", seed:1, year:1977, fact:"A galaxy with its own Force, its own politics, its own religions, its own hundred-year history of wars and Jedi and Sith. Lucas built the most commercially successful fictional universe in human history and the remarkable thing isn't the films — it's that the world exists so completely that fans have spent 50 years filling in every corner of it that Lucas didn't."},
+  {id:5, name:"The Star Trek Universe", from:"Gene Roddenberry · Star Trek", emoji:"🖖", div:"Sci-Fi Galaxies", seed:2, year:1966, fact:"Roddenberry built a future where humanity had solved poverty, racism, and war — and then asked what we'd do next. Star Trek invented the moral-dilemma science fiction episode, inspired real NASA engineers, and gave an entire generation of people of color their first vision of themselves in a future worth having. The Enterprise wasn't just a ship. It was a promise."},
+  {id:6, name:"The Matrix", from:"The Wachowskis · The Matrix", emoji:"🟢", div:"Sci-Fi Galaxies", seed:3, year:1999, fact:"A world that looks exactly like ours because it IS ours — a simulation run by machines while humans float in pods. The Matrix asked a question so genuinely disturbing — what if none of this is real — that philosophers started assigning it in university courses. The sequels complicated the universe. The original built something that changed how an entire generation thought about reality."},
+  {id:7, name:"Blade Runner's Los Angeles", from:"Ridley Scott · Philip K. Dick", emoji:"🌧", div:"Sci-Fi Galaxies", seed:4, year:1982, fact:"2019 Los Angeles. Perpetual rain. Neon advertisements for corporations that don't exist. Replicants who bleed but aren't human. Ridley Scott and cinematographer Jordan Cronenweth built a world so visually complete that it defined the aesthetic of science fiction for 40 years. Blade Runner 2049 proved the universe could be expanded. The original proved it didn't need to be."},
+
+  // ANIMATED WORLDS
+  {id:8, name:"The Miyazaki Universe", from:"Studio Ghibli · Hayao Miyazaki", emoji:"🌿", div:"Animated Worlds", seed:1, year:1984, fact:"Not one world but many — each film a complete universe of its own that somehow feels like it all exists in the same spiritual space. Totoro's forest. Howl's castle. The spirit bathhouse. Miyazaki built worlds where nature is alive, where childhood is sacred, and where wonder is the most serious business there is. No other animator has matched the density of his worldbuilding."},
+  {id:9, name:"Springfield", from:"Matt Groening · The Simpsons", emoji:"🍩", div:"Animated Worlds", seed:2, year:1989, fact:"A town in no specific state with a nuclear power plant, a corrupt mayor, a bar where everyone knows your name, and a family that never ages. The Simpsons built Springfield so carefully in the early seasons that it became a complete American mythology — every episode added a brick. At its peak it was the most precisely observed portrait of middle-class American life ever animated."},
+  {id:10, name:"The Pixar Universe", from:"Pixar Animation Studios", emoji:"🎈", div:"Animated Worlds", seed:3, year:1995, fact:"Toys have feelings. Monsters harvest screams. Fish navigate oceans. Cars replaced humans. Emotions live inside a little girl's head. Pixar didn't build one world — they built a philosophy of worldbuilding. Every film asks what if this hidden world was real and then commits completely to the answer. No studio has built more fully realized universes with more consistent emotional intelligence."},
+  {id:11, name:"The DC Animated Universe", from:"Bruce Timm · Paul Dini", emoji:"🦇", div:"Animated Worlds", seed:4, year:1992, fact:"Batman: The Animated Series built Gotham City so definitively that the comics started borrowing from the show. Bruce Timm and Paul Dini created a DC universe — Batman, Superman, Justice League — that remains the gold standard for superhero worldbuilding. They invented Harley Quinn. They made Mr. Freeze tragic. They built the definitive versions of these characters in a cartoon and nobody has beaten them since."},
+
+  // LITERARY UNIVERSES
+  {id:12, name:"The MCU", from:"Marvel Studios · Kevin Feige", emoji:"🕷", div:"Comic & Literary", seed:1, year:2008, fact:"Kevin Feige took Stan Lee and Jack Kirby's shared-universe idea — every hero in the same city, sharing one continuous history — and pulled off something that had never existed in cinema: a single connected narrative across dozens of films, characters, and directors. It became the highest-grossing film franchise in history. Whether you love it or not, it changed what movies were allowed to attempt, and every studio spent the next decade trying and failing to copy it."},
+  {id:13, name:"Stephen King's Maine", from:"Stephen King · The Dark Tower et al", emoji:"🔴", div:"Comic & Literary", seed:2, year:1974, fact:"Stephen King didn't just write horror novels — he built a connected universe centered on the Dark Tower that links Carrie, The Shining, It, Stand By Me, The Stand, and dozens more. Castle Rock. Derry. The Overlook Hotel. They all exist in the same world, connected by a tower at the center of all realities. King built a multiverse before Marvel made the word fashionable."},
+  {id:14, name:"Sherlock Holmes' London", from:"Arthur Conan Doyle · 1887", emoji:"🔍", div:"Comic & Literary", seed:3, year:1887, fact:"221B Baker Street. The fog. The hansom cabs. Holmes and Watson. Arthur Conan Doyle built a Victorian London so complete that tourists still visit the address looking for the flat. The world has been adapted, reimagined, continued, and expanded for 135 years by hundreds of writers. No fictional world has proven more elastic. Holmes belongs to the world now in a way Doyle never intended."},
+  {id:15, name:"Dune's Universe", from:"Frank Herbert · Dune", emoji:"🏜", div:"Comic & Literary", seed:4, year:1965, fact:"A universe 20,000 years in the future where humanity has spread across the stars but banned computers, where a single desert planet controls the most valuable substance in existence, and where politics, religion, ecology, and prophecy are all the same conversation. Frank Herbert built the most complex fictional universe in science fiction — and then wrote five sequels exploring corners of it that the first book barely touched."},
+
+  // VIDEO GAME WORLDS
+  {id:16, name:"The Legend of Zelda's Hyrule", from:"Nintendo · Shigeru Miyamoto", emoji:"🗡", div:"Video Game Worlds", seed:1, year:1986, fact:"A kingdom that has been rebuilt, reimagined, flooded, destroyed, and reborn across 19 games and 40 years. Hyrule isn't one world — it's a mythology with its own creation story, its own triforce, its own cycle of evil and heroism that loops eternally. No video game universe has generated more genuine emotional attachment across more generations of players. Link never speaks. He doesn't need to."},
+  {id:17, name:"The Elder Scrolls' Tamriel", from:"Bethesda · The Elder Scrolls", emoji:"🗺", div:"Video Game Worlds", seed:2, year:1994, fact:"A continent with nine distinct provinces, hundreds of years of documented history, multiple races with their own religions and prejudices, and a lore so deep that fans have written academic-style analyses of its theology. Skyrim alone contains enough world to spend 200 hours in without seeing everything. Bethesda built a universe so complete that the games themselves can barely contain it."},
+  {id:18, name:"The Last of Us' America", from:"Naughty Dog · Neil Druckmann", emoji:"🍄", div:"Video Game Worlds", seed:3, year:2013, fact:"A post-apocalyptic America overrun by a fungal infection, where the real horror isn't the infected — it's what the surviving humans do to each other. Naughty Dog built a world of extraordinary visual and emotional detail: overgrown cities, survivor communities with their own cultures, a 20-year history of collapse. The HBO show proved the world was so complete it translated perfectly to a different medium without losing anything."},
+  {id:19, name:"Minecraft's Infinite World", from:"Mojang · Markus Persson", emoji:"🟫", div:"Video Game Worlds", seed:4, year:2011, fact:"A world with no story, no objective, no ending — just infinite procedurally generated terrain and the freedom to build anything. Minecraft became the best-selling video game in history not because of what it gave players but because of what it asked them to bring. The universe is whatever you make it. 140 million monthly players are all living in completely different worlds that technically have the same rules."},
+
+  // TV UNIVERSES
+  {id:20, name:"The Wire's Baltimore", from:"David Simon · HBO", emoji:"🚔", div:"TV Universes", seed:1, year:2002, fact:"A city built season by season — the drug trade, the docks, city hall, the schools, the newspaper. David Simon didn't write a crime show. He wrote a novel about institutional failure using Baltimore as the page. Every character exists inside a system that's bigger than them. The Wire built the most complete portrait of an American city in television history and called it entertainment."},
+  {id:21, name:"The Sopranos' New Jersey", from:"David Chase · HBO", emoji:"🍝", div:"TV Universes", seed:2, year:1999, fact:"A specific corner of suburban New Jersey where mob life and family life are the same conversation. Chase built a world of such specificity — the Bada Bing, Satriale's, the ducks in Tony's pool — that it became a complete American mythology about masculinity, therapy, capitalism, and what we inherit from our parents. The world didn't end when the screen went black. It just continued without us watching."},
+  {id:22, name:"Twin Peaks' Pacific Northwest", from:"David Lynch · Mark Frost", emoji:"🦉", div:"TV Universes", seed:3, year:1990, fact:"A small logging town in Washington state where the coffee is always damn fine, the owls are not what they seem, and something ancient and evil lives in the woods. David Lynch built a universe that operates on dream logic — where the Red Room exists, where BOB is real, where Laura Palmer's murder is both a mystery and a myth. Twin Peaks invented a genre of television that still has no name."},
+  {id:23, name:"The X-Files' America", from:"Chris Carter · Fox", emoji:"👽", div:"TV Universes", seed:4, year:1993, fact:"A version of America where the government is hiding the truth about alien life, where monsters are real, and where two FBI agents are the only people paying attention. Chris Carter built a paranoid universe so perfectly calibrated to the 1990s that it became the defining pop cultural artifact of pre-internet suspicion. The truth is out there. An entire generation spent ten years trying to find it."},
+
+  // WILD CARD UNIVERSES
+  {id:24, name:"Avatar's Four Nations", from:"Konietzko · DiMartino · Nickelodeon", emoji:"🌪", div:"Wild Card Universes", seed:1, year:2005, fact:"A world divided into four nations defined by the elements they bend — water, earth, fire, air — each with its own culture, government, martial-arts style, and spiritual tradition modeled on real human civilizations. Avatar: The Last Airbender built a more internally coherent world than most prestige science fiction, with a consistent magic system, a 100-year war with real geopolitical logic, and a reincarnation cosmology that holds up under scrutiny. A children's cartoon out-built nearly everything aimed at adults."},
+  {id:25, name:"Tolkien's Languages Alone", from:"J.R.R. Tolkien · Elvish et al", emoji:"📜", div:"Wild Card Universes", seed:2, year:1915, fact:"Tolkien built Middle-Earth backward — starting with the languages. Quenya and Sindarin are fully functional languages with grammar, vocabulary, and poetry. He invented the world to give the languages somewhere to be spoken. There are people alive today who are fluent in Elvish. A Oxford professor built a language so beautiful that strangers decided to learn it a hundred years later. That's a different kind of universe-building."},
+  {id:26, name:"Tarantino's Universe", from:"Quentin Tarantino · various", emoji:"🎬", div:"Wild Card Universes", seed:3, year:1992, fact:"All of Tarantino's films exist in the same universe — characters are related, the same brands appear everywhere, events in one film affect another. The Red Apple cigarettes. The Big Kahuna Burger. Vic Vega and Vincent Vega are brothers. It's never explained in the films. It doesn't need to be. Tarantino built a universe purely through detail and let the audience find it themselves. That's a different kind of authorship."},
+  {id:27, name:"The Muppet Universe", from:"Jim Henson · The Muppets", emoji:"🐸", div:"Wild Card Universes", seed:4, year:1955, fact:"A world where felt creatures and humans coexist completely naturally, where a frog can host a variety show and a bear can tell terrible jokes and a whatever-Gonzo-is can attempt dangerous stunts — and nobody questions any of it. Jim Henson built a universe based on a single radical premise: sincerity is not weakness. The Muppets have outlasted every ironic cultural moment that tried to make them seem naive."},
+
+  // DARK HORSES
+  {id:28, name:"Jurassic Park's World", from:"Michael Crichton · Spielberg", emoji:"🦕", div:"Dark Horses", seed:1, year:1990, fact:"A world where the question was never could we bring back dinosaurs — only should we. Crichton built a universe grounded in real chaos theory and real genetics extrapolation. Spielberg made it feel completely possible. The Jurassic Park universe has generated five sequels across 30 years not because the story demanded it but because the world — a world where dinosaurs are alive — is simply too irresistible to leave."},
+  {id:29, name:"The Alien Universe", from:"Ridley Scott · H.R. Giger", emoji:"🚀", div:"Dark Horses", seed:2, year:1979, fact:"A deep space universe governed by corporate greed, where humanity's reach has exceeded its grasp and something perfect and terrible lives in the dark between stars. H.R. Giger designed the Xenomorph as a biological weapon built by an even older civilization. Ridley Scott added the Engineers in Prometheus. The universe keeps expanding outward and inward simultaneously. The horror isn't the alien. It's the scale of what built it."},
+  {id:30, name:"Stranger Things' Hawkins", from:"The Duffer Brothers · Netflix", emoji:"🔦", div:"Dark Horses", seed:3, year:2016, fact:"A small Indiana town in 1983 where a government lab has accidentally opened a door to a parallel dimension called the Upside Down. The Duffer Brothers built a universe that is simultaneously a love letter to 1980s pop culture and a genuinely original mythology. The Upside Down has its own ecology, its own rules, its own horror. Hawkins feels like a real place. The shadow version of it feels like a real nightmare."},
+  {id:31, name:"The John Wick Universe", from:"Chad Stahelski · Derek Kolstad", emoji:"🐶", div:"Dark Horses", seed:4, year:2014, fact:"A secret world of assassins hiding inside the ordinary one — with its own currency, its own hotels, its own code of conduct, its own governing body. Nobody explains the rules. The world just operates by them and you infer everything. Chad Stahelski built a universe of extraordinary internal logic from almost nothing. Four films later the world keeps expanding and the remarkable thing is none of it has broken. The rules still hold."},
+];
+
+const R16=[[0,3],[1,2],[4,7],[5,6],[8,11],[9,10],[12,15],[13,14],[16,19],[17,18],[20,23],[21,22],[24,27],[25,26],[28,31],[29,30]];
+const COUNTS=[16,8,4,2,1];
+const RLABELS=["Round of 32","Round of 16","Quarterfinals","Semifinals","The Final"];
+
+let results=[Array(16).fill(null),Array(8).fill(null),Array(4).fill(null),Array(2).fill(null),Array(1).fill(null)];
+let currentVote=null,selected=null,locked=false;
+
+function getC(round,mi,slot){if(round===0)return ALL[R16[mi][slot]];const prev=mi*2+slot;const wid=results[round-1][prev];return wid!=null?ALL[wid]:null;}
+function getCurrentRound(){for(let r=0;r<5;r++)if(results[r].some(w=>w===null))return r;return 5;}
+function getNextActive(){const cr=getCurrentRound();if(cr>=5)return null;for(let mi=0;mi<COUNTS[cr];mi++){if(results[cr][mi]===null){const a=getC(cr,mi,0),b=getC(cr,mi,1);if(a&&b)return{round:cr,mi};}}return null;}
+function totalVotes(){return results.flat().filter(v=>v!==null).length;}
+function fakeA(a,b){return Math.min(88,Math.max(18,50+(b.id-a.id)%17+(a.seed===1?9:a.seed===2?4:0)));}
+
+function render(){
+  document.getElementById('counter').textContent=totalVotes()+'/31';
+  const cr=getCurrentRound();
+  if(cr===5&&results[4][0]!==null)renderChampion(ALL[results[4][0]]);
+  else if(currentVote)renderVote();
+  else renderBracket();
+}
+
+function renderBracket(){
+  document.getElementById('back-btn').style.display='none';
+  const cr=getCurrentRound(),next=getNextActive();
+  const divNames=["Fantasy","Sci-Fi","Animated","Literary","Video Games","TV Worlds","Wild Cards","Dark Horses"];
+  let html='<div class="div-labels">';
+  divNames.forEach(d=>{html+=`<div class="div-label">${d}</div>`;});
+  html+='</div><div class="bracket-cols">';
+  for(let r=0;r<5;r++){
+    const count=COUNTS[r],maxH=[22,30,44,70,100][r],gap=[2,5,12,28,0][r];
+    html+=`<div class="bracket-col"><div class="col-label" style="color:${r===cr?'#8060df':'#141828'}">${["R32","R16","QF","SF","Final"][r]}</div><div class="col-matches" style="gap:${gap}px">`;
+    for(let mi=0;mi<count;mi++){
+      const a=getC(r,mi,0),b=getC(r,mi,1),winner=results[r][mi];
+      const active=r===cr&&winner===null&&a&&b,done=winner!==null;
+      const cls=active?'active':done?'done':'empty';
+      const onclick=(active||done)?`onclick="startVote(${r},${mi})"`:'';
+      html+=`<div class="match-cell ${cls}" style="max-height:${maxH}px;${!active&&!done?'border:1px solid #0a0c18':''}" ${onclick}>`;
+      [a,b].forEach((c,si)=>{
+        if(!c){html+=`<div class="tbd">—</div>`;return;}
+        const isW=winner===c.id,isL=done&&!isW;
+        const nm=c.name.split(' ').slice(0,r===0?3:4).join(' ');
+        html+=`${si===1?'<hr class="match-divider">':''}<div class="match-row ${isW?'winner':isL?'loser':''}"><span class="em">${c.emoji}</span><span class="nm">${nm}</span></div>`;
+      });
+      html+='</div>';
+    }
+    html+='</div></div>';
+  }
+  html+='</div>';
+  if(next)html+=`<div style="padding:14px 16px 0"><button class="vote-btn" onclick="startVote(${next.round},${next.mi})">Vote Next Universe →</button><div class="vote-hint">Tap any purple-bordered match to vote</div></div>`;
+  document.getElementById('main').innerHTML=html;
+}
+
+function startVote(round,mi){currentVote={round,mi};selected=null;locked=false;const w=results[round][mi];if(w!==null){const a=getC(round,mi,0);selected=(a&&a.id===w)?'a':'b';}render();}
+
+function renderVote(){
+  document.getElementById('back-btn').style.display='block';
+  const{round,mi}=currentVote,a=getC(round,mi,0),b=getC(round,mi,1);
+  if(!a||!b){showBracket();return;}
+  const pA=fakeA(a,b),pB=100-pA,majority=selected?(selected==='a'?pA:pB)>=50:false;
+  const hint=!selected?"— Which world would you rather live in. —":locked?"— Verdict locked —":"— Tap to switch. Button to commit. —";
+  let html=`<div id="vote-screen"><div class="vote-header"><div class="round-label">${RLABELS[round]}</div><div class="vote-hint-text">${hint}</div></div>`;
+  [{side:'a',c:a,pct:pA},{side:'b',c:b,pct:pB}].forEach(({side,c,pct})=>{
+    const isSel=selected===side;
+    html+=`<div class="card${isSel?' selected':''}" onclick="selectCard('${side}')">`;
+    if(locked&&isSel)html+=`<div class="pct-bar" style="width:${pct}%"></div>`;
+    html+=`<div class="card-inner"><div class="card-top"><div class="card-emoji">${c.emoji}</div><div style="flex:1;min-width:0"><div class="card-meta">${c.div} · #${c.seed}</div><div class="card-name">${c.name}</div><div class="card-from">${c.from}</div></div>${isSel&&!locked?'<div class="card-arrow">◀</div>':''}</div><div class="card-fact">${c.fact}</div>${locked&&isSel?`<div class="card-pct">${pct}%<span>chose this universe</span><span class="check">· Your verdict ✓</span></div>`:''}</div></div>`;
+  });
+  if(selected&&!locked)html+=`<div class="commit-box"><div class="commit-hint">Changed your mind? Tap the other. Ready?</div><button class="commit-btn" onclick="commitVote()">Lock In Verdict →</button></div>`;
+  if(locked)html+=`<div class="result-box"><div class="result-text ${majority?'majority':'minority'}">${majority?'✓ With the majority':'🔥 You picked different'}</div></div>`;
+  html+='</div>';
+  document.getElementById('main').innerHTML=html;
+}
+
+function selectCard(side){if(locked)return;selected=side;renderVote();}
+function commitVote(){
+  if(!selected||locked)return;
+  locked=true;
+  const{round,mi}=currentVote,a=getC(round,mi,0),b=getC(round,mi,1);
+  results[round][mi]=selected==='a'?a.id:b.id;
+  renderVote();
+  document.getElementById('counter').textContent=totalVotes()+'/31';
+  setTimeout(()=>{currentVote=null;locked=false;selected=null;render();},800);
+}
+function showBracket(){currentVote=null;selected=null;locked=false;render();}
+function renderChampion(c){
+  document.getElementById('back-btn').style.display='none';
+  document.getElementById('main').innerHTML=`<div id="champion-screen"><div class="champ-emoji">${c.emoji}</div><div class="champ-label">The Greatest Fictional Universe Ever Built</div><div class="champ-name">${c.name}</div><div class="champ-from">${c.from}</div><div class="champ-meta">${c.div}</div><div class="champ-fact">${c.fact}</div><button class="reset-btn" onclick="resetGame()">Run It Back</button></div>`;
+}
+function resetGame(){results=[Array(16).fill(null),Array(8).fill(null),Array(4).fill(null),Array(2).fill(null),Array(1).fill(null)];currentVote=null;selected=null;locked=false;render();}
+render();
+</script>
+</body>
+</html>

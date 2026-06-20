@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VERDICT — The 32 Greatest Sports Moments of All Time</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #050510; color: #e8f0ff; font-family: Georgia, 'Times New Roman', serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
+  #app { width: 100%; max-width: 560px; min-height: 100vh; display: flex; flex-direction: column; }
+  header { padding: 16px 20px 12px; border-bottom: 1px solid #1a1a3a; display: flex; align-items: center; justify-content: space-between; background: #0e0e20; }
+  .title { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; color: #4a9eff; }
+  .subtitle { font-size: 9px; color: #3a8ad0; letter-spacing: 2px; text-transform: uppercase; margin-top: 2px; }
+  .counter { font-size: 10px; color: #26345a; background: #12122a; border: 1px solid #1a1a3a; border-radius: 16px; padding: 4px 10px; }
+  .back-btn { background: transparent; border: 1px solid #1a1a3a; border-radius: 8px; padding: 5px 10px; color: #34466a; font-size: 11px; cursor: pointer; font-family: Georgia, serif; }
+  #main { flex: 1; padding: 14px 0; }
+  .core-q { text-align: center; font-size: 12px; color: #4a9eff; font-style: italic; padding: 4px 20px 0; line-height: 1.4; }
+  .div-labels { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px; margin: 10px 10px 8px; }
+  .div-label { font-size: 7px; color: #34466a; text-align: center; padding: 3px 2px; background: #12122a; border-radius: 4px; }
+  .bracket-cols { display: flex; gap: 3px; padding: 0 10px; }
+  .bracket-col { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+  .col-label { font-size: 7px; letter-spacing: 1.5px; text-transform: uppercase; text-align: center; margin-bottom: 5px; }
+  .col-matches { display: flex; flex-direction: column; justify-content: space-around; height: 380px; }
+  .match-cell { border-radius: 5px; overflow: hidden; cursor: default; flex: 1; transition: border-color 0.2s; }
+  .match-cell.active { border: 1px solid #4a9eff !important; background: #12122a !important; cursor: pointer; }
+  .match-cell.done { border: 1px solid #0a1e3a !important; background: #0e0e20 !important; cursor: pointer; }
+  .match-cell.empty { border: 1px solid #12122a; background: #050510; }
+  .match-row { display: flex; align-items: center; gap: 2px; padding: 2px 3px; transition: opacity 0.3s; }
+  .match-row.loser { opacity: 0.22; }
+  .match-row.winner { background: rgba(74,158,255,0.12); }
+  .match-row .em { font-size: 8px; }
+  .match-row .nm { font-size: 7px; color: #34466a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 400; }
+  .match-row.winner .nm { color: #4a9eff; font-weight: 700; }
+  .match-divider { border: none; border-top: 1px solid #181838; margin: 0; }
+  .tbd { padding: 2px 3px; font-size: 6px; color: #1a1a30; }
+  .vote-btn { width: 100%; padding: 14px; background: linear-gradient(135deg, #4a9eff, #1a5aaa); border: none; border-radius: 12px; color: #050510; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; margin-top: 14px; }
+  .vote-hint { font-size: 10px; color: #26345a; text-align: center; margin-top: 6px; }
+  #vote-screen { padding: 0 16px; animation: fadeUp 0.3s ease; }
+  .vote-header { text-align: center; margin-bottom: 16px; }
+  .round-label { font-size: 10px; letter-spacing: 3px; color: #4a9eff; text-transform: uppercase; margin-bottom: 3px; }
+  .vote-hint-text { font-size: 11px; color: #34466a; letter-spacing: 1px; }
+  .card { display: block; width: 100%; margin-bottom: 10px; border-radius: 14px; padding: 16px 18px; cursor: pointer; text-align: left; transition: all 0.25s; position: relative; overflow: hidden; border: 2px solid #1a1a3a; background: #0e0e20; }
+  .card.selected { border-color: #4a9eff !important; background: #141430 !important; transform: scale(1.01); }
+  .card-inner { position: relative; z-index: 1; }
+  .card-top { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 8px; }
+  .card-emoji { font-size: 34px; margin-top: 2px; flex-shrink: 0; }
+  .card-meta { font-size: 9px; color: #1a5aaa; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 2px; }
+  .card-name { font-size: 18px; font-weight: 700; color: #34466a; line-height: 1.2; margin-bottom: 2px; transition: color 0.2s; }
+  .card.selected .card-name { color: #e8f0ff; }
+  .card-from { font-size: 10px; color: #26345a; font-style: italic; transition: color 0.2s; }
+  .card.selected .card-from { color: #6088c0; }
+  .card-tag { display: inline-block; margin-top: 8px; padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 700; background: #1a1a3a; color: #4a9eff; letter-spacing: 1px; }
+  .card.selected .card-tag { background: #4a9eff; color: #050510; }
+  .card-stats { margin-top: 8px; font-size: 9px; color: #2a4a7a; letter-spacing: 0.5px; }
+  .card.selected .card-stats { color: #60a0e0; }
+  .card-fact { font-size: 12px; color: #26345a; line-height: 1.75; transition: color 0.2s; margin-top: 8px; }
+  .card.selected .card-fact { color: #6080b0; }
+  .card-arrow { font-size: 16px; color: #4a9eff; margin-left: auto; flex-shrink: 0; }
+  .card-pct { font-size: 20px; font-weight: 700; color: #4a9eff; margin-top: 10px; }
+  .card-pct span { font-size: 12px; font-weight: 400; color: #34466a; margin-left: 6px; }
+  .card-pct .check { color: #4a9eff; margin-left: 8px; }
+  .pct-bar { position: absolute; top: 0; left: 0; height: 100%; background: rgba(74,158,255,0.06); transition: width 0.9s cubic-bezier(.4,0,.2,1); z-index: 0; }
+  .commit-box { padding: 14px 18px; background: #0e0e20; border: 1px solid #1a1a3a; border-radius: 12px; text-align: center; animation: fadeUp 0.3s ease; }
+  .commit-hint { font-size: 11px; color: #34466a; margin-bottom: 10px; font-style: italic; }
+  .commit-btn { padding: 12px 32px; background: linear-gradient(135deg, #4a9eff, #1a5aaa); border: none; border-radius: 10px; color: #050510; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+  .result-box { padding: 16px 18px; background: #0e0e20; border: 1px solid #1a1a3a; border-radius: 12px; text-align: center; margin-top: 2px; animation: fadeUp 0.3s ease; }
+  .result-majority { font-size: 13px; color: #7ec8a0; font-weight: 700; letter-spacing: 1px; }
+  .result-minority { font-size: 13px; color: #1a5aaa; font-weight: 700; letter-spacing: 1px; }
+  .next-btn { width: 100%; margin-top: 14px; padding: 14px; background: linear-gradient(135deg, #4a9eff, #1a5aaa); border: none; border-radius: 12px; color: #050510; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+  #champion-screen { text-align: center; padding: 36px 24px; animation: fadeUp 0.5s ease; }
+  .champ-emoji { font-size: 76px; margin-bottom: 8px; }
+  .champ-trophy { font-size: 11px; letter-spacing: 4px; color: #4a9eff; text-transform: uppercase; margin-bottom: 8px; }
+  .champ-name { font-size: 26px; font-weight: 700; color: #e8f0ff; margin-bottom: 4px; }
+  .champ-from { font-size: 13px; color: #1a5aaa; font-style: italic; margin-bottom: 4px; }
+  .champ-fact { font-size: 13px; color: #2a4a7a; font-style: italic; max-width: 310px; margin: 14px auto 28px; line-height: 1.8; }
+  .reset-btn { padding: 14px 32px; background: linear-gradient(135deg, #4a9eff, #1a5aaa); border: none; border-radius: 12px; color: #050510; font-size: 14px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  button:active { filter: brightness(0.88); }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div>
+      <a href="index.html" class="title" style="text-decoration:none;cursor:pointer" title="All brackets">VERDICT</a>
+      <div class="subtitle">Greatest Sports Moment Ever</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="back-btn" id="back-btn" style="display:none" onclick="showBracket()">← Bracket</button>
+      <div class="counter" id="counter">0/31</div>
+    </div>
+  </header>
+  <div id="main"></div>
+</div>
+
+<script>
+const ALL = [
+  {id:0,  name:"Miracle on Ice",            from:"Ice Hockey \u00b7 1980 Olympics",   emoji:"\ud83e\udd45", div:"Olympic", seed:1, stats:"USA college kids beat the USSR machine", fact:"A team of American college kids beat the Soviet Union \u2014 the most dominant hockey machine ever assembled \u2014 at the height of the Cold War. Al Michaels screaming 'Do you believe in miracles? YES!' is the most political sports moment in history disguised as a hockey game."},
+  {id:1,  name:"Jesse Owens \u00b7 Berlin",     from:"Track & Field \u00b7 1936",        emoji:"\ud83c\udfc3", div:"Olympic", seed:2, stats:"4 golds in front of Hitler", fact:"Hitler's Olympics. Jesse Owens won four gold medals directly in front of the man who had declared Black people inferior. No speech, no protest, just running faster than anyone on earth. The most devastating rebuttal in human history needed no words at all."},
+  {id:2,  name:"Usain Bolt \u00b7 9.58",        from:"Track & Field \u00b7 2009 Worlds", emoji:"\u26a1", div:"Olympic", seed:3, stats:"World record while celebrating", fact:"He looked left. He beat his own world record while celebrating. Usain Bolt ran 9.58 seconds and seemed almost annoyed it took that long. The most casual act of superhuman performance ever witnessed \u2014 a man so far ahead of his sport he could showboat through history."},
+  {id:3,  name:"Kerri Strug's Vault",       from:"Gymnastics \u00b7 1996 Olympics",   emoji:"\ud83e\udd38", div:"Olympic", seed:4, stats:"Landed gold on a broken ankle", fact:"Injured ankle. One vault left. Gold medal on the line. She landed on one foot, saluted, and collapsed. The entire country held its breath for four seconds and then lost its mind together. The purest image of an athlete giving everything the body has left."},
+  {id:4,  name:"28-3 Comeback",             from:"NFL \u00b7 Super Bowl LI \u00b7 2017",  emoji:"\ud83c\udfc8", div:"Super Bowl", seed:1, stats:"Largest SB comeback ever \u00b7 OT", fact:"New England trailed Atlanta 28-3 in the third quarter of the Super Bowl. No team had ever come back from more than ten. They won in overtime. Brady orchestrated the greatest comeback in the history of the most-watched sporting event on earth, and an entire city in Georgia has never recovered."},
+  {id:5,  name:"The Helmet Catch",          from:"NFL \u00b7 Super Bowl XLII \u00b7 2008", emoji:"\ud83d\ude4c", div:"Super Bowl", seed:2, stats:"Ended the Patriots' perfect season", fact:"David Tyree pinned the ball against his own helmet while being tackled. It kept alive the drive that ended the Patriots' 18-0 perfect season. The most improbable catch in Super Bowl history, saved by a man's skull, and the reason 19-0 never happened."},
+  {id:6,  name:"Immaculate Reception",      from:"NFL \u00b7 1972 Playoffs",          emoji:"\ud83c\udfaf", div:"Super Bowl", seed:3, stats:"Nobody agrees what happened", fact:"Franco Harris caught a deflected ball inches off the ground and ran it in for the touchdown. To this day nobody fully agrees what actually happened or whether it should have counted. The NFL's original miracle, and the play that turned the Steelers from losers into a dynasty."},
+  {id:7,  name:"Lynn Swann's Catches",      from:"NFL \u00b7 Super Bowl X \u00b7 1976",   emoji:"\ud83e\udda2", div:"Super Bowl", seed:4, stats:"Concussed \u00b7 161 yds \u00b7 ballet", fact:"Lynn Swann was concussed in the week before the game. He still made four catches for 161 yards, including an acrobatic 53-yard grab that redefined what a wide receiver could be. Ballet in shoulder pads, performed by a man who probably shouldn't have been cleared to play."},
+  {id:8,  name:"The Shot \u00b7 Jordan '89",    from:"NBA Playoffs \u00b7 1989",         emoji:"\ud83c\udfc0", div:"Basketball", seed:1, stats:"Buzzer-beater over Ehlo \u00b7 the fist pump", fact:"Michael Jordan over Craig Ehlo. The pump fake, the hang, the buzzer, the fist pumping in mid-air. The moment Jordan announced he would not be stopped by anything or anyone. Cleveland still feels it, the way Cleveland always seems to be on the wrong end of these."},
+  {id:9,  name:"LeBron's Block \u00b7 G7",      from:"NBA Finals \u00b7 2016",           emoji:"\ud83d\udc51", div:"Basketball", seed:2, stats:"Down 3-1 \u00b7 ended a 52-yr drought", fact:"Cleveland down 3-1, Game 7 on the road. LeBron chased down Andre Iguodala from behind and pinned the layup against the backboard at the most important moment of the series. The defining play of the greatest Finals comeback ever, and the night a city's 52-year drought finally ended."},
+  {id:10, name:"Magic's Junior Skyhook",    from:"NBA Finals \u00b7 1987",           emoji:"\u2728", div:"Basketball", seed:3, stats:"A guard's hook over two bigs", fact:"Magic Johnson \u2014 a point guard \u2014 hit a running hook shot over two defenders with two seconds left to win Game 4 of the Finals. Even Larry Bird admitted: 'It was a great shot. I didn't think he could make it.' He could. He did. On the Celtics' floor, which made it sweeter."},
+  {id:11, name:"Wilt's 100-Point Game",     from:"NBA \u00b7 March 2, 1962",         emoji:"\ud83d\udcaf", div:"Basketball", seed:4, stats:"100 pts \u00b7 no video exists", fact:"Wilt Chamberlain scored 100 points in a single NBA game. Almost nobody was there. No video exists. We have one blurry photo of Wilt holding a paper sign reading 100. The most dominant individual performance in team sports history happened in near-total obscurity, which only adds to the myth."},
+  {id:12, name:"Kirk Gibson's Homer",       from:"MLB \u00b7 1988 World Series",     emoji:"\u26be", div:"Baseball", seed:1, stats:"Walk-off on two bad legs", fact:"Barely able to walk, a single pinch-hit appearance, full count, two outs. He hit a walk-off homer off the best closer in baseball and limped around the bases pumping his fist. Vin Scully went silent for 67 seconds and let the roar of the crowd tell the story. Pure baseball theater."},
+  {id:13, name:"The Catch \u00b7 Willie Mays",  from:"MLB \u00b7 1954 World Series",     emoji:"\ud83e\udde4", div:"Baseball", seed:2, stats:"Over-the-shoulder \u00b7 460 feet", fact:"Over-the-shoulder, full sprint, 460 feet from home plate. Willie Mays caught Vic Wertz's drive with his back to the infield and then spun and fired it back in. Seventy years later nobody has fully explained how it was physically possible. The greatest defensive play the sport has ever produced."},
+  {id:14, name:"Buckner's Error",           from:"MLB \u00b7 1986 World Series",     emoji:"\ud83d\ude31", div:"Baseball", seed:3, stats:"The ball through the legs", fact:"The ball rolled through Bill Buckner's legs and the Red Sox lost. Boston waited eighteen more years for a title. One ground ball through one man's legs broke an entire city's heart and became the defining image of sports cruelty \u2014 a moment of agony so complete it followed a good man for the rest of his life."},
+  {id:15, name:"Cal Ripken's 2,131st",      from:"MLB \u00b7 September 6, 1995",     emoji:"\ud83d\udd22", div:"Baseball", seed:4, stats:"Broke Gehrig \u00b7 22-min ovation", fact:"Lou Gehrig's consecutive-games record stood for 56 years. Cal Ripken broke it and then played 501 more. When the number flipped on the warehouse wall in Baltimore, the ovation lasted 22 minutes. Coming right after the strike that nearly killed the sport, baseball needed that night more than it knew."},
+  {id:16, name:"Ali vs Foreman",            from:"Boxing \u00b7 Kinshasa \u00b7 1974",    emoji:"\ud83e\udd4a", div:"Boxing", seed:1, stats:"Rope-a-dope \u00b7 4-1 underdog", fact:"Muhammad Ali was a 4-1 underdog against the most feared puncher alive. He rope-a-doped Foreman for eight rounds, let him punch himself out, then dropped him in the eighth. The Rumble in the Jungle is the greatest performance by arguably the greatest athlete who ever lived, on a continent that adopted him as its own."},
+  {id:17, name:"Douglas KOs Tyson",         from:"Boxing \u00b7 Tokyo \u00b7 1990",       emoji:"\ud83d\udca5", div:"Boxing", seed:2, stats:"42-0 Tyson knocked out \u00b7 biggest upset", fact:"Mike Tyson was 42-0 and the biggest favorite in boxing history. Buster Douglas knocked him out in Tokyo. Sports Illustrated hadn't even printed a preview because the result wasn't considered in question. The most shocking upset in combat sports history, delivered by a man fighting through his mother's recent death."},
+  {id:18, name:"Hagler vs Hearns \u00b7 R1",    from:"Boxing \u00b7 1985",               emoji:"\ud83d\udd25", div:"Boxing", seed:3, stats:"8 minutes \u00b7 the greatest round ever", fact:"Eight minutes. Three knockdowns. The most ferocious round in boxing history. Two men decided in the first round that neither of them would survive the night, and they fought like it. Hagler won. Both men were never quite the same afterward. Some fights age you a decade in a single round."},
+  {id:19, name:"Ali's Olympic Gold",        from:"Boxing \u00b7 1960 Olympics",      emoji:"\ud83e\udd47", div:"Boxing", seed:4, stats:"Gold at 18 \u00b7 the origin story", fact:"Cassius Clay won gold at eighteen, came home to Louisville, and was refused service at a whites-only diner. He allegedly threw his medal into the Ohio River. The origin story of the most important athlete America ever produced \u2014 the moment that turned a boxer into a movement."},
+  {id:20, name:"Leicester City",            from:"Premier League \u00b7 2016",      emoji:"\ud83e\udd8a", div:"Underdog", seed:1, stats:"5000-1 odds \u00b7 won the league", fact:"5000-to-1 odds. A team that nearly got relegated the year before. They won the Premier League. Bookmakers said you were more likely to find Elvis alive than see Leicester win the title. They won it anyway, and it remains the single most improbable championship in the history of major team sports."},
+  {id:21, name:"Villanova \u00b7 1985",         from:"College Basketball \u00b7 1985",  emoji:"\ud83c\udfc6", div:"Underdog", seed:2, stats:"8-seed \u00b7 shot 79% in the final", fact:"An eight-seed against the unbeatable Georgetown Hoyas. Villanova shot 79 percent from the field in the championship game \u2014 the most statistically perfect performance in NCAA tournament history, by a team almost nobody believed could stay on the floor with Patrick Ewing, let alone win."},
+  {id:22, name:"1969 Miracle Mets",         from:"MLB \u00b7 1969",                  emoji:"\ud83d\udc08", div:"Underdog", seed:3, stats:"Never above .500 \u2192 champions", fact:"The Miracle Mets had never finished above .500 in franchise history. They won 100 games and the World Series in the same year a man walked on the moon. New York needed both miracles equally that summer, and somehow got them within weeks of each other."},
+  {id:23, name:"Secretariat \u00b7 Belmont",   from:"Horse Racing \u00b7 1973",         emoji:"\ud83d\udc0e", div:"Underdog", seed:4, stats:"Won by 31 lengths \u00b7 heart 2x normal", fact:"Secretariat won the Belmont Stakes by 31 lengths. His final quarter-mile was faster than his first \u2014 he accelerated. He won the Triple Crown so completely that when he died, veterinarians discovered his heart was literally twice the normal size. The closest a living thing has come to mechanical perfection."},
+  {id:24, name:"Tiger's 2000 US Open",      from:"Golf \u00b7 Pebble Beach \u00b7 2000",  emoji:"\u26f3", div:"Individual", seed:1, stats:"Won by 15 strokes", fact:"Tiger Woods won by 15 strokes at Pebble Beach. The second-place finisher was at even par; Tiger was twelve under. He was 24 years old, and the gap between him and every other golfer on earth had never been wider or more frightening. The most dominant performance in the history of his sport."},
+  {id:25, name:"Federer vs Nadal \u00b7 2008",  from:"Tennis \u00b7 Wimbledon Final",    emoji:"\ud83c\udfbe", div:"Individual", seed:2, stats:"5 sets \u00b7 ~5 hrs \u00b7 fading light", fact:"Five sets, nearly five hours, rain delays, fading light. The two greatest tennis players who ever lived at the absolute peak of their powers. Federer wept. Nadal had no idea what to do with himself. Neither did anyone watching. Widely called the greatest match ever played, in any era, on any surface."},
+  {id:26, name:"Phelps \u00b7 8 Golds",         from:"Swimming \u00b7 2008 Olympics",   emoji:"\ud83c\udfca", div:"Individual", seed:3, stats:"8 golds \u00b7 won one by 0.01s", fact:"Michael Phelps won eight gold medals in eight events at a single Olympics, setting seven world records along the way. On the eighth race he nearly lost \u2014 he touched the wall by one one-hundredth of a second. The most decorated Olympian in history came within a fingertip of finishing with seven."},
+  {id:27, name:"Bo Jackson",                from:"NFL/MLB \u00b7 1986-1990",         emoji:"\ud83c\udf2a", div:"Individual", seed:4, stats:"Two pro sports \u00b7 All-Star in both", fact:"Bo Jackson ran over Brian Bosworth. Bo Jackson hit baseballs 500 feet. Bo Jackson played two professional sports simultaneously at an All-Star level in both. He wasn't real. Nobody has explained him satisfactorily since, and an injury took him before we could understand what we were even watching."},
+  {id:28, name:"The Hand of God",           from:"Football \u00b7 1986 World Cup",   emoji:"\u270b", div:"Heartbreak", seed:1, stats:"Cheated, then scored the greatest goal ever", fact:"Maradona punched the ball into the net with his hand and the referee missed it. Then, four minutes later, he scored the greatest individual goal in football history on the same field. He called the first one the Hand of God. England is still furious. Both moments, somehow, were genius."},
+  {id:29, name:"France 98 \u00b7 Zidane",      from:"Football \u00b7 1998 WC Final",    emoji:"\ud83c\udf1f", div:"Heartbreak", seed:2, stats:"2 headed goals \u00b7 home soil", fact:"Zinedine Zidane headed in two goals in the World Cup Final on home soil. France beat Brazil 3-0. A country that barely knew what football was two weeks earlier stopped entirely to watch. One of the great nights in sporting history, and the moment a divided nation briefly became one."},
+  {id:30, name:"The Drive \u00b7 Elway",       from:"NFL \u00b7 1987 AFC Championship", emoji:"\ud83d\ude97", div:"Heartbreak", seed:3, stats:"98 yards \u00b7 5:32 left \u00b7 in Cleveland", fact:"98 yards, 15 plays, 5:32 left. John Elway drove the length of the field in Cleveland in January to force overtime and win. Cleveland has not fully recovered. It is simply called The Drive. No other explanation is required \u2014 the name alone still hurts an entire city."},
+  {id:31, name:"Buckner Side \u2014 the Mets Win", from:"MLB \u00b7 1986 \u00b7 Game 6",       emoji:"\ud83d\udc94", div:"Heartbreak", seed:4, stats:"Same play, the other dugout", fact:"The same ground ball that broke Boston's heart sent the Mets into a Game 7 they would win. From the other dugout, the Buckner error wasn't tragedy \u2014 it was the wildest reprieve in World Series history. Every heartbreak in sports is somebody else's miracle, and this is the cleanest proof of it ever recorded."}
+];
+
+const R16=[[0,3],[1,2],[4,7],[5,6],[8,11],[9,10],[12,15],[13,14],[16,19],[17,18],[20,23],[21,22],[24,27],[25,26],[28,31],[29,30]];
+const COUNTS=[16,8,4,2,1];
+const RLABELS=["Round of 32","Round of 16","Quarterfinal","Semifinal","The Final"];
+let results=[Array(16).fill(null),Array(8).fill(null),Array(4).fill(null),Array(2).fill(null),Array(1).fill(null)];
+let currentVote=null,selected=null,locked=false,askPrompt='';
+
+const ASK_ROOM=[
+  "Were you alive for it, or did you inherit it as legend?",
+  "Greatest moment, or just the most replayed?",
+  "Skill or miracle \u2014 which one are we voting on here?",
+  "Which losing moment deserved to go further?",
+  "If you could have been in the stadium for one, which one?"
+];
+
+function getC(r,mi,slot){
+  if(r===0){const idx=R16[mi][slot];return ALL[idx];}
+  const prevMi=mi*2+slot,prevW=results[r-1][prevMi];
+  if(prevW===null)return null;
+  return ALL.find(c=>c.id===prevW);
+}
+function getCurrentRound(){for(let r=0;r<5;r++){for(let mi=0;mi<COUNTS[r];mi++){if(results[r][mi]===null){const a=getC(r,mi,0),b=getC(r,mi,1);if(a&&b)return r;}}};return 4;}
+function getNextActive(){const cr=getCurrentRound();for(let mi=0;mi<COUNTS[cr];mi++){if(results[cr][mi]===null){const a=getC(cr,mi,0),b=getC(cr,mi,1);if(a&&b)return{round:cr,mi};}}return null;}
+function totalVotes(){return results.flat().filter(v=>v!==null).length;}
+function fakeA(a,b){return Math.min(86,Math.max(20,50+(b.id-a.id)%17+(a.id%4)*2));}
+
+function render(){
+  const done=results[4][0]!==null;
+  if(done){const w=ALL.find(c=>c.id===results[4][0]);renderChampion(w);return;}
+  if(currentVote!==null){renderVote();return;}
+  renderBracket();
+}
+
+function renderBracket(){
+  document.getElementById('back-btn').style.display='none';
+  const cr=getCurrentRound(),next=getNextActive();
+  const divNames=["Olympic","Super Bowl","Basketball","Baseball","Boxing","Underdog","Individual","Heartbreak"];
+  let html='<div class="core-q">Which moment made you feel more alive?</div>';
+  html+='<div class="div-labels">';
+  divNames.forEach(d=>{html+=`<div class="div-label">${d}</div>`;});
+  html+='</div><div class="bracket-cols">';
+  for(let r=0;r<5;r++){
+    const count=COUNTS[r],maxH=[22,30,44,70,100][r],gap=[2,5,12,28,0][r];
+    html+=`<div class="bracket-col"><div class="col-label" style="color:${r===cr?'#4a9eff':'#26345a'}">${["R32","R16","QF","SF","Final"][r]}</div><div class="col-matches" style="gap:${gap}px">`;
+    for(let mi=0;mi<count;mi++){
+      const a=getC(r,mi,0),b=getC(r,mi,1),winner=results[r][mi];
+      const active=r===cr&&winner===null&&a&&b,done=winner!==null;
+      const cls=active?'active':done?'done':'empty';
+      const onclick=(active||done)?`onclick="startVote(${r},${mi})"`:'';
+      html+=`<div class="match-cell ${cls}" style="max-height:${maxH}px;${!active&&!done?'border:1px solid #12122a':''}" ${onclick}>`;
+      [a,b].forEach((c,si)=>{
+        if(!c){html+=`<div class="tbd">—</div>`;return;}
+        const isW=winner===c.id,isL=done&&!isW;
+        const nm=c.name.split(' ').slice(0,r===0?2:3).join(' ');
+        html+=`${si===1?'<hr class="match-divider">':''}<div class="match-row ${isW?'winner':isL?'loser':''}"><span class="em">${c.emoji}</span><span class="nm">${nm}</span></div>`;
+      });
+      html+='</div>';
+    }
+    html+='</div></div>';
+  }
+  html+='</div>';
+  if(next)html+=`<div style="padding:14px 16px 0"><button class="vote-btn" onclick="startVote(${next.round},${next.mi})">Vote Next Matchup →</button><div class="vote-hint">Tap any gold-bordered match to vote</div></div>`;
+  document.getElementById('main').innerHTML=html;
+}
+
+function startVote(round,mi){currentVote={round,mi};selected=null;locked=false;const w=results[round][mi];if(w!==null){const a=getC(round,mi,0);selected=(a&&a.id===w)?'a':'b';}render();}
+
+function renderVote(){
+  document.getElementById('back-btn').style.display='block';
+  const{round,mi}=currentVote,a=getC(round,mi,0),b=getC(round,mi,1);
+  if(!a||!b){showBracket();return;}
+  const pA=fakeA(a,b),pB=100-pA,majority=selected?(selected==='a'?pA:pB)>=50:false;
+  const hint=!selected?"— Which made you feel more alive? —":locked?"— Verdict locked! —":"— Tap to switch. Button to commit. —";
+  let html=`<div id="vote-screen"><div class="vote-header"><div class="round-label">${RLABELS[round]}</div><div class="vote-hint-text">${hint}</div></div>`;
+  [{side:'a',c:a,pct:pA},{side:'b',c:b,pct:pB}].forEach(({side,c,pct})=>{
+    const isSel=selected===side;
+    html+=`<div class="card${isSel?' selected':''}" onclick="selectCard('${side}')">`;
+    if(locked&&isSel)html+=`<div class="pct-bar" style="width:${pct}%"></div>`;
+    html+=`<div class="card-inner">
+      <div class="card-top">
+        <div class="card-emoji">${c.emoji}</div>
+        <div style="flex:1;min-width:0">
+          <div class="card-meta">${c.div} · ${c.from}</div>
+          <div class="card-name">${c.name}</div>
+        </div>
+        ${isSel&&!locked?'<div class="card-arrow">◀</div>':''}
+      </div>
+      <div class="card-tag">${c.seed === 1 ? '#1 SEED' : c.seed === 2 ? '#2 SEED' : c.seed === 3 ? '#3 SEED' : '#4 SEED'}</div>
+      <div class="card-stats">📊 ${c.stats}</div>
+      <div class="card-fact">${c.fact}</div>
+      ${locked&&isSel?`<div class="card-pct">${pct}%<span>voted this moment</span><span class="check">✓</span></div>`:''}
+    </div></div>`;
+  });
+  if(selected&&!locked)html+=`<div class="commit-box"><div class="commit-hint">Still deciding? Tap the other card to compare.</div><button class="commit-btn" onclick="commitVote()">Lock In Verdict →</button></div>`;
+  if(locked){
+    html+=`<div class="result-box"><div class="${majority?'result-majority':'result-minority'}">${majority?'✓ With the majority':'🔥 Against the crowd'}</div>
+      <div class="ask-room" style="margin-top:14px;padding-top:14px;border-top:1px dashed #34466a"><div style="font-size:9px;letter-spacing:3px;color:#1a5aaa;text-transform:uppercase;margin-bottom:6px">Ask the Room</div><div style="font-size:15px;color:#d8e8ff;font-style:italic;line-height:1.4">${askPrompt}</div></div>
+    </div>
+    <button class="next-btn" onclick="advance()">Vote Next Matchup →</button>`;
+  }
+  html+='</div>';
+  document.getElementById('main').innerHTML=html;
+}
+
+function selectCard(side){if(locked)return;selected=side;renderVote();}
+function commitVote(){
+  if(!selected||locked)return;
+  locked=true;
+  askPrompt=ASK_ROOM[Math.floor(Math.random()*ASK_ROOM.length)];
+  const{round,mi}=currentVote,a=getC(round,mi,0),b=getC(round,mi,1);
+  results[round][mi]=selected==='a'?a.id:b.id;
+  renderVote();
+  document.getElementById('counter').textContent=totalVotes()+'/31';
+}
+function advance(){currentVote=null;locked=false;selected=null;render();}
+function showBracket(){currentVote=null;selected=null;locked=false;render();}
+function renderChampion(c){
+  document.getElementById('back-btn').style.display='none';
+  document.getElementById('main').innerHTML=`
+    <div id="champion-screen">
+      <div style="font-size:44px;margin-bottom:6px">🏆</div>
+      <div class="champ-emoji">${c.emoji}</div>
+      <div class="champ-trophy">Greatest Sports Moment of All Time</div>
+      <div class="champ-name">${c.name}</div>
+      <div class="champ-from">${c.from}</div>
+      <div style="display:inline-block;margin:10px 0 6px;padding:4px 16px;border-radius:20px;background:#4a9eff;color:#050510;font-size:11px;font-weight:700;letter-spacing:1px">YOUR VERDICT</div>
+      <div class="champ-fact">${c.fact}</div>
+      <button class="reset-btn" onclick="resetGame()">Run It Back</button>
+    </div>`;
+}
+function resetGame(){results=[Array(16).fill(null),Array(8).fill(null),Array(4).fill(null),Array(2).fill(null),Array(1).fill(null)];currentVote=null;selected=null;locked=false;render();}
+render();
+</script>
+</body>
+</html>
