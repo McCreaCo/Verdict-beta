@@ -226,7 +226,7 @@ function commitVote(){
 function showBracket(){currentVote=null;selected=null;locked=false;render();}
 function renderChampion(c){
   document.getElementById('back-btn').style.display='none';
-  document.getElementById('main').innerHTML=`<div id="champion-screen"><div class="champ-emoji">${c.emoji}</div><div class="champ-label">The Greatest OH HELL YES Moment of All Time</div><div class="champ-name">${c.name}</div><div class="champ-from">${c.from}</div><div class="champ-meta">${c.div}</div><div class="champ-fact">${c.fact}</div><button class="reset-btn" onclick="resetGame()">Run It Back</button></div>`;
+  document.getElementById('main').innerHTML=`<div id="champion-screen"><div class="champ-emoji">${c.emoji}</div><div class="champ-label">The Greatest OH HELL YES Moment of All Time</div><div class="champ-name">${c.name}</div><div class="champ-from">${c.from}</div><div class="champ-meta">${c.div}</div><div class="champ-fact">${c.fact}</div><button class="reset-btn" onclick="resetGame()">Run It Back</button><a href="index.html" style="display:block;max-width:240px;margin-left:auto;margin-right:auto;margin-top:10px;padding:11px;background:transparent;border:1px solid rgba(255,255,255,0.14);border-radius:12px;color:rgba(255,255,255,0.45);font-size:12px;font-weight:400;text-align:center;letter-spacing:1px;font-family:Georgia,serif;text-decoration:none;box-sizing:border-box">← All Brackets</a></div>`;
 }
 function resetGame(){results=[Array(16).fill(null),Array(8).fill(null),Array(4).fill(null),Array(2).fill(null),Array(1).fill(null)];currentVote=null;selected=null;locked=false;render();}
 render();
