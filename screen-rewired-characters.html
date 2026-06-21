@@ -36,25 +36,25 @@
   .tbd { padding: 2px 3px; font-size: 6px; color: #141008; }
 
   .vote-btn { width: 100%; padding: 14px; background: linear-gradient(135deg, #b8956a, #7a5a30); border: none; border-radius: 12px; color: #f0e8d8; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; margin-top: 14px; }
-  .vote-hint { font-size: 10px; color: #1a1408; text-align: center; margin-top: 6px; }
+  .vote-hint { font-size: 10px; color: #6a6478; text-align: center; margin-top: 6px; }
 
   /* VOTE SCREEN */
   #vote-screen { padding: 0 16px; animation: fadeUp 0.3s ease; }
   .vote-header { text-align: center; margin-bottom: 16px; }
   .round-label { font-size: 10px; letter-spacing: 3px; color: #b8956a; text-transform: uppercase; margin-bottom: 3px; }
-  .vote-hint-text { font-size: 11px; color: #2a2010; letter-spacing: 1px; }
+  .vote-hint-text { font-size: 11px; color: #8a8298; letter-spacing: 1px; }
   .card { display: block; width: 100%; margin-bottom: 10px; border-radius: 14px; padding: 16px 18px; cursor: pointer; text-align: left; transition: all 0.25s; position: relative; overflow: hidden; border: 2px solid #141008; background: #080706; }
   .card.selected { border-color: #b8956a !important; background: #161208 !important; transform: scale(1.01); }
   .card-inner { position: relative; z-index: 1; }
   .card-top { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 8px; }
   .card-emoji { font-size: 28px; margin-top: 2px; }
   .card-meta { font-size: 9px; color: #b8956a; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 2px; }
-  .card-name { font-size: 17px; font-weight: 700; color: #4a3a28; line-height: 1.2; margin-bottom: 2px; transition: color 0.2s; }
-  .card.selected .card-name { color: #f0e8d8; }
-  .card-from { font-size: 10px; color: #201808; font-style: italic; transition: color 0.2s; }
-  .card.selected .card-from { color: #6a5030; }
-  .card-fact { font-size: 12px; color: #2a1e10; line-height: 1.75; transition: color 0.2s; }
-  .card.selected .card-fact { color: #907860; }
+  .card-name { font-size: 17px; font-weight: 700; color: #d8d2e2; line-height: 1.2; margin-bottom: 2px; transition: color 0.2s; }
+  .card.selected .card-name { color: #ffffff; }
+  .card-from { font-size: 10px; color: #8a8298; font-style: italic; transition: color 0.2s; }
+  .card.selected .card-from { color: #8a8298; }
+  .card-fact { font-size: 12px; color: #7e7888; line-height: 1.75; transition: color 0.2s; }
+  .card.selected .card-fact { color: #e8e2f0; }
   .card-arrow { font-size: 16px; color: #b8956a; margin-left: auto; flex-shrink: 0; }
   .card-pct { font-size: 18px; font-weight: 700; color: #b8956a; margin-top: 10px; }
   .card-pct span { font-size: 12px; font-weight: 400; color: #3a2a18; margin-left: 6px; }
@@ -202,9 +202,7 @@ function renderBracket() {
   const divNames = ["Antiheroes","Pure Evil","Broken Heroes","Icons","Animated","Rebels","Complex Women","Wild Cards"];
   const colLabels = ["R32","R16","QF","SF","Final"];
 
-  let html = '<div class="div-labels">';
-  divNames.forEach(d => { html += `<div class="div-label">${d}</div>`; });
-  html += '</div><div class="bracket-cols">';
+  let html = '<div class="bracket-cols">';
 
   for (let r=0; r<5; r++) {
     const count = COUNTS[r];

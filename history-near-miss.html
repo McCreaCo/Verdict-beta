@@ -33,23 +33,23 @@
   .match-divider { border: none; border-top: 1px solid #0e1208; margin: 0; }
   .tbd { padding: 2px 3px; font-size: 6px; color: #121608; }
   .vote-btn { width: 100%; padding: 14px; background: linear-gradient(135deg, #70b040, #406020); border: none; border-radius: 12px; color: #080a06; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; margin-top: 14px; }
-  .vote-hint { font-size: 10px; color: #141a08; text-align: center; margin-top: 6px; }
+  .vote-hint { font-size: 10px; color: #6a6478; text-align: center; margin-top: 6px; }
   #vote-screen { padding: 0 16px; animation: fadeUp 0.3s ease; }
   .vote-header { text-align: center; margin-bottom: 16px; }
   .round-label { font-size: 10px; letter-spacing: 3px; color: #70b040; text-transform: uppercase; margin-bottom: 3px; }
-  .vote-hint-text { font-size: 11px; color: #1e2810; letter-spacing: 1px; }
+  .vote-hint-text { font-size: 11px; color: #8a8298; letter-spacing: 1px; }
   .card { display: block; width: 100%; margin-bottom: 10px; border-radius: 14px; padding: 16px 18px; cursor: pointer; text-align: left; transition: all 0.25s; position: relative; overflow: hidden; border: 2px solid #101408; background: #0a0e06; }
   .card.selected { border-color: #70b040 !important; background: #101808 !important; transform: scale(1.01); }
   .card-inner { position: relative; z-index: 1; }
   .card-top { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 8px; }
   .card-emoji { font-size: 28px; margin-top: 2px; flex-shrink: 0; }
   .card-meta { font-size: 9px; color: #70b040; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 2px; }
-  .card-name { font-size: 15px; font-weight: 700; color: #283818; line-height: 1.2; margin-bottom: 2px; transition: color 0.2s; }
-  .card.selected .card-name { color: #f0f8e8; }
-  .card-from { font-size: 10px; color: #161e08; font-style: italic; transition: color 0.2s; }
-  .card.selected .card-from { color: #507030; }
-  .card-fact { font-size: 12px; color: #161e08; line-height: 1.75; transition: color 0.2s; }
-  .card.selected .card-fact { color: #608040; }
+  .card-name { font-size: 15px; font-weight: 700; color: #d8d2e2; line-height: 1.2; margin-bottom: 2px; transition: color 0.2s; }
+  .card.selected .card-name { color: #ffffff; }
+  .card-from { font-size: 10px; color: #8a8298; font-style: italic; transition: color 0.2s; }
+  .card.selected .card-from { color: #8a8298; }
+  .card-fact { font-size: 12px; color: #7e7888; line-height: 1.75; transition: color 0.2s; }
+  .card.selected .card-fact { color: #e8e2f0; }
   .card-arrow { font-size: 16px; color: #70b040; margin-left: auto; flex-shrink: 0; }
   .card-pct { font-size: 18px; font-weight: 700; color: #70b040; margin-top: 10px; }
   .card-pct span { font-size: 12px; font-weight: 400; color: #283818; margin-left: 6px; }
@@ -165,9 +165,7 @@ function renderBracket(){
   document.getElementById('back-btn').style.display='none';
   const cr=getCurrentRound(),next=getNextActive();
   const divNames=["Film","Music","Sports","Literary","TV","Personal","Wild Cards","Dark Horses"];
-  let html='<div class="div-labels">';
-  divNames.forEach(d=>{html+=`<div class="div-label">${d}</div>`;});
-  html+='</div><div class="bracket-cols">';
+  let html='<div class="bracket-cols">';
   for(let r=0;r<5;r++){
     const count=COUNTS[r],maxH=[22,30,44,70,100][r],gap=[2,5,12,28,0][r];
     html+=`<div class="bracket-col"><div class="col-label" style="color:${r===cr?'#70b040':'#141a08'}">${["R32","R16","QF","SF","Final"][r]}</div><div class="col-matches" style="gap:${gap}px">`;
