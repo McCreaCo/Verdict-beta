@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VERDICT — The 32 Greatest Music Artists of All Time</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #07080a; color: #e8eaf8; font-family: Georgia, 'Times New Roman', serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
+  #app { width: 100%; max-width: 560px; min-height: 100vh; display: flex; flex-direction: column; }
+  header { padding: 16px 20px 12px; border-bottom: 1px solid #181c2e; display: flex; align-items: center; justify-content: space-between; background: #0b0e16; }
+  .title { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; color: #7a8aff; }
+  .subtitle { font-size: 9px; color: #5a64d0; letter-spacing: 2px; text-transform: uppercase; margin-top: 2px; }
+  .counter { font-size: 10px; color: #22264a; background: #0e121e; border: 1px solid #181c2e; border-radius: 16px; padding: 4px 10px; }
+  .back-btn { background: transparent; border: 1px solid #181c2e; border-radius: 8px; padding: 5px 10px; color: #2c3258; font-size: 11px; cursor: pointer; font-family: Georgia, serif; }
+  #main { flex: 1; padding: 14px 0; }
+  .core-q { text-align: center; font-size: 12px; color: #7a8aff; font-style: italic; padding: 4px 20px 0; line-height: 1.4; }
+  .div-labels { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px; margin: 10px 10px 8px; }
+  .div-label { font-size: 7px; color: #2c3258; text-align: center; padding: 3px 2px; background: #0e121e; border-radius: 4px; }
+  .bracket-cols { display: flex; gap: 3px; padding: 0 10px; }
+  .bracket-col { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+  .col-label { font-size: 7px; letter-spacing: 1.5px; text-transform: uppercase; text-align: center; margin-bottom: 5px; }
+  .col-matches { display: flex; flex-direction: column; justify-content: space-around; height: 380px; }
+  .match-cell { border-radius: 5px; overflow: hidden; cursor: default; flex: 1; transition: border-color 0.2s; }
+  .match-cell.active { border: 1px solid #7a8aff !important; background: #0e121e !important; cursor: pointer; }
+  .match-cell.done { border: 1px solid #141a3a !important; background: #0b0e16 !important; cursor: pointer; }
+  .match-cell.empty { border: 1px solid #0e121e; background: #07080a; }
+  .match-row { display: flex; align-items: center; gap: 2px; padding: 2px 3px; transition: opacity 0.3s; }
+  .match-row.loser { opacity: 0.22; }
+  .match-row.winner { background: rgba(122,138,255,0.12); }
+  .match-row .em { font-size: 8px; }
+  .match-row .nm { font-size: 7px; color: #2c3258; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 400; }
+  .match-row.winner .nm { color: #7a8aff; font-weight: 700; }
+  .match-divider { border: none; border-top: 1px solid #141a30; margin: 0; }
+  .tbd { padding: 2px 3px; font-size: 6px; color: #161c30; }
+  .vote-btn { width: 100%; padding: 14px; background: linear-gradient(135deg, #7a8aff, #4a52c0); border: none; border-radius: 12px; color: #07080a; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; margin-top: 14px; }
+  .vote-hint { font-size: 10px; color: #6a6478; text-align: center; margin-top: 6px; }
+  #vote-screen { padding: 0 16px; animation: fadeUp 0.3s ease; }
+  .vote-header { text-align: center; margin-bottom: 16px; }
+  .round-label { font-size: 10px; letter-spacing: 3px; color: #7a8aff; text-transform: uppercase; margin-bottom: 3px; }
+  .vote-hint-text { font-size: 11px; color: #8a8298; letter-spacing: 1px; }
+  .card { display: block; width: 100%; margin-bottom: 10px; border-radius: 14px; padding: 16px 18px; cursor: pointer; text-align: left; transition: all 0.25s; position: relative; overflow: hidden; border: 2px solid #181c2e; background: #0b0e16; }
+  .card.selected { border-color: #7a8aff !important; background: #0e1226 !important; transform: scale(1.01); }
+  .card-inner { position: relative; z-index: 1; }
+  .card-top { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 8px; }
+  .card-emoji { font-size: 34px; margin-top: 2px; flex-shrink: 0; }
+  .card-meta { font-size: 9px; color: #4a52c0; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 2px; }
+  .card-name { font-size: 18px; font-weight: 700; color: #d8d2e2; line-height: 1.2; margin-bottom: 2px; transition: color 0.2s; }
+  .card.selected .card-name { color: #ffffff; }
+  .card-from { font-size: 10px; color: #8a8298; font-style: italic; transition: color 0.2s; }
+  .card.selected .card-from { color: #8a8298; }
+  .card-tag { display: inline-block; margin-top: 8px; padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 700; background: #181c2e; color: #7a8aff; letter-spacing: 1px; }
+  .card.selected .card-tag { background: #7a8aff; color: #07080a; }
+  .card-stats { margin-top: 8px; font-size: 9px; color: #9a8aa0; letter-spacing: 0.5px; }
+  .card.selected .card-stats { color: #9a8aa0; }
+  .card-fact { font-size: 12px; color: #7e7888; line-height: 1.75; transition: color 0.2s; margin-top: 8px; }
+  .card.selected .card-fact { color: #e8e2f0; }
+  .card-arrow { font-size: 16px; color: #7a8aff; margin-left: auto; flex-shrink: 0; }
+  .card-pct { font-size: 20px; font-weight: 700; color: #7a8aff; margin-top: 10px; }
+  .card-pct span { font-size: 12px; font-weight: 400; color: #2c3258; margin-left: 6px; }
+  .card-pct .check { color: #7a8aff; margin-left: 8px; }
+  .pct-bar { position: absolute; top: 0; left: 0; height: 100%; background: rgba(122,138,255,0.06); transition: width 0.9s cubic-bezier(.4,0,.2,1); z-index: 0; }
+  .commit-box { padding: 14px 18px; background: #0b0e16; border: 1px solid #181c2e; border-radius: 12px; text-align: center; animation: fadeUp 0.3s ease; }
+  .commit-hint { font-size: 11px; color: #2c3258; margin-bottom: 10px; font-style: italic; }
+  .commit-btn { padding: 12px 32px; background: linear-gradient(135deg, #7a8aff, #4a52c0); border: none; border-radius: 10px; color: #07080a; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+  .result-box { padding: 16px 18px; background: #0b0e16; border: 1px solid #181c2e; border-radius: 12px; text-align: center; margin-top: 2px; animation: fadeUp 0.3s ease; }
+  .result-majority { font-size: 13px; color: #7ec8a0; font-weight: 700; letter-spacing: 1px; }
+  .result-minority { font-size: 13px; color: #4a52c0; font-weight: 700; letter-spacing: 1px; }
+  .next-btn { width: 100%; margin-top: 14px; padding: 14px; background: linear-gradient(135deg, #7a8aff, #4a52c0); border: none; border-radius: 12px; color: #07080a; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+  #champion-screen { text-align: center; padding: 36px 24px; animation: fadeUp 0.5s ease; }
+  .champ-emoji { font-size: 76px; margin-bottom: 8px; }
+  .champ-trophy { font-size: 11px; letter-spacing: 4px; color: #7a8aff; text-transform: uppercase; margin-bottom: 8px; }
+  .champ-name { font-size: 26px; font-weight: 700; color: #e8eaf8; margin-bottom: 4px; }
+  .champ-from { font-size: 13px; color: #4a52c0; font-style: italic; margin-bottom: 4px; }
+  .champ-fact { font-size: 13px; color: #2e3666; font-style: italic; max-width: 310px; margin: 14px auto 28px; line-height: 1.8; }
+  .reset-btn { padding: 14px 32px; background: linear-gradient(135deg, #7a8aff, #4a52c0); border: none; border-radius: 12px; color: #07080a; font-size: 14px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  button:active { filter: brightness(0.88); }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div>
+      <a href="index.html" class="title" style="text-decoration:none;cursor:pointer" title="All brackets">VERDICT</a>
+      <div class="subtitle">Greatest Musical Artist Ever</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="back-btn" id="back-btn" style="display:none" onclick="showBracket()">← Bracket</button>
+      <div class="counter" id="counter">0/31</div>
+    </div>
+  </header>
+  <div id="main"></div>
+</div>
+
+<script>
+const ALL = [
+  // DIV 1 — ROCK GODS
+  {id:0, name:"The Beatles", from:"Rock · 1960-1970", emoji:"🪲", div:"Rock Gods", seed:1, stats:"", fact:"The most influential band in the history of popular music, full stop. In barely a decade they reinvented what a pop song could be, multiple times over, and every artist since works in a world they built. The default #1 in almost any version of this argument."},
+  {id:1, name:"Led Zeppelin", from:"Rock · 1968-1980", emoji:"🎸", div:"Rock Gods", seed:2, stats:"", fact:"The blueprint for hard rock and heavy metal, and one of the greatest live forces ever assembled. Page, Plant, Bonham, and Jones each an all-timer at their instrument. They made the album, not the single, the unit of rock ambition."},
+  {id:2, name:"Jimi Hendrix", from:"Rock · 1966-1970", emoji:"🔥", div:"Rock Gods", seed:3, stats:"", fact:"Reinvented the electric guitar in roughly four years and then was gone. Every guitarist since measures themselves against him, knowing they fall short. A three-seed only because his career was so cruelly short — the talent was number one."},
+  {id:3, name:"Queen", from:"Rock · 1970-1991", emoji:"👑", div:"Rock Gods", seed:4, stats:"", fact:"Freddie Mercury was arguably the greatest frontman who ever lived, and the band's range — opera to stadium rock to disco — was absurd. Their Live Aid set is often called the greatest live performance in history. A monster four-seed."},
+
+  // DIV 2 — POP TITANS
+  {id:4, name:"Michael Jackson", from:"Pop · 1971-2009", emoji:"🕺", div:"Pop Titans", seed:1, stats:"", fact:"The King of Pop, and the maker of the best-selling album of all time in Thriller. He fused dance, music video, and global superstardom into a single art form. The most complete pop entertainer the world has produced."},
+  {id:5, name:"Madonna", from:"Pop · 1982-present", emoji:"⛪", div:"Pop Titans", seed:2, stats:"", fact:"The Queen of Pop and the master of reinvention — she rewrote the rules for how long a pop career could last and what a woman could control in the industry. Every pop star who reinvents herself is following Madonna's map."},
+  {id:6, name:"Prince", from:"Pop/Funk · 1978-2016", emoji:"💜", div:"Pop Titans", seed:3, stats:"", fact:"A one-man genre who played every instrument, wrote everything, and bent funk, rock, and pop to his will. One of the greatest guitarists alive hiding inside one of the greatest pop stars. Singular in every sense."},
+  {id:7, name:"Beyoncé", from:"Pop/R&B · 1997-present", emoji:"🐝", div:"Pop Titans", seed:4, stats:"", fact:"The defining artist of her era and the most-awarded performer in Grammy history. A vocal powerhouse who turned the album drop into a cultural event. Still ascending — a four-seed who could win this whole thing."},
+
+  // DIV 3 — HIP-HOP
+  {id:8, name:"Tupac", from:"Hip-Hop · 1991-1996", emoji:"✊", div:"Hip-Hop", seed:1, stats:"", fact:"The most iconic figure rap has produced — a poet, an actor, a movement. His voice carried a weight and sincerity few rappers have matched. Gone at 25 and still arguably the most famous name the genre ever made."},
+  {id:9, name:"The Notorious B.I.G.", from:"Hip-Hop · 1992-1997", emoji:"👑", div:"Hip-Hop", seed:2, stats:"", fact:"Widely considered the most naturally gifted rapper who ever lived — effortless flow, vivid storytelling, perfect timing. Two albums, both classics. The standard for technical greatness, set in a tragically short career."},
+  {id:10, name:"Jay-Z", from:"Hip-Hop · 1996-present", emoji:"🇧", div:"Hip-Hop", seed:3, stats:"", fact:"The most successful rapper ever by almost any measure — longevity, business, sustained quality. Turned a Brooklyn come-up into a billion-dollar empire while staying one of the genre's sharpest lyricists for 25 years."},
+  {id:11, name:"Kendrick Lamar", from:"Hip-Hop · 2003-present", emoji:"🦋", div:"Hip-Hop", seed:4, stats:"", fact:"The first rapper to win a Pulitzer Prize for music, and the most acclaimed lyricist of his generation. He made dense, ambitious concept albums into commercial hits. A four-seed who many would argue belongs far higher."},
+
+  // DIV 4 — SOUL & R&B
+  {id:12, name:"Aretha Franklin", from:"Soul · 1956-2018", emoji:"👑", div:"Soul & R&B", seed:1, stats:"", fact:"The Queen of Soul, and to many the greatest voice in the history of recorded music. She could take any song and make it definitively hers. The first woman inducted into the Rock and Roll Hall of Fame, and untouchable in her prime."},
+  {id:13, name:"Stevie Wonder", from:"Soul · 1961-present", emoji:"🎹", div:"Soul & R&B", seed:2, stats:"", fact:"A child prodigy who became one of the great songwriters and innovators of the century. His run of 70s albums is among the most acclaimed creative streaks any artist has ever had. A genius across writing, singing, and production."},
+  {id:14, name:"Marvin Gaye", from:"Soul · 1961-1984", emoji:"🎤", div:"Soul & R&B", seed:3, stats:"", fact:"The voice that turned soul into social commentary and intimate confession alike. What's Going On reimagined what a soul album could say. One of the most beautiful and emotionally direct singers ever recorded."},
+  {id:15, name:"Ray Charles", from:"Soul · 1947-2004", emoji:"🕶", div:"Soul & R&B", seed:4, stats:"", fact:"The man who basically invented soul by fusing gospel and R&B, then conquered country and pop too. Genius is an overused word, but it was literally his nickname. A foundational figure who could win a weaker division easily."},
+
+  // DIV 5 — SONGWRITERS
+  {id:16, name:"Bob Dylan", from:"Folk/Rock · 1961-present", emoji:"🎵", div:"Songwriters", seed:1, stats:"", fact:"The only musician to win the Nobel Prize in Literature. He changed what song lyrics could be and gave popular music a literary soul. Voice aside, no songwriter has been more influential on the craft itself."},
+  {id:17, name:"Bruce Springsteen", from:"Rock · 1972-present", emoji:"🇺🇸", div:"Songwriters", seed:2, stats:"", fact:"The Boss — the great chronicler of working-class American life and the most legendary live performer in rock, famous for marathon shows. Decades of anthems and a connection with his audience few have ever matched."},
+  {id:18, name:"Joni Mitchell", from:"Folk · 1968-present", emoji:"🎨", div:"Songwriters", seed:3, stats:"", fact:"The songwriter's songwriter — her harmonic and lyrical invention left every peer in awe. Blue is regularly named one of the greatest albums ever made. Few artists have been so admired by other great artists."},
+  {id:19, name:"Johnny Cash", from:"Country · 1954-2003", emoji:"🖤", div:"Songwriters", seed:4, stats:"", fact:"The Man in Black — country's most iconic outlaw and a voice that carried the whole weight of America in it. His late-career recordings are some of the most moving work of his life. A legend who transcended his genre entirely."},
+
+  // DIV 6 — DIVAS
+  {id:20, name:"Whitney Houston", from:"Pop/R&B · 1983-2012", emoji:"🎶", div:"Divas", seed:1, stats:"", fact:"Possibly the greatest pure vocal instrument pop music has ever heard. At her peak she could do things with a voice that simply shouldn't be possible. Her 'I Will Always Love You' is the definitive vocal performance of its era."},
+  {id:21, name:"Mariah Carey", from:"Pop/R&B · 1990-present", emoji:"🦋", div:"Divas", seed:2, stats:"", fact:"A five-octave range and a record for #1 hits that rivals the Beatles. She also co-wrote nearly all of it, which gets undersold. One of the most successful and technically astonishing vocalists in pop history."},
+  {id:22, name:"Adele", from:"Pop/Soul · 2008-present", emoji:"🎙", div:"Divas", seed:3, stats:"", fact:"Proof that in the streaming age a voice and a piano can still flatten the entire industry. Her albums move numbers nobody else can touch. A throwback talent who became the biggest-selling artist of her generation."},
+  {id:23, name:"Tina Turner", from:"Rock/Soul · 1958-2009", emoji:"⚡", div:"Divas", seed:4, stats:"", fact:"The Queen of Rock and Roll, and one of the most electrifying live performers who ever lived. She reinvented herself into a global superstar in her 40s — a comeback for the ages. Pure, ferocious stage energy."},
+
+  // DIV 7 — BANDS
+  {id:24, name:"The Rolling Stones", from:"Rock · 1962-present", emoji:"👅", div:"Bands", seed:1, stats:"", fact:"The greatest rock and roll band still standing — six decades of swagger and a catalog of definitive rock anthems. The blueprint for the rock band as a touring institution. Longevity nobody else in rock can claim."},
+  {id:25, name:"Pink Floyd", from:"Rock · 1965-1994", emoji:"🌈", div:"Bands", seed:2, stats:"", fact:"The masters of the album as a complete artistic statement. Dark Side of the Moon spent a record-shattering number of years on the charts. They turned rock into immersive, conceptual, headphone-on art."},
+  {id:26, name:"Nirvana", from:"Rock · 1987-1994", emoji:"💛", div:"Bands", seed:3, stats:"", fact:"Three albums that ended one era of rock and started another overnight. Cobain's band gave a generation its voice and its angst. Their cultural impact was vastly larger than their brief, brilliant run."},
+  {id:27, name:"Fleetwood Mac", from:"Rock · 1967-present", emoji:"🪶", div:"Bands", seed:4, stats:"", fact:"They turned their own romantic implosions into Rumours, one of the best-selling and best-loved albums ever made. Three songwriters, perfect harmonies, and drama that fueled timeless songs. A four-seed with a giant's catalog."},
+
+  // DIV 8 — PIONEERS
+  {id:28, name:"Elvis Presley", from:"Rock · 1954-1977", emoji:"🕺", div:"Pioneers", seed:1, stats:"", fact:"The King — the figure who pushed rock and roll into the mainstream and changed popular culture forever. Whatever the debates about his legacy, his impact on music and stardom is almost impossible to overstate. The original superstar."},
+  {id:29, name:"Chuck Berry", from:"Rock · 1955-2017", emoji:"🎸", div:"Pioneers", seed:2, stats:"", fact:"As close to the actual inventor of rock and roll guitar as anyone gets. The Beatles and Stones built their early careers on his songs and licks. Every rock riff traces back to him. The genre's true founding father."},
+  {id:30, name:"Louis Armstrong", from:"Jazz · 1919-1971", emoji:"🎺", div:"Pioneers", seed:3, stats:"", fact:"The man who arguably invented the modern pop vocal and the improvised solo as we know it. His influence reaches every singer and instrumentalist who came after, across every genre. A foundational giant of all recorded music."},
+  {id:31, name:"James Brown", from:"Funk/Soul · 1956-2006", emoji:"💃", div:"Pioneers", seed:4, stats:"", fact:"The Godfather of Soul and the inventor of funk — the rhythmic foundation that hip-hop, R&B, and dance music were all built on. The most sampled artist in history. A four-seed whose fingerprints are on half of modern music."}
+];
+
+const R16=[[0,3],[1,2],[4,7],[5,6],[8,11],[9,10],[12,15],[13,14],[16,19],[17,18],[20,23],[21,22],[24,27],[25,26],[28,31],[29,30]];
+const COUNTS=[16,8,4,2,1];
+const RLABELS=["Round of 32","Round of 16","Quarterfinal","Semifinal","The Final"];
+let results=[Array(16).fill(null),Array(8).fill(null),Array(4).fill(null),Array(2).fill(null),Array(1).fill(null)];
+let currentVote=null,selected=null,locked=false,askPrompt='';
+
+const ASK_ROOM=[
+  "Greatest, or just your favorite? Be honest.",
+  "Peak run or whole career — what are we judging?",
+  "Which losing artist are you furious about?",
+  "Studio genius or live force? Does it change your vote?",
+  "Who here will people still be playing in 100 years?"
+];
+
+function getC(r,mi,slot){
+  if(r===0){const idx=R16[mi][slot];return ALL[idx];}
+  const prevMi=mi*2+slot,prevW=results[r-1][prevMi];
+  if(prevW===null)return null;
+  return ALL.find(c=>c.id===prevW);
+}
+function getCurrentRound(){for(let r=0;r<5;r++){for(let mi=0;mi<COUNTS[r];mi++){if(results[r][mi]===null){const a=getC(r,mi,0),b=getC(r,mi,1);if(a&&b)return r;}}};return 4;}
+function getNextActive(){const cr=getCurrentRound();for(let mi=0;mi<COUNTS[cr];mi++){if(results[cr][mi]===null){const a=getC(cr,mi,0),b=getC(cr,mi,1);if(a&&b)return{round:cr,mi};}}return null;}
+function totalVotes(){return results.flat().filter(v=>v!==null).length;}
+function fakeA(a,b){return Math.min(86,Math.max(20,50+(b.id-a.id)%17+(a.id%4)*2));}
+
+function render(){
+  const done=results[4][0]!==null;
+  if(done){const w=ALL.find(c=>c.id===results[4][0]);renderChampion(w);return;}
+  if(currentVote!==null){renderVote();return;}
+  renderBracket();
+}
+
+function renderBracket(){
+  document.getElementById('back-btn').style.display='none';
+  const cr=getCurrentRound(),next=getNextActive();
+  const divNames=["Rock Gods","Pop Titans","Hip-Hop","Soul & R&B","Songwriters","Divas","Bands","Pioneers"];
+  let html='<div class="core-q">Who is the greatest music artist of all time?</div>';
+  html+='<div class="bracket-cols">';
+  for(let r=0;r<5;r++){
+    const count=COUNTS[r],maxH=[22,30,44,70,100][r],gap=[2,5,12,28,0][r];
+    html+=`<div class="bracket-col"><div class="col-label" style="color:${r===cr?'#7a8aff':'#22264a'}">${["R32","R16","QF","SF","Final"][r]}</div><div class="col-matches" style="gap:${gap}px">`;
+    for(let mi=0;mi<count;mi++){
+      const a=getC(r,mi,0),b=getC(r,mi,1),winner=results[r][mi];
+      const active=r===cr&&winner===null&&a&&b,done=winner!==null;
+      const cls=active?'active':done?'done':'empty';
+      const onclick=(active||done)?`onclick="startVote(${r},${mi})"`:'';
+      html+=`<div class="match-cell ${cls}" style="max-height:${maxH}px;${!active&&!done?'border:1px solid #0e121e':''}" ${onclick}>`;
+      [a,b].forEach((c,si)=>{
+        if(!c){html+=`<div class="tbd">—</div>`;return;}
+        const isW=winner===c.id,isL=done&&!isW;
+        const nm=c.name.split(' ').slice(0,r===0?2:3).join(' ');
+        html+=`${si===1?'<hr class="match-divider">':''}<div class="match-row ${isW?'winner':isL?'loser':''}"><span class="em">${c.emoji}</span><span class="nm">${nm}</span></div>`;
+      });
+      html+='</div>';
+    }
+    html+='</div></div>';
+  }
+  html+='</div>';
+  if(next)html+=`<div style="padding:14px 16px 0"><button class="vote-btn" onclick="startVote(${next.round},${next.mi})">Vote Next Matchup →</button><div class="vote-hint">Tap any gold-bordered match to vote</div></div>`;
+  document.getElementById('main').innerHTML=html;
+}
+
+function startVote(round,mi){currentVote={round,mi};selected=null;locked=false;const w=results[round][mi];if(w!==null){const a=getC(round,mi,0);selected=(a&&a.id===w)?'a':'b';}render();}
+
+function renderVote(){
+  document.getElementById('back-btn').style.display='block';
+  const{round,mi}=currentVote,a=getC(round,mi,0),b=getC(round,mi,1);
+  if(!a||!b){showBracket();return;}
+  const pA=fakeA(a,b),pB=100-pA,majority=selected?(selected==='a'?pA:pB)>=50:false;
+  const hint=!selected?"— Who is the greatest? —":locked?"— Verdict locked! —":"— Tap to switch. Button to commit. —";
+  let html=`<div id="vote-screen"><div class="vote-header"><div class="round-label">${RLABELS[round]}</div><div class="vote-hint-text">${hint}</div></div>`;
+  [{side:'a',c:a,pct:pA},{side:'b',c:b,pct:pB}].forEach(({side,c,pct})=>{
+    const isSel=selected===side;
+    html+=`<div class="card${isSel?' selected':''}" onclick="selectCard('${side}')">`;
+    if(locked&&isSel)html+=`<div class="pct-bar" style="width:${pct}%"></div>`;
+    html+=`<div class="card-inner">
+      <div class="card-top">
+        <div class="card-emoji">${c.emoji}</div>
+        <div style="flex:1;min-width:0">
+          <div class="card-meta">${c.div} · ${c.from}</div>
+          <div class="card-name">${c.name}</div>
+        </div>
+        ${isSel&&!locked?'<div class="card-arrow">◀</div>':''}
+      </div>
+      <div class="card-tag">${c.seed === 1 ? '#1 SEED' : c.seed === 2 ? '#2 SEED' : c.seed === 3 ? '#3 SEED' : '#4 SEED'}</div>
+      ${c.stats?`<div class="card-stats">📊 ${c.stats}</div>`:""}
+      <div class="card-fact">${c.fact}</div>
+      ${locked&&isSel?`<div class="card-pct">${pct}%<span>voted this artist</span><span class="check">✓</span></div>`:''}
+    </div></div>`;
+  });
+  if(selected&&!locked)html+=`<div class="commit-box"><div class="commit-hint">Still deciding? Tap the other card to compare.</div><button class="commit-btn" onclick="commitVote()">Lock In Verdict →</button></div>`;
+  if(locked){
+    html+=`<div class="result-box"><div class="${majority?'result-majority':'result-minority'}">${majority?'✓ With the majority':'🔥 Against the crowd'}</div>
+      <div class="ask-room" style="margin-top:14px;padding-top:14px;border-top:1px dashed #2c3258"><div style="font-size:9px;letter-spacing:3px;color:#4a52c0;text-transform:uppercase;margin-bottom:6px">Ask the Room</div><div style="font-size:15px;color:#dce0f8;font-style:italic;line-height:1.4">${askPrompt}</div></div>
+    </div>
+    <button class="next-btn" onclick="advance()">Vote Next Matchup →</button><a href="index.html" style="display:block;width:100%;margin-top:10px;padding:11px;background:transparent;border:1px solid rgba(255,255,255,0.14);border-radius:12px;color:rgba(255,255,255,0.45);font-size:12px;font-weight:400;text-align:center;letter-spacing:1px;font-family:Georgia,serif;text-decoration:none;box-sizing:border-box">← All Brackets</a>`;
+  }
+  html+='</div>';
+  document.getElementById('main').innerHTML=html;
+}
+
+function selectCard(side){if(locked)return;selected=side;renderVote();}
+function commitVote(){
+  if(!selected||locked)return;
+  locked=true;
+  askPrompt=ASK_ROOM[Math.floor(Math.random()*ASK_ROOM.length)];
+  const{round,mi}=currentVote,a=getC(round,mi,0),b=getC(round,mi,1);
+  results[round][mi]=selected==='a'?a.id:b.id;
+  renderVote();
+  document.getElementById('counter').textContent=totalVotes()+'/31';
+}
+function advance(){currentVote=null;locked=false;selected=null;render();}
+function showBracket(){currentVote=null;selected=null;locked=false;render();}
+function renderChampion(c){
+  document.getElementById('back-btn').style.display='none';
+  document.getElementById('main').innerHTML=`
+    <div id="champion-screen">
+      <div style="font-size:44px;margin-bottom:6px">🏆</div>
+      <div class="champ-emoji">${c.emoji}</div>
+      <div class="champ-trophy">Greatest Music Artist of All Time</div>
+      <div class="champ-name">${c.name}</div>
+      <div class="champ-from">${c.from}</div>
+      <div style="display:inline-block;margin:10px 0 6px;padding:4px 16px;border-radius:20px;background:#7a8aff;color:#07080a;font-size:11px;font-weight:700;letter-spacing:1px">YOUR VERDICT</div>
+      <div class="champ-fact">${c.fact}</div>
+      <button class="reset-btn" onclick="resetGame()">Run It Back</button><a href="index.html" style="display:block;max-width:240px;margin-left:auto;margin-right:auto;margin-top:10px;padding:11px;background:transparent;border:1px solid rgba(255,255,255,0.14);border-radius:12px;color:rgba(255,255,255,0.45);font-size:12px;font-weight:400;text-align:center;letter-spacing:1px;font-family:Georgia,serif;text-decoration:none;box-sizing:border-box">← All Brackets</a>
+    </div>`;
+}
+function resetGame(){results=[Array(16).fill(null),Array(8).fill(null),Array(4).fill(null),Array(2).fill(null),Array(1).fill(null)];currentVote=null;selected=null;locked=false;render();}
+render();
+</script>
+</body>
+</html>

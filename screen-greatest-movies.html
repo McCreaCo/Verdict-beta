@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VERDICT — The 32 Greatest Movies of All Time</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #080a06; color: #eef5e4; font-family: Georgia, 'Times New Roman', serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
+  #app { width: 100%; max-width: 560px; min-height: 100vh; display: flex; flex-direction: column; }
+  header { padding: 16px 20px 12px; border-bottom: 1px solid #1c2a14; display: flex; align-items: center; justify-content: space-between; background: #0e1408; }
+  .title { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; color: #a8d83a; }
+  .subtitle { font-size: 9px; color: #88b020; letter-spacing: 2px; text-transform: uppercase; margin-top: 2px; }
+  .counter { font-size: 10px; color: #2a3a1c; background: #121a0c; border: 1px solid #1c2a14; border-radius: 16px; padding: 4px 10px; }
+  .back-btn { background: transparent; border: 1px solid #1c2a14; border-radius: 8px; padding: 5px 10px; color: #34481f; font-size: 11px; cursor: pointer; font-family: Georgia, serif; }
+  #main { flex: 1; padding: 14px 0; }
+  .core-q { text-align: center; font-size: 12px; color: #a8d83a; font-style: italic; padding: 4px 20px 0; line-height: 1.4; }
+  .div-labels { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px; margin: 10px 10px 8px; }
+  .div-label { font-size: 7px; color: #34481f; text-align: center; padding: 3px 2px; background: #121a0c; border-radius: 4px; }
+  .bracket-cols { display: flex; gap: 3px; padding: 0 10px; }
+  .bracket-col { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+  .col-label { font-size: 7px; letter-spacing: 1.5px; text-transform: uppercase; text-align: center; margin-bottom: 5px; }
+  .col-matches { display: flex; flex-direction: column; justify-content: space-around; height: 380px; }
+  .match-cell { border-radius: 5px; overflow: hidden; cursor: default; flex: 1; transition: border-color 0.2s; }
+  .match-cell.active { border: 1px solid #a8d83a !important; background: #121a0c !important; cursor: pointer; }
+  .match-cell.done { border: 1px solid #1e2e0a !important; background: #0e1408 !important; cursor: pointer; }
+  .match-cell.empty { border: 1px solid #121a0c; background: #080a06; }
+  .match-row { display: flex; align-items: center; gap: 2px; padding: 2px 3px; transition: opacity 0.3s; }
+  .match-row.loser { opacity: 0.22; }
+  .match-row.winner { background: rgba(168,216,58,0.12); }
+  .match-row .em { font-size: 8px; }
+  .match-row .nm { font-size: 7px; color: #34481f; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 400; }
+  .match-row.winner .nm { color: #a8d83a; font-weight: 700; }
+  .match-divider { border: none; border-top: 1px solid #182410; margin: 0; }
+  .tbd { padding: 2px 3px; font-size: 6px; color: #1a2612; }
+  .vote-btn { width: 100%; padding: 14px; background: linear-gradient(135deg, #a8d83a, #6a9018); border: none; border-radius: 12px; color: #080a06; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; margin-top: 14px; }
+  .vote-hint { font-size: 10px; color: #6a6478; text-align: center; margin-top: 6px; }
+  #vote-screen { padding: 0 16px; animation: fadeUp 0.3s ease; }
+  .vote-header { text-align: center; margin-bottom: 16px; }
+  .round-label { font-size: 10px; letter-spacing: 3px; color: #a8d83a; text-transform: uppercase; margin-bottom: 3px; }
+  .vote-hint-text { font-size: 11px; color: #8a8298; letter-spacing: 1px; }
+  .card { display: block; width: 100%; margin-bottom: 10px; border-radius: 14px; padding: 16px 18px; cursor: pointer; text-align: left; transition: all 0.25s; position: relative; overflow: hidden; border: 2px solid #1c2a14; background: #0e1408; }
+  .card.selected { border-color: #a8d83a !important; background: #141e0c !important; transform: scale(1.01); }
+  .card-inner { position: relative; z-index: 1; }
+  .card-top { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 8px; }
+  .card-emoji { font-size: 34px; margin-top: 2px; flex-shrink: 0; }
+  .card-meta { font-size: 9px; color: #6a9018; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 2px; }
+  .card-name { font-size: 18px; font-weight: 700; color: #d8d2e2; line-height: 1.2; margin-bottom: 2px; transition: color 0.2s; }
+  .card.selected .card-name { color: #ffffff; }
+  .card-from { font-size: 10px; color: #8a8298; font-style: italic; transition: color 0.2s; }
+  .card.selected .card-from { color: #8a8298; }
+  .card-tag { display: inline-block; margin-top: 8px; padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 700; background: #1c2a14; color: #a8d83a; letter-spacing: 1px; }
+  .card.selected .card-tag { background: #a8d83a; color: #080a06; }
+  .card-stats { margin-top: 8px; font-size: 9px; color: #9a8aa0; letter-spacing: 0.5px; }
+  .card.selected .card-stats { color: #9a8aa0; }
+  .card-fact { font-size: 12px; color: #7e7888; line-height: 1.75; transition: color 0.2s; margin-top: 8px; }
+  .card.selected .card-fact { color: #e8e2f0; }
+  .card-arrow { font-size: 16px; color: #a8d83a; margin-left: auto; flex-shrink: 0; }
+  .card-pct { font-size: 20px; font-weight: 700; color: #a8d83a; margin-top: 10px; }
+  .card-pct span { font-size: 12px; font-weight: 400; color: #34481f; margin-left: 6px; }
+  .card-pct .check { color: #a8d83a; margin-left: 8px; }
+  .pct-bar { position: absolute; top: 0; left: 0; height: 100%; background: rgba(168,216,58,0.06); transition: width 0.9s cubic-bezier(.4,0,.2,1); z-index: 0; }
+  .commit-box { padding: 14px 18px; background: #0e1408; border: 1px solid #1c2a14; border-radius: 12px; text-align: center; animation: fadeUp 0.3s ease; }
+  .commit-hint { font-size: 11px; color: #34481f; margin-bottom: 10px; font-style: italic; }
+  .commit-btn { padding: 12px 32px; background: linear-gradient(135deg, #a8d83a, #6a9018); border: none; border-radius: 10px; color: #080a06; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+  .result-box { padding: 16px 18px; background: #0e1408; border: 1px solid #1c2a14; border-radius: 12px; text-align: center; margin-top: 2px; animation: fadeUp 0.3s ease; }
+  .result-majority { font-size: 13px; color: #7ec8a0; font-weight: 700; letter-spacing: 1px; }
+  .result-minority { font-size: 13px; color: #6a9018; font-weight: 700; letter-spacing: 1px; }
+  .next-btn { width: 100%; margin-top: 14px; padding: 14px; background: linear-gradient(135deg, #a8d83a, #6a9018); border: none; border-radius: 12px; color: #080a06; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+  #champion-screen { text-align: center; padding: 36px 24px; animation: fadeUp 0.5s ease; }
+  .champ-emoji { font-size: 76px; margin-bottom: 8px; }
+  .champ-trophy { font-size: 11px; letter-spacing: 4px; color: #a8d83a; text-transform: uppercase; margin-bottom: 8px; }
+  .champ-name { font-size: 26px; font-weight: 700; color: #eef5e4; margin-bottom: 4px; }
+  .champ-from { font-size: 13px; color: #6a9018; font-style: italic; margin-bottom: 4px; }
+  .champ-fact { font-size: 13px; color: #3a4a22; font-style: italic; max-width: 310px; margin: 14px auto 28px; line-height: 1.8; }
+  .reset-btn { padding: 14px 32px; background: linear-gradient(135deg, #a8d83a, #6a9018); border: none; border-radius: 12px; color: #080a06; font-size: 14px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  button:active { filter: brightness(0.88); }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div>
+      <a href="index.html" class="title" style="text-decoration:none;cursor:pointer" title="All brackets">VERDICT</a>
+      <div class="subtitle">Greatest Movie Ever Made</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="back-btn" id="back-btn" style="display:none" onclick="showBracket()">← Bracket</button>
+      <div class="counter" id="counter">0/31</div>
+    </div>
+  </header>
+  <div id="main"></div>
+</div>
+
+<script>
+const ALL = [
+  // DIV 1 — EPICS
+  {id:0, name:"The Godfather", from:"1972 · Coppola", emoji:"🍊", div:"Epics", seed:1, stats:"", fact:"Routinely named the greatest American film ever made. Coppola turned a pulp crime novel into a Shakespearean tragedy about family, power, and the slow corruption of a good man. Every gangster film since lives in its shadow, and the quiet of its violence still unnerves."},
+  {id:1, name:"Lawrence of Arabia", from:"1962 · Lean", emoji:"🐫", div:"Epics", seed:2, stats:"", fact:"The most beautiful film ever shot on 70mm — David Lean made the desert itself a character. Spielberg has called it the film that made him want to direct. Nearly four hours long and not one wasted frame."},
+  {id:2, name:"The Lord of the Rings", from:"2001-03 · Jackson", emoji:"💍", div:"Epics", seed:3, stats:"", fact:"Jackson filmed an unfilmable trilogy at once and pulled off the impossible. The Return of the King swept all 11 Oscars it was nominated for, tying the all-time record. The standard every fantasy epic is measured against and none have matched."},
+  {id:3, name:"Ben-Hur", from:"1959 · Wyler", emoji:"🐎", div:"Epics", seed:4, stats:"", fact:"The chariot race is still one of the greatest action sequences ever filmed, done entirely for real with no digital trickery. The first film to win 11 Academy Awards. A monument from the golden age of the Hollywood epic."},
+
+  // DIV 2 — CRIME & DRAMA
+  {id:4, name:"Goodfellas", from:"1990 · Scorsese", emoji:"🔪", div:"Crime & Drama", seed:1, stats:"", fact:"Scorsese's kinetic masterpiece moves like the rush its characters chase. The freeze-frames, the needle-drops, the one-take Copacabana shot — it rewrote the grammar of the crime film. As watchable on the hundredth viewing as the first."},
+  {id:5, name:"Pulp Fiction", from:"1994 · Tarantino", emoji:"🍔", div:"Crime & Drama", seed:2, stats:"", fact:"Tarantino detonated independent film with a non-linear crime story dripping with dialogue nobody had heard before. It made the Palme d'Or cool and turned a generation of film nerds into directors. Still endlessly quoted three decades on."},
+  {id:6, name:"Parasite", from:"2019 · Bong Joon-ho", emoji:"🪜", div:"Crime & Drama", seed:3, stats:"", fact:"The first non-English film to win Best Picture, and it earned every inch of it. A class-war thriller that turns from comedy to horror so smoothly you don't see the knife until it's in. Bong built a whole worldview into a single staircase."},
+  {id:7, name:"Chinatown", from:"1974 · Polanski", emoji:"🕵", div:"Crime & Drama", seed:4, stats:"", fact:"The perfect screenplay, studied in every film school for its structure. Nicholson's detective unravels a conspiracy about water, money, and rot beneath sunny Los Angeles. The ending is one of the bleakest and most perfect in film history."},
+
+  // DIV 3 — SCI-FI & FANTASY
+  {id:8, name:"2001: A Space Odyssey", from:"1968 · Kubrick", emoji:"🛰", div:"Sci-Fi & Fantasy", seed:1, stats:"", fact:"Kubrick made a film about human evolution that still looks like the future 50+ years later. No other movie has matched its scale of ambition — from the dawn of man to the stars in a single cut. Cinema as pure philosophical experience."},
+  {id:9, name:"Star Wars", from:"1977 · Lucas", emoji:"⭐", div:"Sci-Fi & Fantasy", seed:2, stats:"", fact:"It didn't just launch a franchise — it changed what movies were as a business and a mythology. Lucas fused Kurosawa, westerns, and ancient myth into something that felt brand new. The most influential popular film ever made."},
+  {id:10, name:"Blade Runner", from:"1982 · Scott", emoji:"🌧", div:"Sci-Fi & Fantasy", seed:3, stats:"", fact:"A box-office disappointment that became the most influential science-fiction film of the next 40 years. Every rain-soaked neon future owes it a debt. It asks what makes us human and refuses to give an easy answer."},
+  {id:11, name:"The Wizard of Oz", from:"1939 · Fleming", emoji:"👠", div:"Sci-Fi & Fantasy", seed:4, stats:"", fact:"The moment the door opens from sepia Kansas into Technicolor Oz is one of the great gasps in movie history. Nearly a century old and still the template for the journey-to-a-magical-world story. Embedded in the culture itself."},
+
+  // DIV 4 — THRILLERS
+  {id:12, name:"Psycho", from:"1960 · Hitchcock", emoji:"🚿", div:"Thrillers", seed:1, stats:"", fact:"Hitchcock killed his star halfway through and broke every rule of the thriller. The shower scene is the most analyzed 45 seconds in film. It invented the modern suspense film and the idea that nobody is safe."},
+  {id:13, name:"Jaws", from:"1975 · Spielberg", emoji:"🦈", div:"Thrillers", seed:2, stats:"", fact:"The malfunctioning mechanical shark forced Spielberg to hide the monster — and in doing so he invented the summer blockbuster and the art of dread. People still hesitate at the edge of the water. That's how deep it got."},
+  {id:14, name:"Silence of the Lambs", from:"1991 · Demme", emoji:"🦋", div:"Thrillers", seed:3, stats:"", fact:"One of only three films to sweep the top five Oscars. Hopkins built an icon out of 16 minutes of screen time, and Foster's Clarice is the rare hero who matches the villain. A thriller that earned full prestige respect."},
+  {id:15, name:"Vertigo", from:"1958 · Hitchcock", emoji:"🌀", div:"Thrillers", seed:4, stats:"", fact:"Once dismissed, now frequently voted the greatest film ever made in critics' polls. A dizzying study of obsession and illusion that gets richer every viewing. Hitchcock's most personal and most haunting work."},
+
+  // DIV 5 — MODERN CLASSICS
+  {id:16, name:"The Dark Knight", from:"2008 · Nolan", emoji:"🃏", div:"Modern Classics", seed:1, stats:"", fact:"The film that made the world take comic-book movies seriously as cinema. Ledger's Joker is a top-tier villain in any genre, and Nolan built a crime epic that happens to wear a cape. The high-water mark of the blockbuster era."},
+  {id:17, name:"The Matrix", from:"1999 · Wachowskis", emoji:"💊", div:"Modern Classics", seed:2, stats:"", fact:"It bent time on screen with bullet-time and bent minds with its philosophy. The Wachowskis fused anime, cyberpunk, and kung fu into something that reset action filmmaking overnight. Everyone copied it; nobody bettered it."},
+  {id:18, name:"Forrest Gump", from:"1994 · Zemeckis", emoji:"🍫", div:"Modern Classics", seed:3, stats:"", fact:"Beat Pulp Fiction and Shawshank for Best Picture in one of the loaded years in film history. Hanks carries a journey through American history on pure sincerity. Sentimental, sure — and almost impossible to switch off once it starts."},
+  {id:19, name:"Gladiator", from:"2000 · Scott", emoji:"⚔", div:"Modern Classics", seed:4, stats:"", fact:"Single-handedly revived the historical epic. Crowe's Maximus is a granite hero, and 'Are you not entertained?' became a permanent piece of the language. Won Best Picture and proved the swords-and-sandals film still had blood in it."},
+
+  // DIV 6 — ANIMATION
+  {id:20, name:"Spirited Away", from:"2001 · Miyazaki", emoji:"🐉", div:"Animation", seed:1, stats:"", fact:"The masterpiece of the greatest animator who ever lived. Miyazaki's tale of a girl in a spirit world won the Oscar and outgrossed Titanic in Japan. Hand-drawn imagination at a level digital animation has never reached."},
+  {id:21, name:"Toy Story", from:"1995 · Lasseter", emoji:"🤠", div:"Animation", seed:2, stats:"", fact:"The first fully computer-animated feature, and it could have been a gimmick. Instead Pixar made a near-perfect story about friendship and obsolescence that adults feel as deeply as kids. It launched the modern animation era."},
+  {id:22, name:"The Lion King", from:"1994 · Allers/Minkoff", emoji:"🦁", div:"Animation", seed:3, stats:"", fact:"Disney's peak of the hand-drawn renaissance — a Hamlet on the savanna with a soundtrack everyone alive knows by heart. The opening 'Circle of Life' sequence is one of the great openings in any film. Generational."},
+  {id:23, name:"WALL-E", from:"2008 · Stanton", emoji:"🤖", div:"Animation", seed:4, stats:"", fact:"Pixar opened with 40 near-silent minutes of a lonely robot and dared you not to fall in love. A wordless environmental fable disguised as a kids' movie, and one of the most beautiful films of its decade in any form."},
+
+  // DIV 7 — COMEDY
+  {id:24, name:"Some Like It Hot", from:"1959 · Wilder", emoji:"🎷", div:"Comedy", seed:1, stats:"", fact:"Frequently named the funniest film ever made. Wilder's cross-dressing farce with Monroe, Lemmon, and Curtis still lands every joke 65 years later. 'Nobody's perfect' is the perfect last line in movie history."},
+  {id:25, name:"Dr. Strangelove", from:"1964 · Kubrick", emoji:"☢", div:"Comedy", seed:2, stats:"", fact:"Kubrick made the funniest film ever about the end of the world. Peter Sellers plays three roles, each a comic masterpiece, in a satire so sharp it still cuts. Proof that the darkest subject can produce the biggest laughs."},
+  {id:26, name:"Groundhog Day", from:"1993 · Ramis", emoji:"🐿", div:"Comedy", seed:3, stats:"", fact:"A comedy premise that became a philosophy people actually cite. Murray lives the same day until he becomes a better man, and the film is funny, profound, and rewatchable in equal measure. It entered the language as a concept."},
+  {id:27, name:"Airplane!", from:"1980 · ZAZ", emoji:"✈", div:"Comedy", seed:4, stats:"", fact:"The most joke-dense comedy ever made — a gag every few seconds, and an absurd number of them land. It defined the spoof genre and made 'Surely' / 'Don't call me Shirley' immortal. Pure, relentless silliness done perfectly."},
+
+  // DIV 8 — TRAILBLAZERS
+  {id:28, name:"Citizen Kane", from:"1941 · Welles", emoji:"⛄", div:"Trailblazers", seed:1, stats:"", fact:"For 50 years the consensus 'greatest film ever made,' and still in every conversation. Welles invented or perfected so many techniques — deep focus, non-linear story, sound design — that modern film is partly his invention. 'Rosebud.'"},
+  {id:29, name:"Casablanca", from:"1942 · Curtiz", emoji:"🥂", div:"Trailblazers", seed:2, stats:"", fact:"A troubled production that became the most beloved film of Hollywood's golden age. Bogart and Bergman, a piano, and a wartime sacrifice that still breaks hearts. More quotable lines than any film ever written. Timeless in the truest sense."},
+  {id:30, name:"Singin' in the Rain", from:"1952 · Kelly/Donen", emoji:"☔", div:"Trailblazers", seed:3, stats:"", fact:"The greatest movie musical ever made, and a sharp comedy about Hollywood's own panic at the dawn of sound. Gene Kelly dancing through a downpour is one of the purest expressions of joy ever put on film."},
+  {id:31, name:"Seven Samurai", from:"1954 · Kurosawa", emoji:"🗡", div:"Trailblazers", seed:4, stats:"", fact:"Kurosawa invented the 'assemble a team' structure that half of all action movies still use. Three and a half hours that never drag, and the template for everything from The Magnificent Seven to modern blockbusters. World cinema's cornerstone."}
+];
+
+const R16=[[0,3],[1,2],[4,7],[5,6],[8,11],[9,10],[12,15],[13,14],[16,19],[17,18],[20,23],[21,22],[24,27],[25,26],[28,31],[29,30]];
+const COUNTS=[16,8,4,2,1];
+const RLABELS=["Round of 32","Round of 16","Quarterfinal","Semifinal","The Final"];
+let results=[Array(16).fill(null),Array(8).fill(null),Array(4).fill(null),Array(2).fill(null),Array(1).fill(null)];
+let currentVote=null,selected=null,locked=false,askPrompt='';
+
+const ASK_ROOM=[
+  "Best film, or just your favorite film? They're not always the same.",
+  "Does it hold up on a rewatch, or was it a one-time gut-punch?",
+  "Which losing movie are you most mad about?",
+  "Saw it in theaters, or found it later?",
+  "If you could erase your memory and watch one again fresh, which?"
+];
+
+function getC(r,mi,slot){
+  if(r===0){const idx=R16[mi][slot];return ALL[idx];}
+  const prevMi=mi*2+slot,prevW=results[r-1][prevMi];
+  if(prevW===null)return null;
+  return ALL.find(c=>c.id===prevW);
+}
+function getCurrentRound(){for(let r=0;r<5;r++){for(let mi=0;mi<COUNTS[r];mi++){if(results[r][mi]===null){const a=getC(r,mi,0),b=getC(r,mi,1);if(a&&b)return r;}}};return 4;}
+function getNextActive(){const cr=getCurrentRound();for(let mi=0;mi<COUNTS[cr];mi++){if(results[cr][mi]===null){const a=getC(cr,mi,0),b=getC(cr,mi,1);if(a&&b)return{round:cr,mi};}}return null;}
+function totalVotes(){return results.flat().filter(v=>v!==null).length;}
+function fakeA(a,b){return Math.min(86,Math.max(20,50+(b.id-a.id)%17+(a.id%4)*2));}
+
+function render(){
+  const done=results[4][0]!==null;
+  if(done){const w=ALL.find(c=>c.id===results[4][0]);renderChampion(w);return;}
+  if(currentVote!==null){renderVote();return;}
+  renderBracket();
+}
+
+function renderBracket(){
+  document.getElementById('back-btn').style.display='none';
+  const cr=getCurrentRound(),next=getNextActive();
+  const divNames=["Epics","Crime & Drama","Sci-Fi & Fantasy","Thrillers","Modern Classics","Animation","Comedy","Trailblazers"];
+  let html='<div class="core-q">Which is the greatest movie ever made?</div>';
+  html+='<div class="bracket-cols">';
+  for(let r=0;r<5;r++){
+    const count=COUNTS[r],maxH=[22,30,44,70,100][r],gap=[2,5,12,28,0][r];
+    html+=`<div class="bracket-col"><div class="col-label" style="color:${r===cr?'#a8d83a':'#2a3a1c'}">${["R32","R16","QF","SF","Final"][r]}</div><div class="col-matches" style="gap:${gap}px">`;
+    for(let mi=0;mi<count;mi++){
+      const a=getC(r,mi,0),b=getC(r,mi,1),winner=results[r][mi];
+      const active=r===cr&&winner===null&&a&&b,done=winner!==null;
+      const cls=active?'active':done?'done':'empty';
+      const onclick=(active||done)?`onclick="startVote(${r},${mi})"`:'';
+      html+=`<div class="match-cell ${cls}" style="max-height:${maxH}px;${!active&&!done?'border:1px solid #121a0c':''}" ${onclick}>`;
+      [a,b].forEach((c,si)=>{
+        if(!c){html+=`<div class="tbd">—</div>`;return;}
+        const isW=winner===c.id,isL=done&&!isW;
+        const nm=c.name.split(' ').slice(0,r===0?2:3).join(' ');
+        html+=`${si===1?'<hr class="match-divider">':''}<div class="match-row ${isW?'winner':isL?'loser':''}"><span class="em">${c.emoji}</span><span class="nm">${nm}</span></div>`;
+      });
+      html+='</div>';
+    }
+    html+='</div></div>';
+  }
+  html+='</div>';
+  if(next)html+=`<div style="padding:14px 16px 0"><button class="vote-btn" onclick="startVote(${next.round},${next.mi})">Vote Next Matchup →</button><div class="vote-hint">Tap any gold-bordered match to vote</div></div>`;
+  document.getElementById('main').innerHTML=html;
+}
+
+function startVote(round,mi){currentVote={round,mi};selected=null;locked=false;const w=results[round][mi];if(w!==null){const a=getC(round,mi,0);selected=(a&&a.id===w)?'a':'b';}render();}
+
+function renderVote(){
+  document.getElementById('back-btn').style.display='block';
+  const{round,mi}=currentVote,a=getC(round,mi,0),b=getC(round,mi,1);
+  if(!a||!b){showBracket();return;}
+  const pA=fakeA(a,b),pB=100-pA,majority=selected?(selected==='a'?pA:pB)>=50:false;
+  const hint=!selected?"— Which is the greatest? —":locked?"— Verdict locked! —":"— Tap to switch. Button to commit. —";
+  let html=`<div id="vote-screen"><div class="vote-header"><div class="round-label">${RLABELS[round]}</div><div class="vote-hint-text">${hint}</div></div>`;
+  [{side:'a',c:a,pct:pA},{side:'b',c:b,pct:pB}].forEach(({side,c,pct})=>{
+    const isSel=selected===side;
+    html+=`<div class="card${isSel?' selected':''}" onclick="selectCard('${side}')">`;
+    if(locked&&isSel)html+=`<div class="pct-bar" style="width:${pct}%"></div>`;
+    html+=`<div class="card-inner">
+      <div class="card-top">
+        <div class="card-emoji">${c.emoji}</div>
+        <div style="flex:1;min-width:0">
+          <div class="card-meta">${c.div} · ${c.from}</div>
+          <div class="card-name">${c.name}</div>
+        </div>
+        ${isSel&&!locked?'<div class="card-arrow">◀</div>':''}
+      </div>
+      <div class="card-tag">${c.seed === 1 ? '#1 SEED' : c.seed === 2 ? '#2 SEED' : c.seed === 3 ? '#3 SEED' : '#4 SEED'}</div>
+      ${c.stats?`<div class="card-stats">📊 ${c.stats}</div>`:""}
+      <div class="card-fact">${c.fact}</div>
+      ${locked&&isSel?`<div class="card-pct">${pct}%<span>voted this film</span><span class="check">✓</span></div>`:''}
+    </div></div>`;
+  });
+  if(selected&&!locked)html+=`<div class="commit-box"><div class="commit-hint">Still deciding? Tap the other card to compare.</div><button class="commit-btn" onclick="commitVote()">Lock In Verdict →</button></div>`;
+  if(locked){
+    html+=`<div class="result-box"><div class="${majority?'result-majority':'result-minority'}">${majority?'✓ With the majority':'🔥 Against the crowd'}</div>
+      <div class="ask-room" style="margin-top:14px;padding-top:14px;border-top:1px dashed #34481f"><div style="font-size:9px;letter-spacing:3px;color:#6a9018;text-transform:uppercase;margin-bottom:6px">Ask the Room</div><div style="font-size:15px;color:#e2f0d8;font-style:italic;line-height:1.4">${askPrompt}</div></div>
+    </div>
+    <button class="next-btn" onclick="advance()">Vote Next Matchup →</button><a href="index.html" style="display:block;width:100%;margin-top:10px;padding:11px;background:transparent;border:1px solid rgba(255,255,255,0.14);border-radius:12px;color:rgba(255,255,255,0.45);font-size:12px;font-weight:400;text-align:center;letter-spacing:1px;font-family:Georgia,serif;text-decoration:none;box-sizing:border-box">← All Brackets</a>`;
+  }
+  html+='</div>';
+  document.getElementById('main').innerHTML=html;
+}
+
+function selectCard(side){if(locked)return;selected=side;renderVote();}
+function commitVote(){
+  if(!selected||locked)return;
+  locked=true;
+  askPrompt=ASK_ROOM[Math.floor(Math.random()*ASK_ROOM.length)];
+  const{round,mi}=currentVote,a=getC(round,mi,0),b=getC(round,mi,1);
+  results[round][mi]=selected==='a'?a.id:b.id;
+  renderVote();
+  document.getElementById('counter').textContent=totalVotes()+'/31';
+}
+function advance(){currentVote=null;locked=false;selected=null;render();}
+function showBracket(){currentVote=null;selected=null;locked=false;render();}
+function renderChampion(c){
+  document.getElementById('back-btn').style.display='none';
+  document.getElementById('main').innerHTML=`
+    <div id="champion-screen">
+      <div style="font-size:44px;margin-bottom:6px">🏆</div>
+      <div class="champ-emoji">${c.emoji}</div>
+      <div class="champ-trophy">Greatest Movie of All Time</div>
+      <div class="champ-name">${c.name}</div>
+      <div class="champ-from">${c.from}</div>
+      <div style="display:inline-block;margin:10px 0 6px;padding:4px 16px;border-radius:20px;background:#a8d83a;color:#080a06;font-size:11px;font-weight:700;letter-spacing:1px">YOUR VERDICT</div>
+      <div class="champ-fact">${c.fact}</div>
+      <button class="reset-btn" onclick="resetGame()">Run It Back</button><a href="index.html" style="display:block;max-width:240px;margin-left:auto;margin-right:auto;margin-top:10px;padding:11px;background:transparent;border:1px solid rgba(255,255,255,0.14);border-radius:12px;color:rgba(255,255,255,0.45);font-size:12px;font-weight:400;text-align:center;letter-spacing:1px;font-family:Georgia,serif;text-decoration:none;box-sizing:border-box">← All Brackets</a>
+    </div>`;
+}
+function resetGame(){results=[Array(16).fill(null),Array(8).fill(null),Array(4).fill(null),Array(2).fill(null),Array(1).fill(null)];currentVote=null;selected=null;locked=false;render();}
+render();
+</script>
+</body>
+</html>

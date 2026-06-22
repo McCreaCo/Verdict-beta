@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VERDICT — The 32 Greatest TV Shows of All Time</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0a0706; color: #f5e8e4; font-family: Georgia, 'Times New Roman', serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
+  #app { width: 100%; max-width: 560px; min-height: 100vh; display: flex; flex-direction: column; }
+  header { padding: 16px 20px 12px; border-bottom: 1px solid #2a1814; display: flex; align-items: center; justify-content: space-between; background: #140b0a; }
+  .title { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; color: #ff6b5a; }
+  .subtitle { font-size: 9px; color: #d04a3a; letter-spacing: 2px; text-transform: uppercase; margin-top: 2px; }
+  .counter { font-size: 10px; color: #3a221c; background: #1a0e0c; border: 1px solid #2a1814; border-radius: 16px; padding: 4px 10px; }
+  .back-btn { background: transparent; border: 1px solid #2a1814; border-radius: 8px; padding: 5px 10px; color: #48281f; font-size: 11px; cursor: pointer; font-family: Georgia, serif; }
+  #main { flex: 1; padding: 14px 0; }
+  .core-q { text-align: center; font-size: 12px; color: #ff6b5a; font-style: italic; padding: 4px 20px 0; line-height: 1.4; }
+  .div-labels { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px; margin: 10px 10px 8px; }
+  .div-label { font-size: 7px; color: #48281f; text-align: center; padding: 3px 2px; background: #1a0e0c; border-radius: 4px; }
+  .bracket-cols { display: flex; gap: 3px; padding: 0 10px; }
+  .bracket-col { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+  .col-label { font-size: 7px; letter-spacing: 1.5px; text-transform: uppercase; text-align: center; margin-bottom: 5px; }
+  .col-matches { display: flex; flex-direction: column; justify-content: space-around; height: 380px; }
+  .match-cell { border-radius: 5px; overflow: hidden; cursor: default; flex: 1; transition: border-color 0.2s; }
+  .match-cell.active { border: 1px solid #ff6b5a !important; background: #1a0e0c !important; cursor: pointer; }
+  .match-cell.done { border: 1px solid #2e140a !important; background: #140b0a !important; cursor: pointer; }
+  .match-cell.empty { border: 1px solid #1a0e0c; background: #0a0706; }
+  .match-row { display: flex; align-items: center; gap: 2px; padding: 2px 3px; transition: opacity 0.3s; }
+  .match-row.loser { opacity: 0.22; }
+  .match-row.winner { background: rgba(255,107,90,0.12); }
+  .match-row .em { font-size: 8px; }
+  .match-row .nm { font-size: 7px; color: #48281f; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 400; }
+  .match-row.winner .nm { color: #ff6b5a; font-weight: 700; }
+  .match-divider { border: none; border-top: 1px solid #241410; margin: 0; }
+  .tbd { padding: 2px 3px; font-size: 6px; color: #261612; }
+  .vote-btn { width: 100%; padding: 14px; background: linear-gradient(135deg, #ff6b5a, #c03828); border: none; border-radius: 12px; color: #0a0706; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; margin-top: 14px; }
+  .vote-hint { font-size: 10px; color: #6a6478; text-align: center; margin-top: 6px; }
+  #vote-screen { padding: 0 16px; animation: fadeUp 0.3s ease; }
+  .vote-header { text-align: center; margin-bottom: 16px; }
+  .round-label { font-size: 10px; letter-spacing: 3px; color: #ff6b5a; text-transform: uppercase; margin-bottom: 3px; }
+  .vote-hint-text { font-size: 11px; color: #8a8298; letter-spacing: 1px; }
+  .card { display: block; width: 100%; margin-bottom: 10px; border-radius: 14px; padding: 16px 18px; cursor: pointer; text-align: left; transition: all 0.25s; position: relative; overflow: hidden; border: 2px solid #2a1814; background: #140b0a; }
+  .card.selected { border-color: #ff6b5a !important; background: #200e0c !important; transform: scale(1.01); }
+  .card-inner { position: relative; z-index: 1; }
+  .card-top { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 8px; }
+  .card-emoji { font-size: 34px; margin-top: 2px; flex-shrink: 0; }
+  .card-meta { font-size: 9px; color: #c03828; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 2px; }
+  .card-name { font-size: 18px; font-weight: 700; color: #d8d2e2; line-height: 1.2; margin-bottom: 2px; transition: color 0.2s; }
+  .card.selected .card-name { color: #ffffff; }
+  .card-from { font-size: 10px; color: #8a8298; font-style: italic; transition: color 0.2s; }
+  .card.selected .card-from { color: #8a8298; }
+  .card-tag { display: inline-block; margin-top: 8px; padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 700; background: #2a1814; color: #ff6b5a; letter-spacing: 1px; }
+  .card.selected .card-tag { background: #ff6b5a; color: #0a0706; }
+  .card-stats { margin-top: 8px; font-size: 9px; color: #9a8aa0; letter-spacing: 0.5px; }
+  .card.selected .card-stats { color: #9a8aa0; }
+  .card-fact { font-size: 12px; color: #7e7888; line-height: 1.75; transition: color 0.2s; margin-top: 8px; }
+  .card.selected .card-fact { color: #e8e2f0; }
+  .card-arrow { font-size: 16px; color: #ff6b5a; margin-left: auto; flex-shrink: 0; }
+  .card-pct { font-size: 20px; font-weight: 700; color: #ff6b5a; margin-top: 10px; }
+  .card-pct span { font-size: 12px; font-weight: 400; color: #48281f; margin-left: 6px; }
+  .card-pct .check { color: #ff6b5a; margin-left: 8px; }
+  .pct-bar { position: absolute; top: 0; left: 0; height: 100%; background: rgba(255,107,90,0.06); transition: width 0.9s cubic-bezier(.4,0,.2,1); z-index: 0; }
+  .commit-box { padding: 14px 18px; background: #140b0a; border: 1px solid #2a1814; border-radius: 12px; text-align: center; animation: fadeUp 0.3s ease; }
+  .commit-hint { font-size: 11px; color: #48281f; margin-bottom: 10px; font-style: italic; }
+  .commit-btn { padding: 12px 32px; background: linear-gradient(135deg, #ff6b5a, #c03828); border: none; border-radius: 10px; color: #0a0706; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+  .result-box { padding: 16px 18px; background: #140b0a; border: 1px solid #2a1814; border-radius: 12px; text-align: center; margin-top: 2px; animation: fadeUp 0.3s ease; }
+  .result-majority { font-size: 13px; color: #7ec8a0; font-weight: 700; letter-spacing: 1px; }
+  .result-minority { font-size: 13px; color: #c03828; font-weight: 700; letter-spacing: 1px; }
+  .next-btn { width: 100%; margin-top: 14px; padding: 14px; background: linear-gradient(135deg, #ff6b5a, #c03828); border: none; border-radius: 12px; color: #0a0706; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+  #champion-screen { text-align: center; padding: 36px 24px; animation: fadeUp 0.5s ease; }
+  .champ-emoji { font-size: 76px; margin-bottom: 8px; }
+  .champ-trophy { font-size: 11px; letter-spacing: 4px; color: #ff6b5a; text-transform: uppercase; margin-bottom: 8px; }
+  .champ-name { font-size: 26px; font-weight: 700; color: #f5e8e4; margin-bottom: 4px; }
+  .champ-from { font-size: 13px; color: #c03828; font-style: italic; margin-bottom: 4px; }
+  .champ-fact { font-size: 13px; color: #4a2a22; font-style: italic; max-width: 310px; margin: 14px auto 28px; line-height: 1.8; }
+  .reset-btn { padding: 14px 32px; background: linear-gradient(135deg, #ff6b5a, #c03828); border: none; border-radius: 12px; color: #0a0706; font-size: 14px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  button:active { filter: brightness(0.88); }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div>
+      <a href="index.html" class="title" style="text-decoration:none;cursor:pointer" title="All brackets">VERDICT</a>
+      <div class="subtitle">Greatest TV Show Ever</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="back-btn" id="back-btn" style="display:none" onclick="showBracket()">← Bracket</button>
+      <div class="counter" id="counter">0/31</div>
+    </div>
+  </header>
+  <div id="main"></div>
+</div>
+
+<script>
+const ALL = [
+  // DIV 1 — PRESTIGE DRAMA
+  {id:0, name:"The Sopranos", from:"HBO · 1999-2007", emoji:"🦆", div:"Prestige Drama", seed:1, stats:"", fact:"The show that began the golden age of television. A mob boss in therapy let David Chase build the most psychologically rich character on TV, and proved the small screen could out-novel the movies. Everything prestige owes it."},
+  {id:1, name:"The Wire", from:"HBO · 2002-2008", emoji:"🎧", div:"Prestige Drama", seed:2, stats:"", fact:"A novel for television — each season a different organ of a dying American city. Never won a major Emmy, routinely called the greatest show ever anyway. Demands patience and rewards it like nothing else on this list."},
+  {id:2, name:"Mad Men", from:"AMC · 2007-2015", emoji:"🥃", div:"Prestige Drama", seed:3, stats:"", fact:"The most elegant character study TV has produced. Don Draper's hollow charm anchored a meditation on identity, reinvention, and 1960s America. Slow, gorgeous, and devastating in its quiet final shot."},
+  {id:3, name:"Six Feet Under", from:"HBO · 2001-2005", emoji:"⚰", div:"Prestige Drama", seed:4, stats:"", fact:"A family of undertakers facing death weekly, and the source of what many call the greatest series finale ever filmed. A four-seed only because of the company — it would headline most brackets. The ending alone earns it."},
+
+  // DIV 2 — COMEDY
+  {id:4, name:"Seinfeld", from:"NBC · 1989-1998", emoji:"🥨", div:"Comedy", seed:1, stats:"", fact:"The show about nothing that became the most influential sitcom ever. No hugging, no learning, just four terrible people and the architecture of social comedy. Its DNA is in everything that came after."},
+  {id:5, name:"The Office (US)", from:"NBC · 2005-2013", emoji:"📎", div:"Comedy", seed:2, stats:"", fact:"The mockumentary sitcom that became the most-streamed comfort show on earth. A cringe comedy that earned real warmth, and a generation's permanent rewatch. Michael Scott is an all-time TV character."},
+  {id:6, name:"Arrested Development", from:"FOX · 2003-2006", emoji:"🍌", div:"Comedy", seed:3, stats:"", fact:"The most densely written comedy ever made — jokes planted in season one paying off seasons later. Too clever for its original audience, worshipped after the fact. Rewards obsessive rewatching like no other sitcom."},
+  {id:7, name:"I Love Lucy", from:"CBS · 1951-1957", emoji:"🍫", div:"Comedy", seed:4, stats:"", fact:"The show that invented the sitcom as we know it — the three-camera setup, the live audience, the rerun. Lucille Ball was the funniest person on television and a pioneer behind the camera too. The foundation everything else stands on."},
+
+  // DIV 3 — CRIME
+  {id:8, name:"Breaking Bad", from:"AMC · 2008-2013", emoji:"🧪", div:"Crime", seed:1, stats:"", fact:"The most perfectly executed character transformation in TV history — Mr. Chips into Scarface across five flawless seasons. The rare show that got better every year and stuck the landing completely. The complete package."},
+  {id:9, name:"True Detective S1", from:"HBO · 2014", emoji:"🌀", div:"Crime", seed:2, stats:"", fact:"Eight episodes of McConaughey and Harrelson that felt like a great novel and a fever dream at once. The six-minute tracking shot alone is a landmark. A self-contained masterpiece that the later seasons never touched."},
+  {id:10, name:"Fargo", from:"FX · 2014-present", emoji:"🪓", div:"Crime", seed:3, stats:"", fact:"Pulled off the impossible — a TV anthology worthy of the Coen Brothers' film, then did it again across multiple seasons. Dark, funny, and snow-covered, with a new cast of all-timers each round. Reinvention done right."},
+  {id:11, name:"Twin Peaks", from:"ABC · 1990-1991", emoji:"🍒", div:"Crime", seed:4, stats:"", fact:"Lynch brought surrealist art film to network primetime and broke television open. 'Who killed Laura Palmer?' obsessed a nation. Half the strange, dreamlike TV that followed is chasing what it did first."},
+
+  // DIV 4 — GENRE & SCI-FI
+  {id:12, name:"Game of Thrones", from:"HBO · 2011-2019", emoji:"🐉", div:"Genre & Sci-Fi", seed:1, stats:"", fact:"The biggest show on the planet at its peak — a fantasy epic that became a global event every Sunday night. The middle seasons are TV at its most ambitious. The divisive ending can't erase how huge it truly was."},
+  {id:13, name:"The Twilight Zone", from:"CBS · 1959-1964", emoji:"🌑", div:"Genre & Sci-Fi", seed:2, stats:"", fact:"Rod Serling smuggled sharp social commentary into sci-fi parables, and invented the twist ending as a TV form. Sixty years later its episodes are still referenced, parodied, and remade. The anthology that started it all."},
+  {id:14, name:"The X-Files", from:"FOX · 1993-2002", emoji:"👽", div:"Genre & Sci-Fi", seed:3, stats:"", fact:"Defined 90s television and the modern mythology-arc show. Mulder and Scully's chemistry and the monster-of-the-week format gave us a blueprint for genre TV that's still copied. 'The truth is out there.'"},
+  {id:15, name:"Battlestar Galactica", from:"Sci-Fi · 2004-2009", emoji:"🤖", div:"Genre & Sci-Fi", seed:4, stats:"", fact:"A campy 70s show reborn as deadly-serious drama about survival, faith, and what makes us human. It used spaceships to tell post-9/11 stories nobody else dared. Proof genre TV could carry real weight."},
+
+  // DIV 5 — NETWORK CLASSICS
+  {id:16, name:"Cheers", from:"NBC · 1982-1993", emoji:"🍺", div:"Network Classics", seed:1, stats:"", fact:"The gold standard of the ensemble hangout comedy — the bar where everybody knows your name. Launched a dynasty of NBC comedy and produced one of the great finales. Set the template half of TV comedy still follows."},
+  {id:17, name:"M*A*S*H", from:"CBS · 1972-1983", emoji:"🚁", div:"Network Classics", seed:2, stats:"", fact:"A comedy about a war that grew into something deeper than comedy. Its finale was watched by 106 million people — a record that stood for decades. Made you laugh and gut-punched you, often in the same scene."},
+  {id:18, name:"Friends", from:"NBC · 1994-2004", emoji:"☕", div:"Network Classics", seed:3, stats:"", fact:"The most enduring comfort show ever made — still one of the most-streamed series decades on. Six friends on a couch shaped the culture, the haircuts, and the hangout-comedy format for a generation."},
+  {id:19, name:"The Mary Tyler Moore Show", from:"CBS · 1970-1977", emoji:"🧢", div:"Network Classics", seed:4, stats:"", fact:"The show that proved a single working woman could anchor a sitcom, and changed television's idea of who a lead could be. Smart, warm, and quietly revolutionary. Its influence runs through every workplace comedy since."},
+
+  // DIV 6 — ANTIHEROES
+  {id:20, name:"Better Call Saul", from:"AMC · 2015-2022", emoji:"⚖", div:"Antiheroes", seed:1, stats:"", fact:"The rarest thing in TV — a prequel spin-off that rivals its parent. A slow, aching tragedy about a good-enough man becoming a worse one. Bob Odenkirk turned a comic-relief lawyer into one of the great dramatic roles."},
+  {id:21, name:"Deadwood", from:"HBO · 2004-2006", emoji:"⛏", div:"Antiheroes", seed:2, stats:"", fact:"Shakespeare in the mud — David Milch wrote dialogue so rich it scanned like verse, set in a lawless gold-rush town. Cut down too soon and mourned ever since. A cult classic that critics rank among the all-time greats."},
+  {id:22, name:"Dexter", from:"Showtime · 2006-2013", emoji:"🔪", div:"Antiheroes", seed:3, stats:"", fact:"A serial killer who only kills killers — TV's boldest dare to make you root for a monster. The early seasons are a tense, addictive high-wire act. It pushed the antihero idea to its most uncomfortable edge."},
+  {id:23, name:"Boardwalk Empire", from:"HBO · 2010-2014", emoji:"🎩", div:"Antiheroes", seed:4, stats:"", fact:"Scorsese-produced Prohibition epic with a feature-film budget on screen every week. Steve Buscemi anchored a sprawling gangster saga of gorgeous, brutal period detail. Underrated against its HBO siblings."},
+
+  // DIV 7 — MODERN ERA
+  {id:24, name:"Succession", from:"HBO · 2018-2023", emoji:"💼", div:"Modern Era", seed:1, stats:"", fact:"King Lear with private jets — the funniest and most vicious drama of its era. A family of awful billionaires you couldn't look away from. The dialogue alone is a master class; it dominated every awards show it touched."},
+  {id:25, name:"Stranger Things", from:"Netflix · 2016-present", emoji:"🚲", div:"Modern Era", seed:2, stats:"", fact:"The streaming event show — 80s nostalgia and Spielberg wonder turned into a global phenomenon. It launched careers, revived old songs to #1, and proved Netflix could mint a genuine cultural juggernaut."},
+  {id:26, name:"Fleabag", from:"BBC · 2016-2019", emoji:"🦊", div:"Modern Era", seed:3, stats:"", fact:"Phoebe Waller-Bridge reinvented the fourth-wall break and packed a whole soul into 12 half-hours. Devastating, hilarious, and perfect — it ended exactly when it should. The Hot Priest season is near-flawless television."},
+  {id:27, name:"The Last of Us", from:"HBO · 2023-present", emoji:"🍄", div:"Modern Era", seed:4, stats:"", fact:"The video-game adaptation that finally broke the curse. Episode three is one of the most acclaimed hours of TV in years — a self-contained love story that transcended the genre entirely. Proof the form keeps growing."},
+
+  // DIV 8 — TRAILBLAZERS
+  {id:28, name:"The Simpsons", from:"FOX · 1989-present", emoji:"🍩", div:"Trailblazers", seed:1, stats:"", fact:"The longest-running scripted show in American history, and in its 90s golden age the sharpest satire on television. It built a complete comic universe and shaped the humor of everything that followed. Generationally influential."},
+  {id:29, name:"Saturday Night Live", from:"NBC · 1975-present", emoji:"🎤", div:"Trailblazers", seed:2, stats:"", fact:"Fifty years of launching the biggest names in comedy and reflecting the culture back live every week. No show has shaped American humor more, or survived longer doing it. An institution that became part of the calendar."},
+  {id:30, name:"Roots", from:"ABC · 1977", emoji:"🌍", div:"Trailblazers", seed:3, stats:"", fact:"The miniseries that stopped the country — over 100 million Americans watched the finale. It brought the story of slavery into living rooms with a force TV had never managed. A landmark in the medium's history and the nation's."},
+  {id:31, name:"Star Trek", from:"NBC · 1966-1969", emoji:"🖖", div:"Trailblazers", seed:4, stats:"", fact:"Three seasons that launched the most enduring sci-fi universe on television. It imagined an optimistic future, broke barriers on screen, and built the most devoted fandom in the medium. A three-year show with a 60-year afterlife."}
+];
+
+const R16=[[0,3],[1,2],[4,7],[5,6],[8,11],[9,10],[12,15],[13,14],[16,19],[17,18],[20,23],[21,22],[24,27],[25,26],[28,31],[29,30]];
+const COUNTS=[16,8,4,2,1];
+const RLABELS=["Round of 32","Round of 16","Quarterfinal","Semifinal","The Final"];
+let results=[Array(16).fill(null),Array(8).fill(null),Array(4).fill(null),Array(2).fill(null),Array(1).fill(null)];
+let currentVote=null,selected=null,locked=false,askPrompt='';
+
+const ASK_ROOM=[
+  "Best show, or the one you've rewatched the most?",
+  "Did it stick the landing, or fumble the finale?",
+  "Which losing show got robbed here?",
+  "Binge it, or savor it weekly?",
+  "Which one would you make a non-believer watch first?"
+];
+
+function getC(r,mi,slot){
+  if(r===0){const idx=R16[mi][slot];return ALL[idx];}
+  const prevMi=mi*2+slot,prevW=results[r-1][prevMi];
+  if(prevW===null)return null;
+  return ALL.find(c=>c.id===prevW);
+}
+function getCurrentRound(){for(let r=0;r<5;r++){for(let mi=0;mi<COUNTS[r];mi++){if(results[r][mi]===null){const a=getC(r,mi,0),b=getC(r,mi,1);if(a&&b)return r;}}};return 4;}
+function getNextActive(){const cr=getCurrentRound();for(let mi=0;mi<COUNTS[cr];mi++){if(results[cr][mi]===null){const a=getC(cr,mi,0),b=getC(cr,mi,1);if(a&&b)return{round:cr,mi};}}return null;}
+function totalVotes(){return results.flat().filter(v=>v!==null).length;}
+function fakeA(a,b){return Math.min(86,Math.max(20,50+(b.id-a.id)%17+(a.id%4)*2));}
+
+function render(){
+  const done=results[4][0]!==null;
+  if(done){const w=ALL.find(c=>c.id===results[4][0]);renderChampion(w);return;}
+  if(currentVote!==null){renderVote();return;}
+  renderBracket();
+}
+
+function renderBracket(){
+  document.getElementById('back-btn').style.display='none';
+  const cr=getCurrentRound(),next=getNextActive();
+  const divNames=["Prestige Drama","Comedy","Crime","Genre & Sci-Fi","Network Classics","Antiheroes","Modern Era","Trailblazers"];
+  let html='<div class="core-q">Which is the greatest TV show of all time?</div>';
+  html+='<div class="bracket-cols">';
+  for(let r=0;r<5;r++){
+    const count=COUNTS[r],maxH=[22,30,44,70,100][r],gap=[2,5,12,28,0][r];
+    html+=`<div class="bracket-col"><div class="col-label" style="color:${r===cr?'#ff6b5a':'#3a221c'}">${["R32","R16","QF","SF","Final"][r]}</div><div class="col-matches" style="gap:${gap}px">`;
+    for(let mi=0;mi<count;mi++){
+      const a=getC(r,mi,0),b=getC(r,mi,1),winner=results[r][mi];
+      const active=r===cr&&winner===null&&a&&b,done=winner!==null;
+      const cls=active?'active':done?'done':'empty';
+      const onclick=(active||done)?`onclick="startVote(${r},${mi})"`:'';
+      html+=`<div class="match-cell ${cls}" style="max-height:${maxH}px;${!active&&!done?'border:1px solid #1a0e0c':''}" ${onclick}>`;
+      [a,b].forEach((c,si)=>{
+        if(!c){html+=`<div class="tbd">—</div>`;return;}
+        const isW=winner===c.id,isL=done&&!isW;
+        const nm=c.name.split(' ').slice(0,r===0?2:3).join(' ');
+        html+=`${si===1?'<hr class="match-divider">':''}<div class="match-row ${isW?'winner':isL?'loser':''}"><span class="em">${c.emoji}</span><span class="nm">${nm}</span></div>`;
+      });
+      html+='</div>';
+    }
+    html+='</div></div>';
+  }
+  html+='</div>';
+  if(next)html+=`<div style="padding:14px 16px 0"><button class="vote-btn" onclick="startVote(${next.round},${next.mi})">Vote Next Matchup →</button><div class="vote-hint">Tap any gold-bordered match to vote</div></div>`;
+  document.getElementById('main').innerHTML=html;
+}
+
+function startVote(round,mi){currentVote={round,mi};selected=null;locked=false;const w=results[round][mi];if(w!==null){const a=getC(round,mi,0);selected=(a&&a.id===w)?'a':'b';}render();}
+
+function renderVote(){
+  document.getElementById('back-btn').style.display='block';
+  const{round,mi}=currentVote,a=getC(round,mi,0),b=getC(round,mi,1);
+  if(!a||!b){showBracket();return;}
+  const pA=fakeA(a,b),pB=100-pA,majority=selected?(selected==='a'?pA:pB)>=50:false;
+  const hint=!selected?"— Which is the greatest? —":locked?"— Verdict locked! —":"— Tap to switch. Button to commit. —";
+  let html=`<div id="vote-screen"><div class="vote-header"><div class="round-label">${RLABELS[round]}</div><div class="vote-hint-text">${hint}</div></div>`;
+  [{side:'a',c:a,pct:pA},{side:'b',c:b,pct:pB}].forEach(({side,c,pct})=>{
+    const isSel=selected===side;
+    html+=`<div class="card${isSel?' selected':''}" onclick="selectCard('${side}')">`;
+    if(locked&&isSel)html+=`<div class="pct-bar" style="width:${pct}%"></div>`;
+    html+=`<div class="card-inner">
+      <div class="card-top">
+        <div class="card-emoji">${c.emoji}</div>
+        <div style="flex:1;min-width:0">
+          <div class="card-meta">${c.div} · ${c.from}</div>
+          <div class="card-name">${c.name}</div>
+        </div>
+        ${isSel&&!locked?'<div class="card-arrow">◀</div>':''}
+      </div>
+      <div class="card-tag">${c.seed === 1 ? '#1 SEED' : c.seed === 2 ? '#2 SEED' : c.seed === 3 ? '#3 SEED' : '#4 SEED'}</div>
+      ${c.stats?`<div class="card-stats">📊 ${c.stats}</div>`:""}
+      <div class="card-fact">${c.fact}</div>
+      ${locked&&isSel?`<div class="card-pct">${pct}%<span>voted this show</span><span class="check">✓</span></div>`:''}
+    </div></div>`;
+  });
+  if(selected&&!locked)html+=`<div class="commit-box"><div class="commit-hint">Still deciding? Tap the other card to compare.</div><button class="commit-btn" onclick="commitVote()">Lock In Verdict →</button></div>`;
+  if(locked){
+    html+=`<div class="result-box"><div class="${majority?'result-majority':'result-minority'}">${majority?'✓ With the majority':'🔥 Against the crowd'}</div>
+      <div class="ask-room" style="margin-top:14px;padding-top:14px;border-top:1px dashed #48281f"><div style="font-size:9px;letter-spacing:3px;color:#c03828;text-transform:uppercase;margin-bottom:6px">Ask the Room</div><div style="font-size:15px;color:#f0dcd8;font-style:italic;line-height:1.4">${askPrompt}</div></div>
+    </div>
+    <button class="next-btn" onclick="advance()">Vote Next Matchup →</button><a href="index.html" style="display:block;width:100%;margin-top:10px;padding:11px;background:transparent;border:1px solid rgba(255,255,255,0.14);border-radius:12px;color:rgba(255,255,255,0.45);font-size:12px;font-weight:400;text-align:center;letter-spacing:1px;font-family:Georgia,serif;text-decoration:none;box-sizing:border-box">← All Brackets</a>`;
+  }
+  html+='</div>';
+  document.getElementById('main').innerHTML=html;
+}
+
+function selectCard(side){if(locked)return;selected=side;renderVote();}
+function commitVote(){
+  if(!selected||locked)return;
+  locked=true;
+  askPrompt=ASK_ROOM[Math.floor(Math.random()*ASK_ROOM.length)];
+  const{round,mi}=currentVote,a=getC(round,mi,0),b=getC(round,mi,1);
+  results[round][mi]=selected==='a'?a.id:b.id;
+  renderVote();
+  document.getElementById('counter').textContent=totalVotes()+'/31';
+}
+function advance(){currentVote=null;locked=false;selected=null;render();}
+function showBracket(){currentVote=null;selected=null;locked=false;render();}
+function renderChampion(c){
+  document.getElementById('back-btn').style.display='none';
+  document.getElementById('main').innerHTML=`
+    <div id="champion-screen">
+      <div style="font-size:44px;margin-bottom:6px">🏆</div>
+      <div class="champ-emoji">${c.emoji}</div>
+      <div class="champ-trophy">Greatest TV Show of All Time</div>
+      <div class="champ-name">${c.name}</div>
+      <div class="champ-from">${c.from}</div>
+      <div style="display:inline-block;margin:10px 0 6px;padding:4px 16px;border-radius:20px;background:#ff6b5a;color:#0a0706;font-size:11px;font-weight:700;letter-spacing:1px">YOUR VERDICT</div>
+      <div class="champ-fact">${c.fact}</div>
+      <button class="reset-btn" onclick="resetGame()">Run It Back</button><a href="index.html" style="display:block;max-width:240px;margin-left:auto;margin-right:auto;margin-top:10px;padding:11px;background:transparent;border:1px solid rgba(255,255,255,0.14);border-radius:12px;color:rgba(255,255,255,0.45);font-size:12px;font-weight:400;text-align:center;letter-spacing:1px;font-family:Georgia,serif;text-decoration:none;box-sizing:border-box">← All Brackets</a>
+    </div>`;
+}
+function resetGame(){results=[Array(16).fill(null),Array(8).fill(null),Array(4).fill(null),Array(2).fill(null),Array(1).fill(null)];currentVote=null;selected=null;locked=false;render();}
+render();
+</script>
+</body>
+</html>
