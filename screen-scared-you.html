@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VERDICT — Movies That Scared You</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0a0706; color: #f5e6e2; font-family: Georgia, 'Times New Roman', serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
+  #app { width: 100%; max-width: 560px; min-height: 100vh; display: flex; flex-direction: column; }
+  header { padding: 16px 20px 12px; border-bottom: 1px solid #2a1612; display: flex; align-items: center; justify-content: space-between; background: #140a09; }
+  .title { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; color: #ff5e3a; }
+  .subtitle { font-size: 9px; color: #c83820; letter-spacing: 2px; text-transform: uppercase; margin-top: 2px; }
+  .counter { font-size: 10px; color: #3a1e18; background: #1a0c0a; border: 1px solid #2a1612; border-radius: 16px; padding: 4px 10px; }
+  .back-btn { background: transparent; border: 1px solid #2a1612; border-radius: 8px; padding: 5px 10px; color: #48241c; font-size: 11px; cursor: pointer; font-family: Georgia, serif; }
+  #main { flex: 1; padding: 14px 0; }
+  .core-q { text-align: center; font-size: 12px; color: #ff5e3a; font-style: italic; padding: 4px 20px 0; line-height: 1.4; }
+  .div-labels { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px; margin: 10px 10px 8px; }
+  .div-label { font-size: 7px; color: #48241c; text-align: center; padding: 3px 2px; background: #1a0c0a; border-radius: 4px; }
+  .bracket-cols { display: flex; gap: 3px; padding: 0 10px; }
+  .bracket-col { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+  .col-label { font-size: 7px; letter-spacing: 1.5px; text-transform: uppercase; text-align: center; margin-bottom: 5px; }
+  .col-matches { display: flex; flex-direction: column; justify-content: space-around; height: 380px; }
+  .match-cell { border-radius: 5px; overflow: hidden; cursor: default; flex: 1; transition: border-color 0.2s; }
+  .match-cell.active { border: 1px solid #ff5e3a !important; background: #1a0c0a !important; cursor: pointer; }
+  .match-cell.done { border: 1px solid #2e1008 !important; background: #140a09 !important; cursor: pointer; }
+  .match-cell.empty { border: 1px solid #1a0c0a; background: #0a0706; }
+  .match-row { display: flex; align-items: center; gap: 2px; padding: 2px 3px; transition: opacity 0.3s; }
+  .match-row.loser { opacity: 0.22; }
+  .match-row.winner { background: rgba(255,94,58,0.12); }
+  .match-row .em { font-size: 8px; }
+  .match-row .nm { font-size: 7px; color: #48241c; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 400; }
+  .match-row.winner .nm { color: #ff5e3a; font-weight: 700; }
+  .match-divider { border: none; border-top: 1px solid #26120e; margin: 0; }
+  .tbd { padding: 2px 3px; font-size: 6px; color: #261410; }
+  .vote-btn { width: 100%; padding: 14px; background: linear-gradient(135deg, #ff5e3a, #a82810); border: none; border-radius: 12px; color: #0a0706; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; margin-top: 14px; }
+  .vote-hint { font-size: 10px; color: #6a6478; text-align: center; margin-top: 6px; }
+  #vote-screen { padding: 0 16px; animation: fadeUp 0.3s ease; }
+  .vote-header { text-align: center; margin-bottom: 16px; }
+  .round-label { font-size: 10px; letter-spacing: 3px; color: #ff5e3a; text-transform: uppercase; margin-bottom: 3px; }
+  .vote-hint-text { font-size: 11px; color: #8a8298; letter-spacing: 1px; }
+  .card { display: block; width: 100%; margin-bottom: 10px; border-radius: 14px; padding: 16px 18px; cursor: pointer; text-align: left; transition: all 0.25s; position: relative; overflow: hidden; border: 2px solid #2a1612; background: #140a09; }
+  .card.selected { border-color: #ff5e3a !important; background: #200c0a !important; transform: scale(1.01); }
+  .card-inner { position: relative; z-index: 1; }
+  .card-top { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 8px; }
+  .card-emoji { font-size: 34px; margin-top: 2px; flex-shrink: 0; }
+  .card-meta { font-size: 9px; color: #a82810; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 2px; }
+  .card-name { font-size: 18px; font-weight: 700; color: #d8d2e2; line-height: 1.2; margin-bottom: 2px; transition: color 0.2s; }
+  .card.selected .card-name { color: #ffffff; }
+  .card-from { font-size: 10px; color: #8a8298; font-style: italic; transition: color 0.2s; }
+  .card.selected .card-from { color: #8a8298; }
+  .card-tag { display: inline-block; margin-top: 8px; padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 700; background: #2a1612; color: #ff5e3a; letter-spacing: 1px; }
+  .card.selected .card-tag { background: #ff5e3a; color: #0a0706; }
+  .card-stats { margin-top: 8px; font-size: 9px; color: #9a8aa0; letter-spacing: 0.5px; }
+  .card.selected .card-stats { color: #9a8aa0; }
+  .card-fact { font-size: 12px; color: #7e7888; line-height: 1.75; transition: color 0.2s; margin-top: 8px; }
+  .card.selected .card-fact { color: #e8e2f0; }
+  .card-arrow { font-size: 16px; color: #ff5e3a; margin-left: auto; flex-shrink: 0; }
+  .card-pct { font-size: 20px; font-weight: 700; color: #ff5e3a; margin-top: 10px; }
+  .card-pct span { font-size: 12px; font-weight: 400; color: #48241c; margin-left: 6px; }
+  .card-pct .check { color: #ff5e3a; margin-left: 8px; }
+  .pct-bar { position: absolute; top: 0; left: 0; height: 100%; background: rgba(255,94,58,0.06); transition: width 0.9s cubic-bezier(.4,0,.2,1); z-index: 0; }
+  .commit-box { padding: 14px 18px; background: #140a09; border: 1px solid #2a1612; border-radius: 12px; text-align: center; animation: fadeUp 0.3s ease; }
+  .commit-hint { font-size: 11px; color: #48241c; margin-bottom: 10px; font-style: italic; }
+  .commit-btn { padding: 12px 32px; background: linear-gradient(135deg, #ff5e3a, #a82810); border: none; border-radius: 10px; color: #0a0706; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+  .result-box { padding: 16px 18px; background: #140a09; border: 1px solid #2a1612; border-radius: 12px; text-align: center; margin-top: 2px; animation: fadeUp 0.3s ease; }
+  .result-majority { font-size: 13px; color: #7ec8a0; font-weight: 700; letter-spacing: 1px; }
+  .result-minority { font-size: 13px; color: #a82810; font-weight: 700; letter-spacing: 1px; }
+  .next-btn { width: 100%; margin-top: 14px; padding: 14px; background: linear-gradient(135deg, #ff5e3a, #a82810); border: none; border-radius: 12px; color: #0a0706; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+  #champion-screen { text-align: center; padding: 36px 24px; animation: fadeUp 0.5s ease; }
+  .champ-emoji { font-size: 76px; margin-bottom: 8px; }
+  .champ-trophy { font-size: 11px; letter-spacing: 4px; color: #ff5e3a; text-transform: uppercase; margin-bottom: 8px; }
+  .champ-name { font-size: 26px; font-weight: 700; color: #f5e6e2; margin-bottom: 4px; }
+  .champ-from { font-size: 13px; color: #a82810; font-style: italic; margin-bottom: 4px; }
+  .champ-fact { font-size: 13px; color: #4a2620; font-style: italic; max-width: 310px; margin: 14px auto 28px; line-height: 1.8; }
+  .reset-btn { padding: 14px 32px; background: linear-gradient(135deg, #ff5e3a, #a82810); border: none; border-radius: 12px; color: #0a0706; font-size: 14px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  button:active { filter: brightness(0.88); }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div>
+      <a href="index.html" class="title" style="text-decoration:none;cursor:pointer" title="All brackets">VERDICT</a>
+      <div class="subtitle">The One That Kept You Up</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="back-btn" id="back-btn" style="display:none" onclick="showBracket()">← Bracket</button>
+      <div class="counter" id="counter">0/31</div>
+    </div>
+  </header>
+  <div id="main"></div>
+</div>
+
+<script>
+const ALL = [
+  // DIV 1 — SLASHERS
+  {id:0, name:"Halloween", from:"1978 · Carpenter", emoji:"🔪", div:"Slashers", seed:1, stats:"", fact:"The film that built the slasher genre on a $300,000 budget and a blank white mask. Michael Myers never runs — that walking inevitability is the whole terror. Carpenter's score alone raises your heart rate. The blueprint everyone copied."},
+  {id:1, name:"A Nightmare on Elm Street", from:"1984 · Craven", emoji:"🧤", div:"Slashers", seed:2, stats:"", fact:"The villain who kills you in the one place you can't stay awake to defend — your own sleep. Craven turned exhaustion itself into the monster. The premise is so primal it still unsettles. You can't outrun what waits in your dreams."},
+  {id:2, name:"Scream", from:"1996 · Craven", emoji:"👻", div:"Slashers", seed:3, stats:"", fact:"What's your favorite scary movie? Craven built a slasher that knows it's a slasher and plays by the rules on purpose. Meta before meta was a word, genuinely scary, and the opening scene alone is a masterclass in dread."},
+  {id:3, name:"Texas Chain Saw Massacre", from:"1974 · Hooper", emoji:"⛓", div:"Slashers", seed:4, stats:"", fact:"Shows almost nothing and terrifies completely — the grimy, sweltering dread does all the work. It feels less like a movie than something you weren't supposed to see. A four-seed that's still genuinely upsetting fifty years on."},
+
+  // DIV 2 — THE SUPERNATURAL
+  {id:4, name:"The Exorcist", from:"1973 · Friedkin", emoji:"✝", div:"The Supernatural", seed:1, stats:"", fact:"The film that sent audiences fleeing theaters in 1973 and still ranks as the scariest ever made for millions. The slow descent into the unexplainable is relentless. It made an entire generation afraid of the dark. The genre's high-water mark."},
+  {id:5, name:"The Conjuring", from:"2013 · Wan", emoji:"🕯", div:"The Supernatural", seed:2, stats:"", fact:"James Wan revived the haunted-house film with pure craft — every scare earned, every quiet moment loaded. It launched a whole universe because it nailed the fundamentals. The modern gold standard for supernatural dread."},
+  {id:6, name:"Poltergeist", from:"1982 · Hooper", emoji:"📺", div:"The Supernatural", seed:3, stats:"", fact:"They're here. It took the safest place — a suburban family home — and made it the source of terror. The TV static, the closet, the clown. It traumatized a generation of kids who weren't supposed to be watching."},
+  {id:7, name:"Insidious", from:"2010 · Wan", emoji:"🚪", div:"The Supernatural", seed:4, stats:"", fact:"Wan proved you don't need gore — just a red-faced thing standing where it shouldn't be. The dread builds in broad daylight. A four-seed that delivers some of the most effective jolts of the modern era."},
+
+  // DIV 3 — DREAD & ATMOSPHERE (the slow ones that sit in your chest)
+  {id:8, name:"The Shining", from:"1980 · Kubrick", emoji:"🪓", div:"Dread & Atmosphere", seed:1, stats:"", fact:"Kubrick built dread out of carpet patterns and empty hallways. Nothing chases you for most of it — the hotel itself is the threat. The most beautiful and unsettling horror film ever made. It gets under your skin and stays."},
+  {id:9, name:"Hereditary", from:"2018 · Aster", emoji:"🐝", div:"Dread & Atmosphere", seed:2, stats:"", fact:"A grief drama that curdles into pure horror, with a mid-film moment that traumatized a generation. The dread is suffocating and the final act is relentless. Genuinely upsetting in a way few modern films dare to be."},
+  {id:10, name:"The Witch", from:"2015 · Eggers", emoji:"🐐", div:"Dread & Atmosphere", seed:3, stats:"", fact:"A slow-burn period nightmare where the dread comes from isolation, faith, and the woods at the edge of the farm. No cheap scares — just mounting wrongness. Wouldst thou like to live deliciously? It earns every chill."},
+  {id:11, name:"The Babadook", from:"2014 · Kent", emoji:"📕", div:"Dread & Atmosphere", seed:4, stats:"", fact:"A monster that's really about grief and exhaustion, which makes it scarier, not less. The atmosphere of dread is unbearable in the best way. A four-seed that proved horror could be art and terror at once."},
+
+  // DIV 4 — CREATURES
+  {id:12, name:"Alien", from:"1979 · Scott", emoji:"👾", div:"Creatures", seed:1, stats:"", fact:"In space no one can hear you scream. Scott trapped the crew in a haunted house that happens to be a spaceship, with the most perfectly designed monster in film history. The dread of not knowing where it is does the work."},
+  {id:13, name:"The Thing", from:"1982 · Carpenter", emoji:"❄", div:"Creatures", seed:2, stats:"", fact:"The horror isn't the creature — it's that it could be anyone in the room. Carpenter weaponized paranoia and isolation, with practical effects that still stun. The blood-test scene is one of the tensest ever filmed."},
+  {id:14, name:"Jaws", from:"1975 · Spielberg", emoji:"🦈", div:"Creatures", seed:3, stats:"", fact:"The broken mechanical shark forced Spielberg to hide the monster, and dread did the rest. People still hesitate at the edge of the water fifty years later. That's how deep it got — it made the ocean itself frightening."},
+  {id:15, name:"The Descent", from:"2005 · Marshall", emoji:"🕳", div:"Creatures", seed:4, stats:"", fact:"Claustrophobia first, creatures second — by the time the monsters arrive you're already terrified of the cave. A relentless, suffocating descent into the dark. A four-seed that earns its reputation as one of the scariest of its century."},
+
+  // DIV 5 — PSYCHOLOGICAL (the mind-horror)
+  {id:16, name:"Psycho", from:"1960 · Hitchcock", emoji:"🚿", div:"Psychological", seed:1, stats:"", fact:"The shower scene rewired what audiences thought a film could do, and Norman Bates invented the sympathetic monster. Hitchcock made you feel unsafe in the most ordinary place. The foundation modern psychological horror is built on."},
+  {id:17, name:"The Silence of the Lambs", from:"1991 · Demme", emoji:"🦋", div:"Psychological", seed:2, stats:"", fact:"Hannibal Lecter terrifies in just sixteen minutes of screen time, and Buffalo Bill's basement is pure nightmare. A horror film so good it swept the Oscars. The dread of being truly understood by a monster."},
+  {id:18, name:"Misery", from:"1990 · Reiner", emoji:"🔨", div:"Psychological", seed:3, stats:"", fact:"No supernatural anything — just your number-one fan and a sledgehammer. Kathy Bates made the most ordinary obsession into pure terror. The horror of being completely at someone's mercy, made unbearably real."},
+  {id:19, name:"Black Swan", from:"2010 · Aronofsky", emoji:"🦢", div:"Psychological", seed:4, stats:"", fact:"A descent into madness so vivid you can't tell what's real, and neither can she. The body horror creeps in slowly until the finale floors you. A four-seed that proves the scariest monster can be your own unraveling mind."},
+
+  // DIV 6 — FOUND FOOTAGE & THE REAL
+  {id:20, name:"The Blair Witch Project", from:"1999 · Myrick/Sánchez", emoji:"🌲", div:"Found Footage", seed:1, stats:"", fact:"Convinced an entire planet it might be real, and invented the modern found-footage genre on a shoestring. You never see anything — the terror is entirely in the dark woods and the breathing. The ending shot still chills."},
+  {id:21, name:"Paranormal Activity", from:"2007 · Peli", emoji:"📹", div:"Found Footage", seed:2, stats:"", fact:"Made for almost nothing and terrifying because it's so patient — a static camera, a bedroom, and the dread of what happens at 3 a.m. It turned waiting itself into horror. The sleep-paranoia film that spawned a franchise."},
+  {id:22, name:"REC", from:"2007 · Balagueró/Plaza", emoji:"🚨", div:"Found Footage", seed:3, stats:"", fact:"A quarantined apartment building shot in real-time chaos — relentless, claustrophobic, and genuinely frightening. The night-vision finale is one of the scariest endings in found footage. Tighter and meaner than its many imitators."},
+  {id:23, name:"Host", from:"2020 · Savage", emoji:"💻", div:"Found Footage", seed:4, stats:"", fact:"A séance over a video call, shot during lockdown, and scarier than films a hundred times its budget. It uses the exact screen you're watching on against you. A four-seed that proved the genre still has new terrors in it."},
+
+  // DIV 7 — MODERN HORROR
+  {id:24, name:"Get Out", from:"2017 · Peele", emoji:"🫖", div:"Modern Horror", seed:1, stats:"", fact:"A social thriller that reveals its horror engine piece by piece until it lands like a hammer. Peele won the screenwriting Oscar for exactly that construction. The sunken place is one of modern horror's most indelible images."},
+  {id:25, name:"It Follows", from:"2014 · Mitchell", emoji:"👣", div:"Modern Horror", seed:2, stats:"", fact:"A single, simple, unstoppable idea — something is always walking toward you, slowly, forever. The dread never lets up because the threat never stops. A modern classic that gets in your head and follows you out of the theater."},
+  {id:26, name:"A Quiet Place", from:"2018 · Krasinski", emoji:"🤫", div:"Modern Horror", seed:3, stats:"", fact:"Built almost entirely on silence, it makes the audience afraid to make a sound themselves. Every creak is unbearable. A brilliant high-concept that turned a packed theater into a held breath. Tension as pure craft."},
+  {id:27, name:"Midsommar", from:"2019 · Aster", emoji:"🌼", div:"Modern Horror", seed:4, stats:"", fact:"Horror in broad, blinding daylight — no shadows to hide in, which somehow makes it worse. A beautiful, sun-soaked nightmare you can't look away from. A four-seed that proves dread doesn't need the dark."},
+
+  // DIV 8 — THE CLASSICS
+  {id:28, name:"Nosferatu", from:"1922 · Murnau", emoji:"🧛", div:"The Classics", seed:1, stats:"", fact:"The original screen nightmare — Count Orlok rising from his coffin is the first time movies truly frightened an audience. A century old and still genuinely unsettling to look at. The rat-like shadow that started it all."},
+  {id:29, name:"Night of the Living Dead", from:"1968 · Romero", emoji:"🧟", div:"The Classics", seed:2, stats:"", fact:"Invented the modern zombie and the entire genre that followed, on almost no money. Grim, relentless, and shockingly bleak for its time. The bunker-under-siege template that horror has reused for fifty-plus years."},
+  {id:30, name:"Rosemary's Baby", from:"1968 · Polanski", emoji:"🍼", div:"The Classics", seed:3, stats:"", fact:"Slow, creeping paranoia where the horror is that nobody believes her. The dread builds from ordinary neighbors and quiet wrongness until the unbearable reveal. One of the most influential horror films ever made."},
+  {id:31, name:"The Birds", from:"1963 · Hitchcock", emoji:"🐦", div:"The Classics", seed:4, stats:"", fact:"Hitchcock took the most harmless thing imaginable and made it terrifying, with no explanation and no mercy. The playground scene is a masterclass in mounting dread. A four-seed that proves the master could scare you with anything."}
+];
+
+const R16=[[0,3],[1,2],[4,7],[5,6],[8,11],[9,10],[12,15],[13,14],[16,19],[17,18],[20,23],[21,22],[24,27],[25,26],[28,31],[29,30]];
+const COUNTS=[16,8,4,2,1];
+const RLABELS=["Round of 32","Round of 16","Quarterfinal","Semifinal","The Final"];
+let results=[Array(16).fill(null),Array(8).fill(null),Array(4).fill(null),Array(2).fill(null),Array(1).fill(null)];
+let currentVote=null,selected=null,locked=false,askPrompt='';
+
+const ASK_ROOM=[
+  "Saw it too young, or old enough to handle it?",
+  "Scary in the moment, or scary for weeks after?",
+  "Could you watch it again alone, lights off?",
+  "Jump-scare scary, or the kind that sits in your chest?",
+  "Which loser of this matchup actually messed you up more?"
+];
+
+function getC(r,mi,slot){
+  if(r===0){const idx=R16[mi][slot];return ALL[idx];}
+  const prevMi=mi*2+slot,prevW=results[r-1][prevMi];
+  if(prevW===null)return null;
+  return ALL.find(c=>c.id===prevW);
+}
+function getCurrentRound(){for(let r=0;r<5;r++){for(let mi=0;mi<COUNTS[r];mi++){if(results[r][mi]===null){const a=getC(r,mi,0),b=getC(r,mi,1);if(a&&b)return r;}}};return 4;}
+function getNextActive(){const cr=getCurrentRound();for(let mi=0;mi<COUNTS[cr];mi++){if(results[cr][mi]===null){const a=getC(cr,mi,0),b=getC(cr,mi,1);if(a&&b)return{round:cr,mi};}}return null;}
+function totalVotes(){return results.flat().filter(v=>v!==null).length;}
+function fakeA(a,b){return Math.min(86,Math.max(20,50+(b.id-a.id)%17+(a.id%4)*2));}
+
+function render(){
+  const done=results[4][0]!==null;
+  if(done){const w=ALL.find(c=>c.id===results[4][0]);renderChampion(w);return;}
+  if(currentVote!==null){renderVote();return;}
+  renderBracket();
+}
+
+function renderBracket(){
+  document.getElementById('back-btn').style.display='none';
+  const cr=getCurrentRound(),next=getNextActive();
+  const divNames=["Slashers","The Supernatural","Dread & Atmosphere","Creatures","Psychological","Found Footage","Modern Horror","The Classics"];
+  let html='<div class="core-q">Which one scared you the most?</div>';
+  html+='<div class="bracket-cols">';
+  for(let r=0;r<5;r++){
+    const count=COUNTS[r],maxH=[22,30,44,70,100][r],gap=[2,5,12,28,0][r];
+    html+=`<div class="bracket-col"><div class="col-label" style="color:${r===cr?'#ff5e3a':'#3a1e18'}">${["R32","R16","QF","SF","Final"][r]}</div><div class="col-matches" style="gap:${gap}px">`;
+    for(let mi=0;mi<count;mi++){
+      const a=getC(r,mi,0),b=getC(r,mi,1),winner=results[r][mi];
+      const active=r===cr&&winner===null&&a&&b,done=winner!==null;
+      const cls=active?'active':done?'done':'empty';
+      const onclick=(active||done)?`onclick="startVote(${r},${mi})"`:'';
+      html+=`<div class="match-cell ${cls}" style="max-height:${maxH}px;${!active&&!done?'border:1px solid #1a0c0a':''}" ${onclick}>`;
+      [a,b].forEach((c,si)=>{
+        if(!c){html+=`<div class="tbd">—</div>`;return;}
+        const isW=winner===c.id,isL=done&&!isW;
+        const nm=c.name.split(' ').slice(0,r===0?2:3).join(' ');
+        html+=`${si===1?'<hr class="match-divider">':''}<div class="match-row ${isW?'winner':isL?'loser':''}"><span class="em">${c.emoji}</span><span class="nm">${nm}</span></div>`;
+      });
+      html+='</div>';
+    }
+    html+='</div></div>';
+  }
+  html+='</div>';
+  if(next)html+=`<div style="padding:14px 16px 0"><button class="vote-btn" onclick="startVote(${next.round},${next.mi})">Vote Next Matchup →</button><div class="vote-hint">Tap any gold-bordered match to vote</div></div>`;
+  document.getElementById('main').innerHTML=html;
+}
+
+function startVote(round,mi){currentVote={round,mi};selected=null;locked=false;const w=results[round][mi];if(w!==null){const a=getC(round,mi,0);selected=(a&&a.id===w)?'a':'b';}render();}
+
+function renderVote(){
+  document.getElementById('back-btn').style.display='block';
+  const{round,mi}=currentVote,a=getC(round,mi,0),b=getC(round,mi,1);
+  if(!a||!b){showBracket();return;}
+  const pA=fakeA(a,b),pB=100-pA,majority=selected?(selected==='a'?pA:pB)>=50:false;
+  const hint=!selected?"— Which one scared you more? —":locked?"— Verdict locked! —":"— Tap to switch. Button to commit. —";
+  let html=`<div id="vote-screen"><div class="vote-header"><div class="round-label">${RLABELS[round]}</div><div class="vote-hint-text">${hint}</div></div>`;
+  [{side:'a',c:a,pct:pA},{side:'b',c:b,pct:pB}].forEach(({side,c,pct})=>{
+    const isSel=selected===side;
+    html+=`<div class="card${isSel?' selected':''}" onclick="selectCard('${side}')">`;
+    if(locked&&isSel)html+=`<div class="pct-bar" style="width:${pct}%"></div>`;
+    html+=`<div class="card-inner">
+      <div class="card-top">
+        <div class="card-emoji">${c.emoji}</div>
+        <div style="flex:1;min-width:0">
+          <div class="card-meta">${c.div} · ${c.from}</div>
+          <div class="card-name">${c.name}</div>
+        </div>
+        ${isSel&&!locked?'<div class="card-arrow">◀</div>':''}
+      </div>
+      <div class="card-tag">${c.seed === 1 ? '#1 SEED' : c.seed === 2 ? '#2 SEED' : c.seed === 3 ? '#3 SEED' : '#4 SEED'}</div>
+      ${c.stats?`<div class="card-stats">📊 ${c.stats}</div>`:""}
+      <div class="card-fact">${c.fact}</div>
+      ${locked&&isSel?`<div class="card-pct">${pct}%<span>found scarier</span><span class="check">✓</span></div>`:''}
+    </div></div>`;
+  });
+  if(selected&&!locked)html+=`<div class="commit-box"><div class="commit-hint">Still deciding? Tap the other card to compare.</div><button class="commit-btn" onclick="commitVote()">Lock In Verdict →</button></div>`;
+  if(locked){
+    html+=`<div class="result-box"><div class="${majority?'result-majority':'result-minority'}">${majority?'✓ With the majority':'🔥 Against the crowd'}</div>
+      <div class="ask-room" style="margin-top:14px;padding-top:14px;border-top:1px dashed #48241c"><div style="font-size:9px;letter-spacing:3px;color:#a82810;text-transform:uppercase;margin-bottom:6px">Ask the Room</div><div style="font-size:15px;color:#f0d8d0;font-style:italic;line-height:1.4">${askPrompt}</div></div>
+    </div>
+    <button class="next-btn" onclick="advance()">Vote Next Matchup →</button><a href="index.html" style="display:block;width:100%;margin-top:10px;padding:11px;background:transparent;border:1px solid rgba(255,255,255,0.14);border-radius:12px;color:rgba(255,255,255,0.45);font-size:12px;font-weight:400;text-align:center;letter-spacing:1px;font-family:Georgia,serif;text-decoration:none;box-sizing:border-box">← All Brackets</a>`;
+  }
+  html+='</div>';
+  document.getElementById('main').innerHTML=html;
+}
+
+function selectCard(side){if(locked)return;selected=side;renderVote();}
+function commitVote(){
+  if(!selected||locked)return;
+  locked=true;
+  askPrompt=ASK_ROOM[Math.floor(Math.random()*ASK_ROOM.length)];
+  const{round,mi}=currentVote,a=getC(round,mi,0),b=getC(round,mi,1);
+  results[round][mi]=selected==='a'?a.id:b.id;
+  renderVote();
+  document.getElementById('counter').textContent=totalVotes()+'/31';
+}
+function advance(){currentVote=null;locked=false;selected=null;render();}
+function showBracket(){currentVote=null;selected=null;locked=false;render();}
+function renderChampion(c){
+  document.getElementById('back-btn').style.display='none';
+  document.getElementById('main').innerHTML=`
+    <div id="champion-screen">
+      <div style="font-size:44px;margin-bottom:6px">🏆</div>
+      <div class="champ-emoji">${c.emoji}</div>
+      <div class="champ-trophy">The One That Scared You Most</div>
+      <div class="champ-name">${c.name}</div>
+      <div class="champ-from">${c.from}</div>
+      <div style="display:inline-block;margin:10px 0 6px;padding:4px 16px;border-radius:20px;background:#ff5e3a;color:#0a0706;font-size:11px;font-weight:700;letter-spacing:1px">YOUR VERDICT</div>
+      <div class="champ-fact">${c.fact}</div>
+      <button class="reset-btn" onclick="resetGame()">Run It Back</button><a href="index.html" style="display:block;max-width:240px;margin-left:auto;margin-right:auto;margin-top:10px;padding:11px;background:transparent;border:1px solid rgba(255,255,255,0.14);border-radius:12px;color:rgba(255,255,255,0.45);font-size:12px;font-weight:400;text-align:center;letter-spacing:1px;font-family:Georgia,serif;text-decoration:none;box-sizing:border-box">← All Brackets</a>
+    </div>`;
+}
+function resetGame(){results=[Array(16).fill(null),Array(8).fill(null),Array(4).fill(null),Array(2).fill(null),Array(1).fill(null)];currentVote=null;selected=null;locked=false;render();}
+render();
+</script>
+</body>
+</html>
