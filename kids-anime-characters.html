@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VERDICT — Anime Legends</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #09080a; color: #f0eaf8; font-family: Georgia, 'Times New Roman', serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
+  #app { width: 100%; max-width: 560px; min-height: 100vh; display: flex; flex-direction: column; }
+  header { padding: 16px 20px 12px; border-bottom: 1px solid #22182a; display: flex; align-items: center; justify-content: space-between; background: #0e0b14; }
+  .title { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; color: #ff7ab0; }
+  .subtitle { font-size: 9px; color: #c0487a; letter-spacing: 2px; text-transform: uppercase; margin-top: 2px; }
+  .counter { font-size: 10px; color: #2e2040; background: #14101c; border: 1px solid #22182a; border-radius: 16px; padding: 4px 10px; }
+  .back-btn { background: transparent; border: 1px solid #22182a; border-radius: 8px; padding: 5px 10px; color: #3a2850; font-size: 11px; cursor: pointer; font-family: Georgia, serif; }
+  #main { flex: 1; padding: 14px 0; }
+  .core-q { text-align: center; font-size: 12px; color: #ff7ab0; font-style: italic; padding: 4px 20px 0; line-height: 1.4; }
+  .bracket-cols { display: flex; gap: 3px; padding: 0 10px; }
+  .bracket-col { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+  .col-label { font-size: 7px; letter-spacing: 1.5px; text-transform: uppercase; text-align: center; margin-bottom: 5px; }
+  .col-matches { display: flex; flex-direction: column; justify-content: space-around; height: 380px; }
+  .match-cell { border-radius: 5px; overflow: hidden; cursor: default; flex: 1; transition: border-color 0.2s; }
+  .match-cell.active { border: 1px solid #ff7ab0 !important; background: #14101c !important; cursor: pointer; }
+  .match-cell.done { border: 1px solid #2e1e2a !important; background: #0e0b14 !important; cursor: pointer; }
+  .match-cell.empty { border: 1px solid #14101c; background: #09080a; }
+  .match-row { display: flex; align-items: center; gap: 2px; padding: 2px 3px; transition: opacity 0.3s; }
+  .match-row.loser { opacity: 0.22; }
+  .match-row.winner { background: rgba(255,122,176,0.12); }
+  .match-row .em { font-size: 8px; }
+  .match-row .nm { font-size: 7px; color: #3a2850; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 400; }
+  .match-row.winner .nm { color: #ff7ab0; font-weight: 700; }
+  .match-divider { border: none; border-top: 1px solid #1e1428; margin: 0; }
+  .tbd { padding: 2px 3px; font-size: 6px; color: #221830; }
+  .vote-btn { width: 100%; padding: 14px; background: linear-gradient(135deg, #ff7ab0, #c0487a); border: none; border-radius: 12px; color: #09080a; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; margin-top: 14px; }
+  .vote-hint { font-size: 10px; color: #6a6478; text-align: center; margin-top: 6px; }
+  #vote-screen { padding: 0 16px; animation: fadeUp 0.3s ease; }
+  .vote-header { text-align: center; margin-bottom: 16px; }
+  .round-label { font-size: 10px; letter-spacing: 3px; color: #ff7ab0; text-transform: uppercase; margin-bottom: 3px; }
+  .vote-hint-text { font-size: 11px; color: #8a8298; letter-spacing: 1px; }
+  .card { display: block; width: 100%; margin-bottom: 10px; border-radius: 14px; padding: 16px 18px; cursor: pointer; text-align: left; transition: all 0.25s; position: relative; overflow: hidden; border: 2px solid #22182a; background: #0e0b14; }
+  .card.selected { border-color: #ff7ab0 !important; background: #1a1020 !important; transform: scale(1.01); }
+  .card-inner { position: relative; z-index: 1; }
+  .card-top { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 8px; }
+  .card-emoji { font-size: 34px; margin-top: 2px; flex-shrink: 0; }
+  .card-meta { font-size: 9px; color: #c0487a; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 2px; }
+  .card-name { font-size: 18px; font-weight: 700; color: #d8d2e2; line-height: 1.2; margin-bottom: 2px; transition: color 0.2s; }
+  .card.selected .card-name { color: #ffffff; }
+  .card-from { font-size: 10px; color: #8a8298; font-style: italic; transition: color 0.2s; }
+  .card.selected .card-from { color: #8a8298; }
+  .card-tag { display: inline-block; margin-top: 8px; padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 700; background: #22182a; color: #ff7ab0; letter-spacing: 1px; }
+  .card.selected .card-tag { background: #ff7ab0; color: #09080a; }
+  .card-stats { margin-top: 8px; font-size: 9px; color: #9a8aa0; letter-spacing: 0.5px; }
+  .card.selected .card-stats { color: #9a8aa0; }
+  .card-fact { font-size: 12px; color: #7e7888; line-height: 1.75; transition: color 0.2s; margin-top: 8px; }
+  .card.selected .card-fact { color: #e8e2f0; }
+  .card-arrow { font-size: 16px; color: #ff7ab0; margin-left: auto; flex-shrink: 0; }
+  .card-pct { font-size: 20px; font-weight: 700; color: #ff7ab0; margin-top: 10px; }
+  .card-pct span { font-size: 12px; font-weight: 400; color: #3a2850; margin-left: 6px; }
+  .card-pct .check { color: #ff7ab0; margin-left: 8px; }
+  .pct-bar { position: absolute; top: 0; left: 0; height: 100%; background: rgba(255,122,176,0.06); transition: width 0.9s cubic-bezier(.4,0,.2,1); z-index: 0; }
+  .commit-box { padding: 14px 18px; background: #0e0b14; border: 1px solid #22182a; border-radius: 12px; text-align: center; animation: fadeUp 0.3s ease; }
+  .commit-hint { font-size: 11px; color: #3a2850; margin-bottom: 10px; font-style: italic; }
+  .commit-btn { padding: 12px 32px; background: linear-gradient(135deg, #ff7ab0, #c0487a); border: none; border-radius: 10px; color: #09080a; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+  .result-box { padding: 16px 18px; background: #0e0b14; border: 1px solid #22182a; border-radius: 12px; text-align: center; margin-top: 2px; animation: fadeUp 0.3s ease; }
+  .result-majority { font-size: 13px; color: #7ec8a0; font-weight: 700; letter-spacing: 1px; }
+  .result-minority { font-size: 13px; color: #c0487a; font-weight: 700; letter-spacing: 1px; }
+  .next-btn { width: 100%; margin-top: 14px; padding: 14px; background: linear-gradient(135deg, #ff7ab0, #c0487a); border: none; border-radius: 12px; color: #09080a; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+  #champion-screen { text-align: center; padding: 36px 24px; animation: fadeUp 0.5s ease; }
+  .champ-emoji { font-size: 76px; margin-bottom: 8px; }
+  .champ-trophy { font-size: 11px; letter-spacing: 4px; color: #ff7ab0; text-transform: uppercase; margin-bottom: 8px; }
+  .champ-name { font-size: 26px; font-weight: 700; color: #f0eaf8; margin-bottom: 4px; }
+  .champ-from { font-size: 13px; color: #c0487a; font-style: italic; margin-bottom: 4px; }
+  .champ-fact { font-size: 13px; color: #8a7d98; font-style: italic; max-width: 310px; margin: 14px auto 28px; line-height: 1.8; }
+  .reset-btn { padding: 14px 32px; background: linear-gradient(135deg, #ff7ab0, #c0487a); border: none; border-radius: 12px; color: #09080a; font-size: 14px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  button:active { filter: brightness(0.88); }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div>
+      <a href="index.html" class="title" style="text-decoration:none;cursor:pointer" title="All brackets">VERDICT</a>
+      <div class="subtitle">Greatest of All Time</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="back-btn" id="back-btn" style="display:none" onclick="showBracket()">← Bracket</button>
+      <div class="counter" id="counter">0/31</div>
+    </div>
+  </header>
+  <div id="main"></div>
+</div>
+<script>
+
+const ALL = [{"id": 0, "name": "Goku", "from": "Dragon Ball", "emoji": "🔥", "div": "Shonen Legends", "seed": 1, "stats": "", "fact": "The character who basically defined what a shonen hero is — pure-hearted, food-obsessed, and only truly happy fighting someone stronger than him. Goku has been powering up since the 80s with no sign of stopping, and 'going Super Saiyan' entered the global vocabulary because of him. The original benchmark."}, {"id": 1, "name": "Naruto", "from": "Naruto", "emoji": "🍥", "div": "Shonen Legends", "seed": 2, "stats": "", "fact": "A loud, lonely kid with a monster sealed inside him who decided the way to earn the village's respect was to never give up on anyone — including his enemies. Naruto's whole philosophy is talking opponents into becoming friends, and it made him one of the most beloved heroes on Earth. Believe it."}, {"id": 2, "name": "Luffy", "from": "One Piece", "emoji": "👒", "div": "Shonen Legends", "seed": 3, "stats": "", "fact": "A rubber-bodied pirate who wants to be King of the Pirates not for treasure but for freedom, collecting the most loyal crew in anime along the way. Luffy fights like a cartoon and feels like a hurricane, and One Piece is the best-selling comic series in history behind him. Seeded #3 here is borderline criminal."}, {"id": 3, "name": "Ichigo", "from": "Bleach", "emoji": "⚔", "div": "Shonen Legends", "seed": 4, "stats": "", "fact": "A teenager who can see ghosts and ends up a Soul Reaper guarding the line between the living and the dead, oversized sword and all. Ichigo's the moody, reluctant hero of the bunch — protecting people is the only thing he's ever really sure about. A stacked-division #4."}, {"id": 4, "name": "Pikachu", "from": "Pokemon", "emoji": "⚡", "div": "Pokemon", "seed": 1, "stats": "", "fact": "The electric mouse who became the face of a multi-billion-dollar franchise and, to a whole generation, a more recognizable character than Mickey Mouse. Pikachu refuses its Poke Ball, rides on Ash's shoulder, and says basically one word. Somehow that was enough to conquer the planet."}, {"id": 5, "name": "Ash Ketchum", "from": "Pokemon", "emoji": "🧢", "div": "Pokemon", "seed": 2, "stats": "", "fact": "The kid who spent 25 years and a thousand episodes trying to become a Pokemon Master before finally, actually winning it all. Ash's stubborn refusal to age or quit made him the constant companion of multiple childhoods. He caught 'em — mostly."}, {"id": 6, "name": "Charizard", "from": "Pokemon", "emoji": "🐲", "div": "Pokemon", "seed": 3, "stats": "", "fact": "The fire-breathing dragon every 90s kid wanted on their team and every trading-card binder was built around. Charizard is pure cool-factor — the holographic card that ruled the playground and the Pokemon most likely to ignore its trainer out of sheer attitude."}, {"id": 7, "name": "Eevee", "from": "Pokemon", "emoji": "🦊", "div": "Pokemon", "seed": 4, "stats": "", "fact": "The Pokemon that can evolve into eight totally different creatures, which made it the ultimate 'which one will you choose' fantasy. Eevee is adorable, endlessly flexible, and Pikachu's official rival for franchise mascot. A genuinely dangerous #4 on cuteness alone."}, {"id": 8, "name": "Deku", "from": "My Hero Academia", "emoji": "💚", "div": "My Hero Academia", "seed": 1, "stats": "", "fact": "A boy born without a superpower in a world where almost everyone has one, who inherits the greatest power of all and nearly breaks his own body learning to use it. Deku cries constantly and charges in anyway — the whole series runs on a kid who wants to save people more than he wants to win."}, {"id": 9, "name": "All Might", "from": "My Hero Academia", "emoji": "🦾", "div": "My Hero Academia", "seed": 2, "stats": "", "fact": "The number-one hero whose giant smile is a deliberate performance to make everyone feel safe — while he's secretly running on borrowed time and a hidden injury. All Might is the mentor who passes the torch, and 'You can be a hero' is the emotional core of the series. A #2 that could win it all."}, {"id": 10, "name": "Bakugo", "from": "My Hero Academia", "emoji": "💥", "div": "My Hero Academia", "seed": 3, "stats": "", "fact": "The childhood rival with an explosive temper and an even bigger ego, who spends the series learning that being strong and being a hero aren't the same thing. Bakugo is the best-written jerk in modern anime — you start out hating him and end up cheering. 2v3 against Todoroki is a war."}, {"id": 11, "name": "Todoroki", "from": "My Hero Academia", "emoji": "🧊", "div": "My Hero Academia", "seed": 4, "stats": "", "fact": "Half fire, half ice, and entirely shaped by a father who treated him like a project instead of a son. Todoroki's arc — deciding his power belongs to him, not his dad — is the most quietly emotional in the whole class. The scar on his face tells you everything before he says a word."}, {"id": 12, "name": "Tanjiro", "from": "Demon Slayer", "emoji": "💧", "div": "Demon Slayer", "seed": 1, "stats": "", "fact": "A kind-hearted boy who becomes a demon slayer to find a cure for his sister, carrying her in a box on his back through every fight. Tanjiro is defined by empathy — he pities the demons even as he defeats them — and Demon Slayer became a global phenomenon on his decency and some of the most beautiful animation ever made."}, {"id": 13, "name": "Nezuko", "from": "Demon Slayer", "emoji": "🎋", "div": "Demon Slayer", "seed": 2, "stats": "", "fact": "Turned into a demon but refusing to harm humans, fighting to protect the brother trying to turn her back. Nezuko shrinks to fit in a box, explodes into a fierce protector when it counts, and became a merchandising supernova. The bamboo muzzle is iconic for a reason."}, {"id": 14, "name": "Zenitsu", "from": "Demon Slayer", "emoji": "⚡", "div": "Demon Slayer", "seed": 3, "stats": "", "fact": "A cowardly crybaby who's useless while awake and a lightning-fast master swordsman the instant he passes out from fear. Zenitsu is comic relief that turns into one of the most thrilling fighters in the show — the gap between his panic and his power is both the whole joke and the whole appeal."}, {"id": 15, "name": "Rengoku", "from": "Demon Slayer", "emoji": "🗡", "div": "Demon Slayer", "seed": 4, "stats": "", "fact": "A blazing-hearted flame swordsman whose unshakeable positivity and one unforgettable stand made him the most beloved side character in the franchise. He set hearts on fire in the movie that became the highest-grossing film in Japanese history. A #4 only because his division is absolute murder."}, {"id": 16, "name": "Totoro", "from": "My Neighbor Totoro", "emoji": "🌳", "div": "Ghibli", "seed": 1, "stats": "", "fact": "A giant, fuzzy forest spirit only children can see, who waits at bus stops in the rain and helps two sisters through their mother's illness without a single fight. Totoro is the gentlest icon in anime — the Studio Ghibli mascot, and proof a character can be unforgettable without ever raising a fist."}, {"id": 17, "name": "Chihiro", "from": "Spirited Away", "emoji": "🏮", "div": "Ghibli", "seed": 2, "stats": "", "fact": "A sulky ten-year-old trapped in a spirit-world bathhouse who has to work, grow up, and save her parents from a witch's curse. Chihiro starts as a whiny kid and becomes brave through sheer persistence — Spirited Away won the Oscar and is one of the greatest animated films ever made, full stop."}, {"id": 18, "name": "Howl", "from": "Howl's Moving Castle", "emoji": "🏰", "div": "Ghibli", "seed": 3, "stats": "", "fact": "A vain, dramatic wizard who lives in a walking castle and would rather run from a war than fight in it. Howl is all flair and hidden heart, and the romance at the center of his movie is one of Ghibli's most beloved. The hair-dye meltdown is a legendary tantrum."}, {"id": 19, "name": "Ponyo", "from": "Ponyo", "emoji": "🐟", "div": "Ghibli", "seed": 4, "stats": "", "fact": "A goldfish who wants to become a human girl so badly she causes a tidal wave doing it. Ponyo is pure, chaotic toddler energy turned into a force of nature — Ghibli's most joyful, most uncontainable creation. Ham!"}, {"id": 20, "name": "Sasuke", "from": "Naruto", "emoji": "🌀", "div": "Power & Rivals", "seed": 1, "stats": "", "fact": "The brooding rival who walks the line between hero and villain for most of his series, driven by revenge and slowly pulled back by one stubborn friend. Sasuke is the blueprint for the 'cool dark rival' that every shonen since has copied. His rivalry with Naruto is the heart of the whole saga."}, {"id": 21, "name": "Kakashi", "from": "Naruto", "emoji": "📖", "div": "Power & Rivals", "seed": 2, "stats": "", "fact": "A masked, perpetually-late ninja reading a novel mid-battle who's secretly one of the most dangerous and decorated warriors alive. Kakashi is the cool teacher everyone wishes they had — lazy on the surface, devastating when it counts, hiding more pain than he lets on. We still want to see under that mask."}, {"id": 22, "name": "Vegeta", "from": "Dragon Ball", "emoji": "👑", "div": "Power & Rivals", "seed": 3, "stats": "", "fact": "A proud warrior prince who started out trying to destroy Earth and became its fiercest defender without once admitting he'd gone soft. Vegeta's whole arc is a grudge against being second-best, and his refusal to quit makes him the most relatable powerhouse in Dragon Ball. The eternal rival."}, {"id": 23, "name": "Gon", "from": "Hunter x Hunter", "emoji": "🎣", "div": "Power & Rivals", "seed": 4, "stats": "", "fact": "A cheerful boy hunting for the father who abandoned him, whose sunny exterior hides a terrifying willingness to give up everything to win. Gon looks like the simplest shonen hero alive until Hunter x Hunter reveals how dark that determination can go. A genuinely unsettling #4."}, {"id": 24, "name": "Gojo", "from": "Jujutsu Kaisen", "emoji": "🔵", "div": "New Wave", "seed": 1, "stats": "", "fact": "The strongest sorcerer alive, who knows it, and hides world-ending power behind a blindfold and a permanent smirk. Gojo became an instant global icon the moment Jujutsu Kaisen aired — overwhelmingly powerful, infuriatingly cool, and the character everyone suddenly wanted to be."}, {"id": 25, "name": "Anya", "from": "Spy x Family", "emoji": "🥜", "div": "New Wave", "seed": 2, "stats": "", "fact": "A tiny telepath secretly adopted by a spy and an assassin who don't know each other's real jobs — and who can read both their minds. Anya is the funniest character in modern anime, reacting to grown-up chaos with peanut-loving glee. 'Waku waku!' She carries her show on pure charm."}, {"id": 26, "name": "Yuji Itadori", "from": "Jujutsu Kaisen", "emoji": "👊", "div": "New Wave", "seed": 3, "stats": "", "fact": "A super-strong kid who swallows a cursed finger to save his friends and ends up sharing his body with the King of Curses. Yuji's the rare shonen hero motivated by making sure people die 'properly' — a surprisingly heavy idea wrapped in a cheerful, kind kid. 2v3 against Anya is a tonal collision for the ages."}, {"id": 27, "name": "Loid Forger", "from": "Spy x Family", "emoji": "🕴", "div": "New Wave", "seed": 4, "stats": "", "fact": "A master spy who builds a fake family for a mission and slowly, against all his training, falls for the act. Loid is suave competence undone by one weird kid and a fake wife who's secretly an assassin — the straight man holding the funniest setup in anime together. A loaded #4."}, {"id": 28, "name": "Sailor Moon", "from": "Sailor Moon", "emoji": "🌙", "div": "Classics", "seed": 1, "stats": "", "fact": "A crybaby middle-schooler who transforms into the leader of a team of magical guardians and saves the world on the regular. Sailor Moon basically created the magical-girl genre as the world knows it, and 'in the name of the Moon' launched a thousand childhoods. The original girl-power icon."}, {"id": 29, "name": "Doraemon", "from": "Doraemon", "emoji": "🐱", "div": "Classics", "seed": 2, "stats": "", "fact": "A robotic cat from the future with a magic pocket full of gadgets, sent back to help one hopeless boy get his life together. Doraemon is an icon on Mickey Mouse's level across all of Asia — and most Western kids have never heard of him. That gap is the upset waiting to happen on this board."}, {"id": 30, "name": "Yugi Muto", "from": "Yu-Gi-Oh!", "emoji": "🃏", "div": "Classics", "seed": 3, "stats": "", "fact": "A shy kid who solves an ancient puzzle and shares his body with the spirit of a pharaoh who happens to be unbeatable at card games. Yu-Gi-Oh turned a children's card game into life-or-death duels and built a trading-card empire that's still going strong. It's time to duel."}, {"id": 31, "name": "Astro Boy", "from": "Astro Boy", "emoji": "🤖", "div": "Classics", "seed": 4, "stats": "", "fact": "The robot boy who basically started anime as the world knows it — the granddaddy of every character on this board. Astro Boy launched in the 60s as one of the first TV anime ever, and every spiky-haired hero here owes him a debt. The original, in the most literal sense. A #4 carrying 60 years of history."}];
+const R1 = [[0, 3], [1, 2], [4, 7], [5, 6], [8, 11], [9, 10], [12, 15], [13, 14], [16, 19], [17, 18], [20, 23], [21, 22], [24, 27], [25, 26], [28, 31], [29, 30]];
+const COUNTS = [16, 8, 4, 2, 1];
+const NR = COUNTS.length, LASTR = NR-1, TOTAL = 31;
+const RLABELS = ["Round of 32", "Round of 16", "Quarterfinal", "Semifinal", "The Final"];
+const COLLABELS = ["R32", "R16", "QF", "SF", "Final"];
+const HEIGHTS = [22, 30, 44, 70, 100];
+const GAPS = [2, 5, 12, 28, 0];
+const DIVNAMES = ["Shonen Legends", "Pokemon", "My Hero Academia", "Demon Slayer", "Ghibli", "Power & Rivals", "New Wave", "Classics"];
+const ASK_ROOM = ["Strongest in a fight vs. greatest character: same pick?", "Which one got your whole family into anime?", "Nostalgia legend or current obsession — who wins?", "Which franchise got robbed by the seeding?", "Who would your 10-year-old self have voted for?"];
+let results = COUNTS.map(n=>Array(n).fill(null));
+let currentVote=null, selected=null, locked=false, askPrompt='';
+
+function getC(r,mi,slot){
+  if(r===0){const idx=R1[mi][slot];return ALL[idx];}
+  const prevMi=mi*2+slot, prevW=results[r-1][prevMi];
+  if(prevW===null)return null;
+  return ALL.find(c=>c.id===prevW);
+}
+function getCurrentRound(){for(let r=0;r<NR;r++){for(let mi=0;mi<COUNTS[r];mi++){if(results[r][mi]===null){const a=getC(r,mi,0),b=getC(r,mi,1);if(a&&b)return r;}}}return LASTR;}
+function getNextActive(){const cr=getCurrentRound();for(let mi=0;mi<COUNTS[cr];mi++){if(results[cr][mi]===null){const a=getC(cr,mi,0),b=getC(cr,mi,1);if(a&&b)return{round:cr,mi};}}return null;}
+function totalVotes(){return results.flat().filter(v=>v!==null).length;}
+function fakeA(a,b){return Math.min(86,Math.max(20,50+(b.id-a.id)%17+(a.id%4)*2));}
+
+function render(){
+  const done=results[LASTR][0]!==null;
+  if(done){const w=ALL.find(c=>c.id===results[LASTR][0]);renderChampion(w);return;}
+  if(currentVote!==null){renderVote();return;}
+  renderBracket();
+}
+
+function renderBracket(){
+  document.getElementById('back-btn').style.display='none';
+  const cr=getCurrentRound(),next=getNextActive();
+  let html='<div class="core-q">Who\'s the greatest anime & manga character of all time?</div>';
+  html+='<div class="bracket-cols">';
+  for(let r=0;r<NR;r++){
+    const count=COUNTS[r],maxH=HEIGHTS[r],gap=GAPS[r];
+    html+='<div class="bracket-col"><div class="col-label" style="color:'+(r===cr?'#ff7ab0':'#2e2040')+'">'+COLLABELS[r]+'</div><div class="col-matches" style="gap:'+gap+'px">';
+    for(let mi=0;mi<count;mi++){
+      const a=getC(r,mi,0),b=getC(r,mi,1),winner=results[r][mi];
+      const active=r===cr&&winner===null&&a&&b,done=winner!==null;
+      const cls=active?'active':done?'done':'empty';
+      const onclick=(active||done)?'onclick="startVote('+r+','+mi+')"':'';
+      html+='<div class="match-cell '+cls+'" style="max-height:'+maxH+'px;'+(!active&&!done?'border:1px solid #14101c':'')+'" '+onclick+'>';
+      [a,b].forEach((c,si)=>{
+        if(!c){html+='<div class="tbd">&mdash;</div>';return;}
+        const isW=winner===c.id,isL=done&&!isW;
+        const nm=c.name.split(' ').slice(0,r===0?2:3).join(' ');
+        html+=(si===1?'<hr class="match-divider">':'')+'<div class="match-row '+(isW?'winner':isL?'loser':'')+'"><span class="em">'+c.emoji+'</span><span class="nm">'+nm+'</span></div>';
+      });
+      html+='</div>';
+    }
+    html+='</div></div>';
+  }
+  html+='</div>';
+  if(next)html+='<div style="padding:14px 16px 0"><button class="vote-btn" onclick="startVote('+next.round+','+next.mi+')">Vote Next Matchup &rarr;</button><div class="vote-hint">Tap any highlighted match to vote</div></div>';
+  document.getElementById('main').innerHTML=html;
+}
+
+function startVote(round,mi){currentVote={round,mi};selected=null;locked=false;const w=results[round][mi];if(w!==null){const a=getC(round,mi,0);selected=(a&&a.id===w)?'a':'b';}render();}
+
+function renderVote(){
+  document.getElementById('back-btn').style.display='block';
+  const o=currentVote,round=o.round,mi=o.mi,a=getC(round,mi,0),b=getC(round,mi,1);
+  if(!a||!b){showBracket();return;}
+  const pA=fakeA(a,b),pB=100-pA,majority=selected?(selected==='a'?pA:pB)>=50:false;
+  const hint=!selected?"— Who's the greatest? —":locked?"— Verdict locked! —":"— Tap to switch. Button to commit. —";
+  let html='<div id="vote-screen"><div class="vote-header"><div class="round-label">'+RLABELS[round]+'</div><div class="vote-hint-text">'+hint+'</div></div>';
+  [{side:'a',c:a,pct:pA},{side:'b',c:b,pct:pB}].forEach(function(o){
+    const side=o.side,c=o.c,pct=o.pct,isSel=selected===side;
+    html+='<div class="card'+(isSel?' selected':'')+'" onclick="selectCard(\''+side+'\')">';
+    if(locked&&isSel)html+='<div class="pct-bar" style="width:'+pct+'%"></div>';
+    html+='<div class="card-inner"><div class="card-top"><div class="card-emoji">'+c.emoji+'</div><div style="flex:1;min-width:0"><div class="card-meta">'+c.div+' · '+c.from+'</div><div class="card-name">'+c.name+'</div></div>'+(isSel&&!locked?'<div class="card-arrow">◀</div>':'')+'</div>';
+    html+='<div class="card-tag">'+(c.seed===1?'#1 SEED':c.seed===2?'#2 SEED':c.seed===3?'#3 SEED':'#4 SEED')+'</div>';
+    if(c.stats)html+='<div class="card-stats">📊 '+c.stats+'</div>';
+    html+='<div class="card-fact">'+c.fact+'</div>';
+    if(locked&&isSel)html+='<div class="card-pct">'+pct+'%<span>voted this character</span><span class="check">✓</span></div>';
+    html+='</div></div>';
+  });
+  if(selected&&!locked)html+='<div class="commit-box"><div class="commit-hint">Still deciding? Tap the other card to compare.</div><button class="commit-btn" onclick="commitVote()">Lock In Verdict &rarr;</button></div>';
+  if(locked){
+    html+='<div class="result-box"><div class="'+(majority?'result-majority':'result-minority')+'">'+(majority?'✓ With the majority':'🔥 Against the crowd')+'</div><div class="ask-room" style="margin-top:14px;padding-top:14px;border-top:1px dashed #3a2850"><div style="font-size:9px;letter-spacing:3px;color:#c0487a;text-transform:uppercase;margin-bottom:6px">Ask the Room</div><div style="font-size:15px;color:#e8d8f0;font-style:italic;line-height:1.4">'+askPrompt+'</div></div></div><button class="next-btn" onclick="advance()">Vote Next Matchup &rarr;</button>';
+  }
+  html+='</div>';
+  document.getElementById('main').innerHTML=html;
+}
+
+function selectCard(side){if(locked)return;selected=side;renderVote();}
+function commitVote(){
+  if(!selected||locked)return;
+  locked=true;
+  askPrompt=ASK_ROOM[Math.floor(Math.random()*ASK_ROOM.length)];
+  const o=currentVote,round=o.round,mi=o.mi,a=getC(round,mi,0),b=getC(round,mi,1);
+  results[round][mi]=selected==='a'?a.id:b.id;
+  renderVote();
+  document.getElementById('counter').textContent=totalVotes()+'/'+TOTAL;
+}
+function advance(){currentVote=null;locked=false;selected=null;render();}
+function showBracket(){currentVote=null;selected=null;locked=false;render();}
+function renderChampion(c){
+  document.getElementById('back-btn').style.display='none';
+  document.getElementById('main').innerHTML='<div id="champion-screen"><div style="font-size:44px;margin-bottom:6px">🏆</div><div class="champ-emoji">'+c.emoji+'</div><div class="champ-trophy">Greatest of All Time</div><div class="champ-name">'+c.name+'</div><div class="champ-from">'+c.from+'</div><div style="display:inline-block;margin:10px 0 6px;padding:4px 16px;border-radius:20px;background:#ff7ab0;color:#09080a;font-size:11px;font-weight:700;letter-spacing:1px">YOUR VERDICT</div><div class="champ-fact">'+c.fact+'</div><button class="reset-btn" onclick="resetGame()">Run It Back</button></div>';
+}
+function resetGame(){results=COUNTS.map(n=>Array(n).fill(null));currentVote=null;selected=null;locked=false;render();}
+render();
+
+</script>
+</body>
+</html>

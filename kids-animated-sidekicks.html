@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VERDICT — Animated Sidekicks</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #09080a; color: #f0eaf8; font-family: Georgia, 'Times New Roman', serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
+  #app { width: 100%; max-width: 560px; min-height: 100vh; display: flex; flex-direction: column; }
+  header { padding: 16px 20px 12px; border-bottom: 1px solid #22182a; display: flex; align-items: center; justify-content: space-between; background: #0e0b14; }
+  .title { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; color: #ff6b5a; }
+  .subtitle { font-size: 9px; color: #c03828; letter-spacing: 2px; text-transform: uppercase; margin-top: 2px; }
+  .counter { font-size: 10px; color: #2e2040; background: #14101c; border: 1px solid #22182a; border-radius: 16px; padding: 4px 10px; }
+  .back-btn { background: transparent; border: 1px solid #22182a; border-radius: 8px; padding: 5px 10px; color: #3a2850; font-size: 11px; cursor: pointer; font-family: Georgia, serif; }
+  #main { flex: 1; padding: 14px 0; }
+  .core-q { text-align: center; font-size: 12px; color: #ff6b5a; font-style: italic; padding: 4px 20px 0; line-height: 1.4; }
+  .bracket-cols { display: flex; gap: 3px; padding: 0 10px; }
+  .bracket-col { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+  .col-label { font-size: 7px; letter-spacing: 1.5px; text-transform: uppercase; text-align: center; margin-bottom: 5px; }
+  .col-matches { display: flex; flex-direction: column; justify-content: space-around; height: 380px; }
+  .match-cell { border-radius: 5px; overflow: hidden; cursor: default; flex: 1; transition: border-color 0.2s; }
+  .match-cell.active { border: 1px solid #ff6b5a !important; background: #14101c !important; cursor: pointer; }
+  .match-cell.done { border: 1px solid #2e1e2a !important; background: #0e0b14 !important; cursor: pointer; }
+  .match-cell.empty { border: 1px solid #14101c; background: #09080a; }
+  .match-row { display: flex; align-items: center; gap: 2px; padding: 2px 3px; transition: opacity 0.3s; }
+  .match-row.loser { opacity: 0.22; }
+  .match-row.winner { background: rgba(255,107,90,0.12); }
+  .match-row .em { font-size: 8px; }
+  .match-row .nm { font-size: 7px; color: #3a2850; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 400; }
+  .match-row.winner .nm { color: #ff6b5a; font-weight: 700; }
+  .match-divider { border: none; border-top: 1px solid #1e1428; margin: 0; }
+  .tbd { padding: 2px 3px; font-size: 6px; color: #221830; }
+  .vote-btn { width: 100%; padding: 14px; background: linear-gradient(135deg, #ff6b5a, #c03828); border: none; border-radius: 12px; color: #09080a; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; margin-top: 14px; }
+  .vote-hint { font-size: 10px; color: #6a6478; text-align: center; margin-top: 6px; }
+  #vote-screen { padding: 0 16px; animation: fadeUp 0.3s ease; }
+  .vote-header { text-align: center; margin-bottom: 16px; }
+  .round-label { font-size: 10px; letter-spacing: 3px; color: #ff6b5a; text-transform: uppercase; margin-bottom: 3px; }
+  .vote-hint-text { font-size: 11px; color: #8a8298; letter-spacing: 1px; }
+  .card { display: block; width: 100%; margin-bottom: 10px; border-radius: 14px; padding: 16px 18px; cursor: pointer; text-align: left; transition: all 0.25s; position: relative; overflow: hidden; border: 2px solid #22182a; background: #0e0b14; }
+  .card.selected { border-color: #ff6b5a !important; background: #1a1020 !important; transform: scale(1.01); }
+  .card-inner { position: relative; z-index: 1; }
+  .card-top { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 8px; }
+  .card-emoji { font-size: 34px; margin-top: 2px; flex-shrink: 0; }
+  .card-meta { font-size: 9px; color: #c03828; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 2px; }
+  .card-name { font-size: 18px; font-weight: 700; color: #d8d2e2; line-height: 1.2; margin-bottom: 2px; transition: color 0.2s; }
+  .card.selected .card-name { color: #ffffff; }
+  .card-from { font-size: 10px; color: #8a8298; font-style: italic; transition: color 0.2s; }
+  .card.selected .card-from { color: #8a8298; }
+  .card-tag { display: inline-block; margin-top: 8px; padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 700; background: #22182a; color: #ff6b5a; letter-spacing: 1px; }
+  .card.selected .card-tag { background: #ff6b5a; color: #09080a; }
+  .card-stats { margin-top: 8px; font-size: 9px; color: #9a8aa0; letter-spacing: 0.5px; }
+  .card.selected .card-stats { color: #9a8aa0; }
+  .card-fact { font-size: 12px; color: #7e7888; line-height: 1.75; transition: color 0.2s; margin-top: 8px; }
+  .card.selected .card-fact { color: #e8e2f0; }
+  .card-arrow { font-size: 16px; color: #ff6b5a; margin-left: auto; flex-shrink: 0; }
+  .card-pct { font-size: 20px; font-weight: 700; color: #ff6b5a; margin-top: 10px; }
+  .card-pct span { font-size: 12px; font-weight: 400; color: #3a2850; margin-left: 6px; }
+  .card-pct .check { color: #ff6b5a; margin-left: 8px; }
+  .pct-bar { position: absolute; top: 0; left: 0; height: 100%; background: rgba(255,107,90,0.06); transition: width 0.9s cubic-bezier(.4,0,.2,1); z-index: 0; }
+  .commit-box { padding: 14px 18px; background: #0e0b14; border: 1px solid #22182a; border-radius: 12px; text-align: center; animation: fadeUp 0.3s ease; }
+  .commit-hint { font-size: 11px; color: #3a2850; margin-bottom: 10px; font-style: italic; }
+  .commit-btn { padding: 12px 32px; background: linear-gradient(135deg, #ff6b5a, #c03828); border: none; border-radius: 10px; color: #09080a; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+  .result-box { padding: 16px 18px; background: #0e0b14; border: 1px solid #22182a; border-radius: 12px; text-align: center; margin-top: 2px; animation: fadeUp 0.3s ease; }
+  .result-majority { font-size: 13px; color: #7ec8a0; font-weight: 700; letter-spacing: 1px; }
+  .result-minority { font-size: 13px; color: #c03828; font-weight: 700; letter-spacing: 1px; }
+  .next-btn { width: 100%; margin-top: 14px; padding: 14px; background: linear-gradient(135deg, #ff6b5a, #c03828); border: none; border-radius: 12px; color: #09080a; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+  #champion-screen { text-align: center; padding: 36px 24px; animation: fadeUp 0.5s ease; }
+  .champ-emoji { font-size: 76px; margin-bottom: 8px; }
+  .champ-trophy { font-size: 11px; letter-spacing: 4px; color: #ff6b5a; text-transform: uppercase; margin-bottom: 8px; }
+  .champ-name { font-size: 26px; font-weight: 700; color: #f0eaf8; margin-bottom: 4px; }
+  .champ-from { font-size: 13px; color: #c03828; font-style: italic; margin-bottom: 4px; }
+  .champ-fact { font-size: 13px; color: #8a7d98; font-style: italic; max-width: 310px; margin: 14px auto 28px; line-height: 1.8; }
+  .reset-btn { padding: 14px 32px; background: linear-gradient(135deg, #ff6b5a, #c03828); border: none; border-radius: 12px; color: #09080a; font-size: 14px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  button:active { filter: brightness(0.88); }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div>
+      <a href="index.html" class="title" style="text-decoration:none;cursor:pointer" title="All brackets">VERDICT</a>
+      <div class="subtitle">They Steal Every Scene</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="back-btn" id="back-btn" style="display:none" onclick="showBracket()">← Bracket</button>
+      <div class="counter" id="counter">0/31</div>
+    </div>
+  </header>
+  <div id="main"></div>
+</div>
+<script>
+
+const ALL = [{"id": 0, "name": "Genie", "from": "Aladdin · 1992", "emoji": "🧞", "div": "Disney Magic", "seed": 1, "stats": "", "fact": "Robin Williams improvised so much that animators drew to his voice instead of the other way around, inventing the modern celebrity-voiced sidekick in the process. Genie is a one-creature variety show — impressions, song, and a heart that just wants to be set free. The bar every sidekick since gets measured against."}, {"id": 1, "name": "Mushu", "from": "Mulan · 1998", "emoji": "🐲", "div": "Disney Magic", "seed": 2, "stats": "", "fact": "A tiny dragon demoted to gong-ringer, trying to earn his guardian job back by coaching Mulan through an entire army. Mushu talks the biggest game in the Disney canon with the smallest body to back it up — and somehow that's exactly why he works."}, {"id": 2, "name": "Sebastian", "from": "The Little Mermaid · 1989", "emoji": "🦀", "div": "Disney Magic", "seed": 3, "stats": "", "fact": "A crab with a clipboard and a Caribbean swing, tasked with babysitting a princess who will not stay out of trouble. Sebastian sings the song that basically built the modern Disney musical, then spends the rest of the movie one nervous breakdown from quitting."}, {"id": 3, "name": "Abu", "from": "Aladdin · 1992", "emoji": "🐵", "div": "Disney Magic", "seed": 4, "stats": "", "fact": "A kleptomaniac monkey whose inability to keep his hands off shiny things both saves and dooms Aladdin roughly every ten minutes. Loyal, greedy, and the only one brave enough to dive back into the Cave of Wonders — the friend who'd rob you and rescue you the same afternoon."}, {"id": 4, "name": "Olaf", "from": "Frozen · 2013", "emoji": "⛄", "div": "Frozen-era", "seed": 1, "stats": "", "fact": "A snowman who dreams of summer without understanding what summer does to snow — the purest, most accidentally philosophical sidekick of the modern era. Olaf says the quiet emotional truth out loud while everyone else is busy having feelings about it. Warm hugs."}, {"id": 5, "name": "Maximus", "from": "Tangled · 2010", "emoji": "🐴", "div": "Frozen-era", "seed": 2, "stats": "", "fact": "A palace horse who acts like a bloodhound, a soldier, and a disapproving older brother all at once — and never says a word. Maximus carries entire chase scenes on facial expressions alone, which is an absurd thing to pull off without a voice."}, {"id": 6, "name": "Pascal", "from": "Tangled · 2010", "emoji": "🦎", "div": "Frozen-era", "seed": 3, "stats": "", "fact": "A chameleon who's Rapunzel's only friend through eighteen years in a tower, communicating entirely in color changes and tiny judgmental looks. Pascal's the silent best friend who shoves you out the door toward the life you're too scared to go get."}, {"id": 7, "name": "Heihei", "from": "Moana · 2016", "emoji": "🐔", "div": "Frozen-era", "seed": 4, "stats": "", "fact": "A rooster so profoundly stupid he repeatedly tries to eat the ocean, then accidentally stows away on the most important voyage of Moana's life. Heihei is comedy stripped to its purest form — a bird with no thoughts who somehow survives everything. Genius by accident."}, {"id": 8, "name": "Dory", "from": "Finding Nemo · 2003", "emoji": "🐠", "div": "Pixar Pals", "seed": 1, "stats": "", "fact": "A blue tang with no short-term memory who becomes the emotional engine of two entire movies. Dory's 'just keep swimming' is a coping strategy disguised as a song, and her cheerful refusal to give up is what drags a grieving dad across an ocean."}, {"id": 9, "name": "Dug", "from": "Up · 2009", "emoji": "🐕", "div": "Pixar Pals", "seed": 2, "stats": "", "fact": "A dog with a collar that speaks his thoughts aloud, which turns out to be the most honest thing in any Pixar movie. Dug loves instantly, completely, and without strategy — 'I have just met you, and I love you' is the whole personality, and it's perfect."}, {"id": 10, "name": "Mater", "from": "Cars · 2006", "emoji": "🚚", "div": "Pixar Pals", "seed": 3, "stats": "", "fact": "A rusty tow truck with no filter and infinite loyalty — the friend who embarrasses you in public and would also tow you home at 3am without being asked. Mater never changes to fit Radiator Springs; the movie decides his backwards charm was the point all along."}, {"id": 11, "name": "Forky", "from": "Toy Story 4 · 2019", "emoji": "🍴", "div": "Pixar Pals", "seed": 4, "stats": "", "fact": "A spork with googly eyes and an existential crisis, convinced he's trash and not a toy. Forky asks the biggest questions in the Toy Story universe — what am I, why do I matter — from inside a craft-supply body. Weirdly profound for a utensil."}, {"id": 12, "name": "Donkey", "from": "Shrek · 2001", "emoji": "🫏", "div": "DreamWorks", "seed": 1, "stats": "", "fact": "Eddie Murphy talking a mile a minute as the friend Shrek absolutely did not ask for and desperately needed. Donkey's superpower is refusing to be pushed away — he annoys his way past the ogre's walls until they're actually friends. Waffles included."}, {"id": 13, "name": "Puss in Boots", "from": "Shrek 2 · 2004", "emoji": "🐱", "div": "DreamWorks", "seed": 2, "stats": "", "fact": "A swashbuckling cat who weaponizes giant kitten eyes to disarm enemies mid-fight, then got so popular he earned his own movies. Puss is all swagger until the hat comes off — and his later films turned the gag into a hero with a real fear of death."}, {"id": 14, "name": "Toothless", "from": "How to Train Your Dragon · 2010", "emoji": "🐉", "div": "DreamWorks", "seed": 3, "stats": "", "fact": "A Night Fury who acts more like a cat than a dragon — chasing lights, making faces, sulking. Toothless flips the entire dragon mythology by being a wounded animal who learns to trust, and the wordless friendship he builds with Hiccup carries three movies."}, {"id": 15, "name": "Gobber", "from": "How to Train Your Dragon · 2010", "emoji": "🔨", "div": "DreamWorks", "seed": 4, "stats": "", "fact": "The one-armed, one-legged blacksmith who's seen it all and lost half of himself to dragons, delivering Berk's hardest truths with a shrug and a joke. Gobber's the mentor who's funnier than he has any right to be while teaching kids to forge weapons."}, {"id": 16, "name": "Timon & Pumbaa", "from": "The Lion King · 1994", "emoji": "🐗", "div": "Pride Lands", "seed": 1, "stats": "", "fact": "A meerkat and warthog who adopt a runaway lion cub and raise him on a no-worries philosophy and a bug diet. Hakuna Matata is genuinely a worldview, and these two are the comic relief that turns out to be the emotional safety net of the whole movie."}, {"id": 17, "name": "Zazu", "from": "The Lion King · 1994", "emoji": "🐦", "div": "Pride Lands", "seed": 2, "stats": "", "fact": "A hornbill majordomo trying to keep a kingdom's worth of lions in line with nothing but a stiff beak and a sense of duty. Zazu is exasperation given feathers — the responsible adult nobody listens to, which is its own kind of heroism."}, {"id": 18, "name": "Rafiki", "from": "The Lion King · 1994", "emoji": "🐒", "div": "Pride Lands", "seed": 3, "stats": "", "fact": "A mandrill shaman who whacks a future king with a stick to teach him that the past can either hurt or teach. Rafiki straddles wise mentor and total wildcard, and that unpredictability is what makes his lessons actually land."}, {"id": 19, "name": "Iago", "from": "Aladdin · 1992", "emoji": "🦜", "div": "Pride Lands", "seed": 4, "stats": "", "fact": "Gilbert Gottfried as a parrot who's somehow the most relatable character in Aladdin — greedy, sarcastic, and completely over it. Iago says what everyone's thinking, then switches sides when it suits him, which is the most honest arc in the film."}, {"id": 20, "name": "Baymax", "from": "Big Hero 6 · 2014", "emoji": "🤖", "div": "Heart & Spark", "seed": 1, "stats": "", "fact": "A balloon-shaped healthcare robot programmed only to help, who becomes a grieving kid's best friend almost by accident. Baymax can't be cruel — it's not in his code — and that relentless gentleness is exactly what makes him the most comforting character on this list. Ba-la-la-la."}, {"id": 21, "name": "Bing Bong", "from": "Inside Out · 2015", "emoji": "🐘", "div": "Heart & Spark", "seed": 2, "stats": "", "fact": "Riley's imaginary friend — part cat, part elephant, part dolphin, made of cotton candy and slowly being forgotten. Bing Bong's choice to let himself fade so Joy can escape is the single most devastating thirty seconds Pixar ever animated. 'Take her to the moon for me.'"}, {"id": 22, "name": "Frozone", "from": "The Incredibles · 2004", "emoji": "🧊", "div": "Heart & Spark", "seed": 3, "stats": "", "fact": "Where is his super suit? Frozone is the best-friend hero with a whole life, a wife, and a dinner ruined by the city needing saving. Samuel L. Jackson icing his way across a frozen rooftop is effortless cool in a movie full of try-hards."}, {"id": 23, "name": "Bruni", "from": "Frozen 2 · 2019", "emoji": "🔥", "div": "Heart & Spark", "seed": 4, "stats": "", "fact": "The fire salamander who became a merchandising supernova on the strength of being very small and very cute. Bruni does almost nothing plot-wise and absolutely steals every frame he's in — proof that sometimes adorable is the entire job description."}, {"id": 24, "name": "Minions", "from": "Despicable Me · 2010", "emoji": "🍌", "div": "Loud & Proud", "seed": 1, "stats": "", "fact": "Gibberish-speaking yellow capsules who exist only to serve the most despicable master they can find, and who accidentally became bigger than the movies they're in. The Minions are chaos with no plan, and the world cannot get enough of it. Banana."}, {"id": 25, "name": "Kronk", "from": "The Emperor's New Groove · 2000", "emoji": "💪", "div": "Loud & Proud", "seed": 2, "stats": "", "fact": "A henchman so sweet and dim he can't commit to being evil, complete with a shoulder-angel and a spinach-puff recipe. Kronk is the funniest thing in his movie — a bad guy who'd rather be cooking and clearly should be."}, {"id": 26, "name": "Lumiere", "from": "Beauty and the Beast · 1991", "emoji": "🕯", "div": "Loud & Proud", "seed": 3, "stats": "", "fact": "A candelabra maître d' who throws a full Broadway dinner show for one hungry guest, because hospitality is the entire reason he exists. Lumiere is charm with a French accent and an open flame — the host who turns a cursed castle into a party."}, {"id": 27, "name": "Cogsworth", "from": "Beauty and the Beast · 1991", "emoji": "🕰", "div": "Loud & Proud", "seed": 4, "stats": "", "fact": "A mantel clock wound far too tight, forever trying to follow the rules in a castle where the rules have fallen apart. Cogsworth is the uptight foil to Lumiere's flair, and their bickering is an old-married-couple act that's been running for centuries."}, {"id": 28, "name": "Stitch", "from": "Lilo & Stitch · 2002", "emoji": "👽", "div": "Small & Mighty", "seed": 1, "stats": "", "fact": "Experiment 626 — engineered to destroy, reprogrammed by a lonely Hawaiian girl into family. Stitch is the rare sidekick who's also a tiny weapon of mass destruction learning what 'ohana' means. Cute, feral, and genuinely dangerous in the best way."}, {"id": 29, "name": "Tinker Bell", "from": "Peter Pan · 1953", "emoji": "🧚", "div": "Small & Mighty", "seed": 2, "stats": "", "fact": "A fairy who speaks only in bells, throws full tantrums, and once tried to get a girl killed out of pure jealousy — and we love her anyway. Tinker Bell has more attitude per ounce than anyone in animation, and her light going out is how the movie teaches kids about belief."}, {"id": 30, "name": "Flounder", "from": "The Little Mermaid · 1989", "emoji": "🐟", "div": "Small & Mighty", "seed": 3, "stats": "", "fact": "A nervous little fish who's terrified of basically everything and follows Ariel into danger regardless, because that's what best friends do. Flounder's the friend with no powers and no plan who shows up anyway — quiet, everyday loyalty."}, {"id": 31, "name": "Thumper", "from": "Bambi · 1942", "emoji": "🐰", "div": "Small & Mighty", "seed": 4, "stats": "", "fact": "The rabbit who taught a fawn to walk, talk, and skate across a frozen pond, and gave the world the most-quoted manners lesson in animation. If you can't say something nice, don't say nothing at all — eighty years later, still the rule."}];
+const R1 = [[0, 3], [1, 2], [4, 7], [5, 6], [8, 11], [9, 10], [12, 15], [13, 14], [16, 19], [17, 18], [20, 23], [21, 22], [24, 27], [25, 26], [28, 31], [29, 30]];
+const COUNTS = [16, 8, 4, 2, 1];
+const NR = COUNTS.length, LASTR = NR-1, TOTAL = 31;
+const RLABELS = ["Round of 32", "Round of 16", "Quarterfinal", "Semifinal", "The Final"];
+const COLLABELS = ["R32", "R16", "QF", "SF", "Final"];
+const HEIGHTS = [22, 30, 44, 70, 100];
+const GAPS = [2, 5, 12, 28, 0];
+const DIVNAMES = ["Disney Magic", "Frozen-era", "Pixar Pals", "DreamWorks", "Pride Lands", "Heart & Spark", "Loud & Proud", "Small & Mighty"];
+const ASK_ROOM = ["Funniest one here — and is funniest the same as best?", "Which sidekick is secretly the actual main character?", "Cuteness pick or comedy pick? Defend it.", "Which one would you most want riding shotgun?", "Who made you cry harder than the hero did?"];
+let results = COUNTS.map(n=>Array(n).fill(null));
+let currentVote=null, selected=null, locked=false, askPrompt='';
+
+function getC(r,mi,slot){
+  if(r===0){const idx=R1[mi][slot];return ALL[idx];}
+  const prevMi=mi*2+slot, prevW=results[r-1][prevMi];
+  if(prevW===null)return null;
+  return ALL.find(c=>c.id===prevW);
+}
+function getCurrentRound(){for(let r=0;r<NR;r++){for(let mi=0;mi<COUNTS[r];mi++){if(results[r][mi]===null){const a=getC(r,mi,0),b=getC(r,mi,1);if(a&&b)return r;}}}return LASTR;}
+function getNextActive(){const cr=getCurrentRound();for(let mi=0;mi<COUNTS[cr];mi++){if(results[cr][mi]===null){const a=getC(cr,mi,0),b=getC(cr,mi,1);if(a&&b)return{round:cr,mi};}}return null;}
+function totalVotes(){return results.flat().filter(v=>v!==null).length;}
+function fakeA(a,b){return Math.min(86,Math.max(20,50+(b.id-a.id)%17+(a.id%4)*2));}
+
+function render(){
+  const done=results[LASTR][0]!==null;
+  if(done){const w=ALL.find(c=>c.id===results[LASTR][0]);renderChampion(w);return;}
+  if(currentVote!==null){renderVote();return;}
+  renderBracket();
+}
+
+function renderBracket(){
+  document.getElementById('back-btn').style.display='none';
+  const cr=getCurrentRound(),next=getNextActive();
+  let html='<div class="core-q">Who\'s the sidekick that steals the whole movie?</div>';
+  html+='<div class="bracket-cols">';
+  for(let r=0;r<NR;r++){
+    const count=COUNTS[r],maxH=HEIGHTS[r],gap=GAPS[r];
+    html+='<div class="bracket-col"><div class="col-label" style="color:'+(r===cr?'#ff6b5a':'#2e2040')+'">'+COLLABELS[r]+'</div><div class="col-matches" style="gap:'+gap+'px">';
+    for(let mi=0;mi<count;mi++){
+      const a=getC(r,mi,0),b=getC(r,mi,1),winner=results[r][mi];
+      const active=r===cr&&winner===null&&a&&b,done=winner!==null;
+      const cls=active?'active':done?'done':'empty';
+      const onclick=(active||done)?'onclick="startVote('+r+','+mi+')"':'';
+      html+='<div class="match-cell '+cls+'" style="max-height:'+maxH+'px;'+(!active&&!done?'border:1px solid #14101c':'')+'" '+onclick+'>';
+      [a,b].forEach((c,si)=>{
+        if(!c){html+='<div class="tbd">&mdash;</div>';return;}
+        const isW=winner===c.id,isL=done&&!isW;
+        const nm=c.name.split(' ').slice(0,r===0?2:3).join(' ');
+        html+=(si===1?'<hr class="match-divider">':'')+'<div class="match-row '+(isW?'winner':isL?'loser':'')+'"><span class="em">'+c.emoji+'</span><span class="nm">'+nm+'</span></div>';
+      });
+      html+='</div>';
+    }
+    html+='</div></div>';
+  }
+  html+='</div>';
+  if(next)html+='<div style="padding:14px 16px 0"><button class="vote-btn" onclick="startVote('+next.round+','+next.mi+')">Vote Next Matchup &rarr;</button><div class="vote-hint">Tap any highlighted match to vote</div></div>';
+  document.getElementById('main').innerHTML=html;
+}
+
+function startVote(round,mi){currentVote={round,mi};selected=null;locked=false;const w=results[round][mi];if(w!==null){const a=getC(round,mi,0);selected=(a&&a.id===w)?'a':'b';}render();}
+
+function renderVote(){
+  document.getElementById('back-btn').style.display='block';
+  const o=currentVote,round=o.round,mi=o.mi,a=getC(round,mi,0),b=getC(round,mi,1);
+  if(!a||!b){showBracket();return;}
+  const pA=fakeA(a,b),pB=100-pA,majority=selected?(selected==='a'?pA:pB)>=50:false;
+  const hint=!selected?"— Who steals the scene? —":locked?"— Verdict locked! —":"— Tap to switch. Button to commit. —";
+  let html='<div id="vote-screen"><div class="vote-header"><div class="round-label">'+RLABELS[round]+'</div><div class="vote-hint-text">'+hint+'</div></div>';
+  [{side:'a',c:a,pct:pA},{side:'b',c:b,pct:pB}].forEach(function(o){
+    const side=o.side,c=o.c,pct=o.pct,isSel=selected===side;
+    html+='<div class="card'+(isSel?' selected':'')+'" onclick="selectCard(\''+side+'\')">';
+    if(locked&&isSel)html+='<div class="pct-bar" style="width:'+pct+'%"></div>';
+    html+='<div class="card-inner"><div class="card-top"><div class="card-emoji">'+c.emoji+'</div><div style="flex:1;min-width:0"><div class="card-meta">'+c.div+' · '+c.from+'</div><div class="card-name">'+c.name+'</div></div>'+(isSel&&!locked?'<div class="card-arrow">◀</div>':'')+'</div>';
+    html+='<div class="card-tag">'+(c.seed===1?'#1 SEED':c.seed===2?'#2 SEED':c.seed===3?'#3 SEED':'#4 SEED')+'</div>';
+    if(c.stats)html+='<div class="card-stats">📊 '+c.stats+'</div>';
+    html+='<div class="card-fact">'+c.fact+'</div>';
+    if(locked&&isSel)html+='<div class="card-pct">'+pct+'%<span>voted this sidekick</span><span class="check">✓</span></div>';
+    html+='</div></div>';
+  });
+  if(selected&&!locked)html+='<div class="commit-box"><div class="commit-hint">Still deciding? Tap the other card to compare.</div><button class="commit-btn" onclick="commitVote()">Lock In Verdict &rarr;</button></div>';
+  if(locked){
+    html+='<div class="result-box"><div class="'+(majority?'result-majority':'result-minority')+'">'+(majority?'✓ With the majority':'🔥 Against the crowd')+'</div><div class="ask-room" style="margin-top:14px;padding-top:14px;border-top:1px dashed #3a2850"><div style="font-size:9px;letter-spacing:3px;color:#c03828;text-transform:uppercase;margin-bottom:6px">Ask the Room</div><div style="font-size:15px;color:#e8d8f0;font-style:italic;line-height:1.4">'+askPrompt+'</div></div></div><button class="next-btn" onclick="advance()">Vote Next Matchup &rarr;</button>';
+  }
+  html+='</div>';
+  document.getElementById('main').innerHTML=html;
+}
+
+function selectCard(side){if(locked)return;selected=side;renderVote();}
+function commitVote(){
+  if(!selected||locked)return;
+  locked=true;
+  askPrompt=ASK_ROOM[Math.floor(Math.random()*ASK_ROOM.length)];
+  const o=currentVote,round=o.round,mi=o.mi,a=getC(round,mi,0),b=getC(round,mi,1);
+  results[round][mi]=selected==='a'?a.id:b.id;
+  renderVote();
+  document.getElementById('counter').textContent=totalVotes()+'/'+TOTAL;
+}
+function advance(){currentVote=null;locked=false;selected=null;render();}
+function showBracket(){currentVote=null;selected=null;locked=false;render();}
+function renderChampion(c){
+  document.getElementById('back-btn').style.display='none';
+  document.getElementById('main').innerHTML='<div id="champion-screen"><div style="font-size:44px;margin-bottom:6px">🏆</div><div class="champ-emoji">'+c.emoji+'</div><div class="champ-trophy">Scene Stealer Supreme</div><div class="champ-name">'+c.name+'</div><div class="champ-from">'+c.from+'</div><div style="display:inline-block;margin:10px 0 6px;padding:4px 16px;border-radius:20px;background:#ff6b5a;color:#09080a;font-size:11px;font-weight:700;letter-spacing:1px">YOUR VERDICT</div><div class="champ-fact">'+c.fact+'</div><button class="reset-btn" onclick="resetGame()">Run It Back</button></div>';
+}
+function resetGame(){results=COUNTS.map(n=>Array(n).fill(null));currentVote=null;selected=null;locked=false;render();}
+render();
+
+</script>
+</body>
+</html>
