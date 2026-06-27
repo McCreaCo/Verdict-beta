@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VERDICT — Greatest Duos</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #09080a; color: #f0eaf8; font-family: Georgia, 'Times New Roman', serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
+  #app { width: 100%; max-width: 560px; min-height: 100vh; display: flex; flex-direction: column; }
+  header { padding: 16px 20px 12px; border-bottom: 1px solid #22182a; display: flex; align-items: center; justify-content: space-between; background: #0e0b14; }
+  .title { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; color: #f5a623; }
+  .subtitle { font-size: 9px; color: #c05a08; letter-spacing: 2px; text-transform: uppercase; margin-top: 2px; }
+  .counter { font-size: 10px; color: #2e2040; background: #14101c; border: 1px solid #22182a; border-radius: 16px; padding: 4px 10px; }
+  .back-btn { background: transparent; border: 1px solid #22182a; border-radius: 8px; padding: 5px 10px; color: #3a2850; font-size: 11px; cursor: pointer; font-family: Georgia, serif; }
+  #main { flex: 1; padding: 14px 0; }
+  .core-q { text-align: center; font-size: 12px; color: #f5a623; font-style: italic; padding: 4px 20px 0; line-height: 1.4; }
+  .bracket-cols { display: flex; gap: 3px; padding: 0 10px; }
+  .bracket-col { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+  .col-label { font-size: 7px; letter-spacing: 1.5px; text-transform: uppercase; text-align: center; margin-bottom: 5px; }
+  .col-matches { display: flex; flex-direction: column; justify-content: space-around; height: 380px; }
+  .match-cell { border-radius: 5px; overflow: hidden; cursor: default; flex: 1; transition: border-color 0.2s; }
+  .match-cell.active { border: 1px solid #f5a623 !important; background: #14101c !important; cursor: pointer; }
+  .match-cell.done { border: 1px solid #2e1e2a !important; background: #0e0b14 !important; cursor: pointer; }
+  .match-cell.empty { border: 1px solid #14101c; background: #09080a; }
+  .match-row { display: flex; align-items: center; gap: 2px; padding: 2px 3px; transition: opacity 0.3s; }
+  .match-row.loser { opacity: 0.22; }
+  .match-row.winner { background: rgba(245,166,35,0.12); }
+  .match-row .em { font-size: 8px; }
+  .match-row .nm { font-size: 7px; color: #3a2850; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 400; }
+  .match-row.winner .nm { color: #f5a623; font-weight: 700; }
+  .match-divider { border: none; border-top: 1px solid #1e1428; margin: 0; }
+  .tbd { padding: 2px 3px; font-size: 6px; color: #221830; }
+  .vote-btn { width: 100%; padding: 14px; background: linear-gradient(135deg, #f5a623, #c05a08); border: none; border-radius: 12px; color: #09080a; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; margin-top: 14px; }
+  .vote-hint { font-size: 10px; color: #6a6478; text-align: center; margin-top: 6px; }
+  #vote-screen { padding: 0 16px; animation: fadeUp 0.3s ease; }
+  .vote-header { text-align: center; margin-bottom: 16px; }
+  .round-label { font-size: 10px; letter-spacing: 3px; color: #f5a623; text-transform: uppercase; margin-bottom: 3px; }
+  .vote-hint-text { font-size: 11px; color: #8a8298; letter-spacing: 1px; }
+  .card { display: block; width: 100%; margin-bottom: 10px; border-radius: 14px; padding: 16px 18px; cursor: pointer; text-align: left; transition: all 0.25s; position: relative; overflow: hidden; border: 2px solid #22182a; background: #0e0b14; }
+  .card.selected { border-color: #f5a623 !important; background: #1a1020 !important; transform: scale(1.01); }
+  .card-inner { position: relative; z-index: 1; }
+  .card-top { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 8px; }
+  .card-emoji { font-size: 34px; margin-top: 2px; flex-shrink: 0; }
+  .card-meta { font-size: 9px; color: #c05a08; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 2px; }
+  .card-name { font-size: 18px; font-weight: 700; color: #d8d2e2; line-height: 1.2; margin-bottom: 2px; transition: color 0.2s; }
+  .card.selected .card-name { color: #ffffff; }
+  .card-from { font-size: 10px; color: #8a8298; font-style: italic; transition: color 0.2s; }
+  .card.selected .card-from { color: #8a8298; }
+  .card-tag { display: inline-block; margin-top: 8px; padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 700; background: #22182a; color: #f5a623; letter-spacing: 1px; }
+  .card.selected .card-tag { background: #f5a623; color: #09080a; }
+  .card-stats { margin-top: 8px; font-size: 9px; color: #9a8aa0; letter-spacing: 0.5px; }
+  .card.selected .card-stats { color: #9a8aa0; }
+  .card-fact { font-size: 12px; color: #7e7888; line-height: 1.75; transition: color 0.2s; margin-top: 8px; }
+  .card.selected .card-fact { color: #e8e2f0; }
+  .card-arrow { font-size: 16px; color: #f5a623; margin-left: auto; flex-shrink: 0; }
+  .card-pct { font-size: 20px; font-weight: 700; color: #f5a623; margin-top: 10px; }
+  .card-pct span { font-size: 12px; font-weight: 400; color: #3a2850; margin-left: 6px; }
+  .card-pct .check { color: #f5a623; margin-left: 8px; }
+  .pct-bar { position: absolute; top: 0; left: 0; height: 100%; background: rgba(245,166,35,0.06); transition: width 0.9s cubic-bezier(.4,0,.2,1); z-index: 0; }
+  .commit-box { padding: 14px 18px; background: #0e0b14; border: 1px solid #22182a; border-radius: 12px; text-align: center; animation: fadeUp 0.3s ease; }
+  .commit-hint { font-size: 11px; color: #3a2850; margin-bottom: 10px; font-style: italic; }
+  .commit-btn { padding: 12px 32px; background: linear-gradient(135deg, #f5a623, #c05a08); border: none; border-radius: 10px; color: #09080a; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+  .result-box { padding: 16px 18px; background: #0e0b14; border: 1px solid #22182a; border-radius: 12px; text-align: center; margin-top: 2px; animation: fadeUp 0.3s ease; }
+  .result-majority { font-size: 13px; color: #7ec8a0; font-weight: 700; letter-spacing: 1px; }
+  .result-minority { font-size: 13px; color: #c05a08; font-weight: 700; letter-spacing: 1px; }
+  .next-btn { width: 100%; margin-top: 14px; padding: 14px; background: linear-gradient(135deg, #f5a623, #c05a08); border: none; border-radius: 12px; color: #09080a; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+  #champion-screen { text-align: center; padding: 36px 24px; animation: fadeUp 0.5s ease; }
+  .champ-emoji { font-size: 76px; margin-bottom: 8px; }
+  .champ-trophy { font-size: 11px; letter-spacing: 4px; color: #f5a623; text-transform: uppercase; margin-bottom: 8px; }
+  .champ-name { font-size: 26px; font-weight: 700; color: #f0eaf8; margin-bottom: 4px; }
+  .champ-from { font-size: 13px; color: #c05a08; font-style: italic; margin-bottom: 4px; }
+  .champ-fact { font-size: 13px; color: #8a7d98; font-style: italic; max-width: 310px; margin: 14px auto 28px; line-height: 1.8; }
+  .reset-btn { padding: 14px 32px; background: linear-gradient(135deg, #f5a623, #c05a08); border: none; border-radius: 12px; color: #09080a; font-size: 14px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  button:active { filter: brightness(0.88); }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div>
+      <a href="index.html" class="title" style="text-decoration:none;cursor:pointer" title="All brackets">VERDICT</a>
+      <div class="subtitle">Which Friendship Is Real</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="back-btn" id="back-btn" style="display:none" onclick="showBracket()">← Bracket</button>
+      <div class="counter" id="counter">0/31</div>
+    </div>
+  </header>
+  <div id="main"></div>
+</div>
+<script>
+
+const ALL = [{"id": 0, "name": "Woody & Buzz", "from": "Toy Story", "emoji": "🤠", "div": "Animated BFFs", "seed": 1, "stats": "", "fact": "They start as bitter rivals — one threatened, one delusional — and become the deepest friendship in animation across four movies. Woody and Buzz are the gold standard for enemies-to-best-friends, and their bond literally defined a generation of childhoods. You've got a friend in me."}, {"id": 1, "name": "Mike & Sulley", "from": "Monsters, Inc.", "emoji": "👁", "div": "Animated BFFs", "seed": 2, "stats": "", "fact": "A one-eyed green motormouth and a giant blue furball who run the scare floor together and would do anything for each other. Mike and Sulley are the ultimate work-best-friends, and the moment their friendship is tested is the heart of the whole film."}, {"id": 2, "name": "SpongeBob & Patrick", "from": "SpongeBob SquarePants", "emoji": "🌟", "div": "Animated BFFs", "seed": 3, "stats": "", "fact": "A sponge and a starfish whose friendship is so pure and so dumb it's basically the platonic ideal of best-friendship. They blow bubbles, catch jellyfish, and ruin everything together, and they wouldn't have it any other way. 2v3 against Mike & Sulley is a war."}, {"id": 3, "name": "Mario & Luigi", "from": "Super Mario", "emoji": "🍄", "div": "Animated BFFs", "seed": 4, "stats": "", "fact": "The most famous brothers in the world — one fearless, one nervous, both ready to leap into danger to save the day (and each other). After the 2023 movie, their bond finally got the spotlight it deserved. A brotherly #4 that punches up."}, {"id": 4, "name": "Han & Chewie", "from": "Star Wars", "emoji": "🚀", "div": "Adventure Partners", "seed": 1, "stats": "", "fact": "A smuggler and a Wookiee who fly the fastest ship in the galaxy and communicate half in growls. Han and Chewie are the coolest friendship in space — decades of loyalty with no words needed. Chewie, we're home."}, {"id": 5, "name": "Shrek & Donkey", "from": "Shrek", "emoji": "🟢", "div": "Adventure Partners", "seed": 2, "stats": "", "fact": "An ogre who wants to be left alone and a donkey who absolutely will not leave him alone, forming the funniest odd couple in animation. Donkey annoys his way into Shrek's heart, and somehow it's genuinely moving. That'll do, Donkey."}, {"id": 6, "name": "Marlin & Dory", "from": "Finding Nemo", "emoji": "🐠", "div": "Adventure Partners", "seed": 3, "stats": "", "fact": "An anxious clownfish and a forgetful blue tang cross an entire ocean together, each fixing what the other lacks. Marlin learns to let go and Dory gives him a reason to keep swimming — a friendship built on patience and memory loss."}, {"id": 7, "name": "Ralph & Vanellope", "from": "Wreck-It Ralph", "emoji": "🎮", "div": "Adventure Partners", "seed": 4, "stats": "", "fact": "A hulking villain and a glitchy little racer who become each other's first real friend across two arcades. Their bond is brave enough to let the sequel test whether friends can grow apart and still love each other. A surprisingly deep #4."}, {"id": 8, "name": "Lloyd & Harry", "from": "Dumb and Dumber", "emoji": "🚕", "div": "Comedy Duos", "seed": 1, "stats": "", "fact": "The two dumbest men alive, driving across the country on a doomed romantic quest with unshakable optimism and zero brain cells between them. Lloyd and Harry are the funniest friendship in comedy precisely because neither could survive alone."}, {"id": 9, "name": "Wayne & Garth", "from": "Wayne's World", "emoji": "🎸", "div": "Comedy Duos", "seed": 2, "stats": "", "fact": "Two basement-dwelling metalheads running a public-access TV show who turned 'excellent' and 'party on' into a language. Wayne and Garth's pure, joyful friendship made them an instant comedy institution. We're not worthy."}, {"id": 10, "name": "Bill & Ted", "from": "Bill & Ted", "emoji": "🎸", "div": "Comedy Duos", "seed": 3, "stats": "", "fact": "Two lovable airheads who travel through time to pass history class and accidentally save the future with the power of friendship and air guitar. Be excellent to each other — their whole philosophy fits on a bumper sticker, and it works."}, {"id": 11, "name": "Phineas & Ferb", "from": "Phineas and Ferb", "emoji": "🔧", "div": "Comedy Duos", "seed": 4, "stats": "", "fact": "Two stepbrothers who build a roller coaster, a rocket, and a time machine before lunch every single summer day. Phineas dreams it and silent Ferb builds it — the most productive friendship in cartoon history. A genius #4."}, {"id": 12, "name": "Batman & Robin", "from": "Batman", "emoji": "🦇", "div": "Ride or Die", "seed": 1, "stats": "", "fact": "The Dynamic Duo — the brooding detective and the acrobatic kid who lightens him up, the most famous crime-fighting partnership ever drawn. Batman and Robin set the template for every hero-and-sidekick team that followed. Holy teamwork."}, {"id": 13, "name": "R2-D2 & C-3PO", "from": "Star Wars", "emoji": "🤖", "div": "Ride or Die", "seed": 2, "stats": "", "fact": "A brave little beeping droid and his anxious, complaining golden companion who bicker their way through an entire galactic war. R2 and 3PO are the comic backbone of Star Wars — the friendship that's survived every single movie."}, {"id": 14, "name": "Sherlock & Watson", "from": "Sherlock Holmes", "emoji": "🔍", "div": "Ride or Die", "seed": 3, "stats": "", "fact": "The brilliant, impossible detective and the steady doctor who grounds him — the most adapted friendship in all of fiction. Sherlock needs Watson more than he'll ever admit, and that's the whole point. Elementary."}, {"id": 15, "name": "Sam & Frodo", "from": "The Lord of the Rings", "emoji": "💍", "div": "Ride or Die", "seed": 4, "stats": "", "fact": "A hobbit carrying the weight of the world and the gardener who refuses to let him carry it alone. Sam and Frodo are arguably the truest friendship ever filmed — 'I can't carry it for you, but I can carry you.' A devastating #4."}, {"id": 16, "name": "Joey & Chandler", "from": "Friends", "emoji": "📺", "div": "TV Best Friends", "seed": 1, "stats": "", "fact": "A dim-but-sweet actor and a sarcastic neurotic who share an apartment, a foosball table, and the best bromance on television. Joey and Chandler made roommate-friendship into an art form. Could they BE any closer?"}, {"id": 17, "name": "Troy & Abed", "from": "Community", "emoji": "🎬", "div": "TV Best Friends", "seed": 2, "stats": "", "fact": "Two best friends who live in their own pop-culture dreamworld, ending every episode in a handshake and a blanket fort. Troy and Abed are the purest, weirdest friendship on TV — in the morning!"}, {"id": 18, "name": "Turk & JD", "from": "Scrubs", "emoji": "🩺", "div": "TV Best Friends", "seed": 3, "stats": "", "fact": "A surgeon and a doctor whose friendship is so close it has its own theme song they sing to each other. Turk and JD redefined how openly two guy friends could love each other. Guy love, that's all it is."}, {"id": 19, "name": "Cory & Shawn", "from": "Boy Meets World", "emoji": "🏫", "div": "TV Best Friends", "seed": 4, "stats": "", "fact": "A steady kid and his troubled best friend who grow up side by side across an entire childhood of television. Cory and Shawn are the friendship a generation actually grew up with. A heartfelt #4."}, {"id": 20, "name": "Elliott & E.T.", "from": "E.T.", "emoji": "👽", "div": "Kids & Their Creatures", "seed": 1, "stats": "", "fact": "A lonely boy and a stranded alien who form a bond so deep they literally feel each other's emotions. Elliott and E.T. created the blueprint for every kid-and-creature friendship since, and the bike-across-the-moon is cinema itself. E.T. phone home."}, {"id": 21, "name": "Hiccup & Toothless", "from": "How to Train Your Dragon", "emoji": "🐉", "div": "Kids & Their Creatures", "seed": 2, "stats": "", "fact": "A Viking boy and the wounded dragon he was supposed to kill, building trust one cautious gesture at a time. Their wordless friendship carries three movies and is the most beautifully animated bond on this list. A boy and his dragon, perfected."}, {"id": 22, "name": "Lilo & Stitch", "from": "Lilo & Stitch", "emoji": "🌊", "div": "Kids & Their Creatures", "seed": 3, "stats": "", "fact": "A lonely Hawaiian girl and the destructive little alien she adopts as a 'dog,' who teach each other what family means. Ohana means nobody gets left behind — and their friendship is the rare one built out of two broken pieces fitting together."}, {"id": 23, "name": "Calvin & Hobbes", "from": "Calvin and Hobbes", "emoji": "🐯", "div": "Kids & Their Creatures", "seed": 4, "stats": "", "fact": "A wildly imaginative boy and his tiger — a stuffed animal to everyone else, his best friend and partner in chaos to him. The most beloved friendship in comics, and the question of whether Hobbes is 'real' misses the point entirely. A legendary #4."}, {"id": 24, "name": "Wallace & Gromit", "from": "Wallace and Gromit", "emoji": "🧀", "div": "Power Pairs", "seed": 1, "stats": "", "fact": "A cheese-loving inventor and his silent, long-suffering, infinitely smarter dog who quietly saves the day every single time. Wallace and Gromit are claymation perfection — the dog does all the thinking and never gets the credit, and loves him anyway."}, {"id": 25, "name": "Tom & Jerry", "from": "Tom and Jerry", "emoji": "🧀", "div": "Power Pairs", "seed": 2, "stats": "", "fact": "A cat and mouse locked in eighty years of escalating warfare who secretly can't live without each other. Tom and Jerry are the greatest frenemies in animation — the rare 'friendship' built entirely on trying to destroy each other. No words, all chaos."}, {"id": 26, "name": "Jake & Finn", "from": "Adventure Time", "emoji": "🐶", "div": "Power Pairs", "seed": 3, "stats": "", "fact": "A boy and his shape-shifting magical dog brother adventuring across a strange, beautiful post-apocalyptic land. Jake and Finn are the coziest, weirdest brotherhood in modern cartoons. Mathematical."}, {"id": 27, "name": "Mordecai & Rigby", "from": "Regular Show", "emoji": "🦝", "div": "Power Pairs", "seed": 4, "stats": "", "fact": "A blue jay and a raccoon working dead-end park jobs and turning every chore into a reality-bending disaster. Mordecai and Rigby are the ultimate slacker-friends whose laziness summons literal monsters. Ooooohhh. A chaotic #4."}, {"id": 28, "name": "Harry & Ron", "from": "Harry Potter", "emoji": "🧙", "div": "Iconic Two", "seed": 1, "stats": "", "fact": "The Boy Who Lived and the loyal best friend who stuck by him from the very first train ride. Ron gives Harry the one thing he never had — a normal friend who chose him — and their bond anchors the entire series. The friendship that survives a war."}, {"id": 29, "name": "Bert & Ernie", "from": "Sesame Street", "emoji": "🦆", "div": "Iconic Two", "seed": 2, "stats": "", "fact": "An uptight worrier and his goofy, rubber-duck-loving roommate who've been bickering and loving each other for over fifty years. Bert and Ernie taught generations of kids that best friends can be total opposites. The original odd couple."}, {"id": 30, "name": "Cosmo & Wanda", "from": "The Fairly OddParents", "emoji": "🪄", "div": "Iconic Two", "seed": 3, "stats": "", "fact": "Two fairy godparents — one a chaos gremlin, one the long-suffering brains — who grant a lonely kid's wishes and clean up the fallout. Cosmo and Wanda are a married duo whose comedy runs on one being a genius and one being Cosmo."}, {"id": 31, "name": "Drake & Josh", "from": "Drake & Josh", "emoji": "🎸", "div": "Iconic Two", "seed": 4, "stats": "", "fact": "Two mismatched stepbrothers — a smooth musician and an anxious overthinker — whose schemes blow up in increasingly spectacular ways. Drake and Josh defined a Nickelodeon era of brotherly chaos. Hug me, brotha. A nostalgic #4."}];
+const R1 = [[0, 3], [1, 2], [4, 7], [5, 6], [8, 11], [9, 10], [12, 15], [13, 14], [16, 19], [17, 18], [20, 23], [21, 22], [24, 27], [25, 26], [28, 31], [29, 30]];
+const COUNTS = [16, 8, 4, 2, 1];
+const NR = COUNTS.length, LASTR = NR-1, TOTAL = 31;
+const RLABELS = ["Round of 32", "Round of 16", "Quarterfinal", "Semifinal", "The Final"];
+const COLLABELS = ["R32", "R16", "QF", "SF", "Final"];
+const HEIGHTS = [22, 30, 44, 70, 100];
+const GAPS = [2, 5, 12, 28, 0];
+const DIVNAMES = ["Animated BFFs", "Adventure Partners", "Comedy Duos", "Ride or Die", "TV Best Friends", "Kids & Their Creatures", "Power Pairs", "Iconic Two"];
+const ASK_ROOM = ["Which pair would you actually want in your friend group?", "Who carries the friendship — and does it matter?", "Funniest duo vs. most loyal duo?", "Which friendship would survive a real fight?", "Which pairing got robbed by the seeding?"];
+let results = COUNTS.map(n=>Array(n).fill(null));
+let currentVote=null, selected=null, locked=false, askPrompt='';
+
+function getC(r,mi,slot){
+  if(r===0){const idx=R1[mi][slot];return ALL[idx];}
+  const prevMi=mi*2+slot, prevW=results[r-1][prevMi];
+  if(prevW===null)return null;
+  return ALL.find(c=>c.id===prevW);
+}
+function getCurrentRound(){for(let r=0;r<NR;r++){for(let mi=0;mi<COUNTS[r];mi++){if(results[r][mi]===null){const a=getC(r,mi,0),b=getC(r,mi,1);if(a&&b)return r;}}}return LASTR;}
+function getNextActive(){const cr=getCurrentRound();for(let mi=0;mi<COUNTS[cr];mi++){if(results[cr][mi]===null){const a=getC(cr,mi,0),b=getC(cr,mi,1);if(a&&b)return{round:cr,mi};}}return null;}
+function totalVotes(){return results.flat().filter(v=>v!==null).length;}
+function fakeA(a,b){return Math.min(86,Math.max(20,50+(b.id-a.id)%17+(a.id%4)*2));}
+
+function render(){
+  const done=results[LASTR][0]!==null;
+  if(done){const w=ALL.find(c=>c.id===results[LASTR][0]);renderChampion(w);return;}
+  if(currentVote!==null){renderVote();return;}
+  renderBracket();
+}
+
+function renderBracket(){
+  document.getElementById('back-btn').style.display='none';
+  const cr=getCurrentRound(),next=getNextActive();
+  let html='<div class="core-q">Which on-screen friendship is the real deal?</div>';
+  html+='<div class="bracket-cols">';
+  for(let r=0;r<NR;r++){
+    const count=COUNTS[r],maxH=HEIGHTS[r],gap=GAPS[r];
+    html+='<div class="bracket-col"><div class="col-label" style="color:'+(r===cr?'#f5a623':'#2e2040')+'">'+COLLABELS[r]+'</div><div class="col-matches" style="gap:'+gap+'px">';
+    for(let mi=0;mi<count;mi++){
+      const a=getC(r,mi,0),b=getC(r,mi,1),winner=results[r][mi];
+      const active=r===cr&&winner===null&&a&&b,done=winner!==null;
+      const cls=active?'active':done?'done':'empty';
+      const onclick=(active||done)?'onclick="startVote('+r+','+mi+')"':'';
+      html+='<div class="match-cell '+cls+'" style="max-height:'+maxH+'px;'+(!active&&!done?'border:1px solid #14101c':'')+'" '+onclick+'>';
+      [a,b].forEach((c,si)=>{
+        if(!c){html+='<div class="tbd">&mdash;</div>';return;}
+        const isW=winner===c.id,isL=done&&!isW;
+        const nm=c.name.split(' ').slice(0,r===0?2:3).join(' ');
+        html+=(si===1?'<hr class="match-divider">':'')+'<div class="match-row '+(isW?'winner':isL?'loser':'')+'"><span class="em">'+c.emoji+'</span><span class="nm">'+nm+'</span></div>';
+      });
+      html+='</div>';
+    }
+    html+='</div></div>';
+  }
+  html+='</div>';
+  if(next)html+='<div style="padding:14px 16px 0"><button class="vote-btn" onclick="startVote('+next.round+','+next.mi+')">Vote Next Matchup &rarr;</button><div class="vote-hint">Tap any highlighted match to vote</div></div>';
+  document.getElementById('main').innerHTML=html;
+}
+
+function startVote(round,mi){currentVote={round,mi};selected=null;locked=false;const w=results[round][mi];if(w!==null){const a=getC(round,mi,0);selected=(a&&a.id===w)?'a':'b';}render();}
+
+function renderVote(){
+  document.getElementById('back-btn').style.display='block';
+  const o=currentVote,round=o.round,mi=o.mi,a=getC(round,mi,0),b=getC(round,mi,1);
+  if(!a||!b){showBracket();return;}
+  const pA=fakeA(a,b),pB=100-pA,majority=selected?(selected==='a'?pA:pB)>=50:false;
+  const hint=!selected?"— Which duo wins? —":locked?"— Verdict locked! —":"— Tap to switch. Button to commit. —";
+  let html='<div id="vote-screen"><div class="vote-header"><div class="round-label">'+RLABELS[round]+'</div><div class="vote-hint-text">'+hint+'</div></div>';
+  [{side:'a',c:a,pct:pA},{side:'b',c:b,pct:pB}].forEach(function(o){
+    const side=o.side,c=o.c,pct=o.pct,isSel=selected===side;
+    html+='<div class="card'+(isSel?' selected':'')+'" onclick="selectCard(\''+side+'\')">';
+    if(locked&&isSel)html+='<div class="pct-bar" style="width:'+pct+'%"></div>';
+    html+='<div class="card-inner"><div class="card-top"><div class="card-emoji">'+c.emoji+'</div><div style="flex:1;min-width:0"><div class="card-meta">'+c.div+' · '+c.from+'</div><div class="card-name">'+c.name+'</div></div>'+(isSel&&!locked?'<div class="card-arrow">◀</div>':'')+'</div>';
+    html+='<div class="card-tag">'+(c.seed===1?'#1 SEED':c.seed===2?'#2 SEED':c.seed===3?'#3 SEED':'#4 SEED')+'</div>';
+    if(c.stats)html+='<div class="card-stats">📊 '+c.stats+'</div>';
+    html+='<div class="card-fact">'+c.fact+'</div>';
+    if(locked&&isSel)html+='<div class="card-pct">'+pct+'%<span>voted this duo</span><span class="check">✓</span></div>';
+    html+='</div></div>';
+  });
+  if(selected&&!locked)html+='<div class="commit-box"><div class="commit-hint">Still deciding? Tap the other card to compare.</div><button class="commit-btn" onclick="commitVote()">Lock In Verdict &rarr;</button></div>';
+  if(locked){
+    html+='<div class="result-box"><div class="'+(majority?'result-majority':'result-minority')+'">'+(majority?'✓ With the majority':'🔥 Against the crowd')+'</div><div class="ask-room" style="margin-top:14px;padding-top:14px;border-top:1px dashed #3a2850"><div style="font-size:9px;letter-spacing:3px;color:#c05a08;text-transform:uppercase;margin-bottom:6px">Ask the Room</div><div style="font-size:15px;color:#e8d8f0;font-style:italic;line-height:1.4">'+askPrompt+'</div></div></div><button class="next-btn" onclick="advance()">Vote Next Matchup &rarr;</button>';
+  }
+  html+='</div>';
+  document.getElementById('main').innerHTML=html;
+}
+
+function selectCard(side){if(locked)return;selected=side;renderVote();}
+function commitVote(){
+  if(!selected||locked)return;
+  locked=true;
+  askPrompt=ASK_ROOM[Math.floor(Math.random()*ASK_ROOM.length)];
+  const o=currentVote,round=o.round,mi=o.mi,a=getC(round,mi,0),b=getC(round,mi,1);
+  results[round][mi]=selected==='a'?a.id:b.id;
+  renderVote();
+  document.getElementById('counter').textContent=totalVotes()+'/'+TOTAL;
+}
+function advance(){currentVote=null;locked=false;selected=null;render();}
+function showBracket(){currentVote=null;selected=null;locked=false;render();}
+function renderChampion(c){
+  document.getElementById('back-btn').style.display='none';
+  document.getElementById('main').innerHTML='<div id="champion-screen"><div style="font-size:44px;margin-bottom:6px">🏆</div><div class="champ-emoji">'+c.emoji+'</div><div class="champ-trophy">The Ultimate Duo</div><div class="champ-name">'+c.name+'</div><div class="champ-from">'+c.from+'</div><div style="display:inline-block;margin:10px 0 6px;padding:4px 16px;border-radius:20px;background:#f5a623;color:#09080a;font-size:11px;font-weight:700;letter-spacing:1px">YOUR VERDICT</div><div class="champ-fact">'+c.fact+'</div><button class="reset-btn" onclick="resetGame()">Run It Back</button><div style="margin-top:20px"><a href="index.html" style="color:#6a6478;font-size:12px;letter-spacing:2px;text-transform:uppercase;text-decoration:none;font-family:Georgia,serif">← All Brackets</a></div></div>';
+}
+function resetGame(){results=COUNTS.map(n=>Array(n).fill(null));currentVote=null;selected=null;locked=false;render();}
+render();
+
+</script>
+</body>
+</html>

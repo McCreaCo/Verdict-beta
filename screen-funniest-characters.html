@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VERDICT — Funniest Characters</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #09080a; color: #f0eaf8; font-family: Georgia, 'Times New Roman', serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
+  #app { width: 100%; max-width: 560px; min-height: 100vh; display: flex; flex-direction: column; }
+  header { padding: 16px 20px 12px; border-bottom: 1px solid #22182a; display: flex; align-items: center; justify-content: space-between; background: #0e0b14; }
+  .title { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; color: #4a9eff; }
+  .subtitle { font-size: 9px; color: #1a5aaa; letter-spacing: 2px; text-transform: uppercase; margin-top: 2px; }
+  .counter { font-size: 10px; color: #2e2040; background: #14101c; border: 1px solid #22182a; border-radius: 16px; padding: 4px 10px; }
+  .back-btn { background: transparent; border: 1px solid #22182a; border-radius: 8px; padding: 5px 10px; color: #3a2850; font-size: 11px; cursor: pointer; font-family: Georgia, serif; }
+  #main { flex: 1; padding: 14px 0; }
+  .core-q { text-align: center; font-size: 12px; color: #4a9eff; font-style: italic; padding: 4px 20px 0; line-height: 1.4; }
+  .bracket-cols { display: flex; gap: 3px; padding: 0 10px; }
+  .bracket-col { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+  .col-label { font-size: 7px; letter-spacing: 1.5px; text-transform: uppercase; text-align: center; margin-bottom: 5px; }
+  .col-matches { display: flex; flex-direction: column; justify-content: space-around; height: 380px; }
+  .match-cell { border-radius: 5px; overflow: hidden; cursor: default; flex: 1; transition: border-color 0.2s; }
+  .match-cell.active { border: 1px solid #4a9eff !important; background: #14101c !important; cursor: pointer; }
+  .match-cell.done { border: 1px solid #2e1e2a !important; background: #0e0b14 !important; cursor: pointer; }
+  .match-cell.empty { border: 1px solid #14101c; background: #09080a; }
+  .match-row { display: flex; align-items: center; gap: 2px; padding: 2px 3px; transition: opacity 0.3s; }
+  .match-row.loser { opacity: 0.22; }
+  .match-row.winner { background: rgba(74,158,255,0.12); }
+  .match-row .em { font-size: 8px; }
+  .match-row .nm { font-size: 7px; color: #3a2850; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 400; }
+  .match-row.winner .nm { color: #4a9eff; font-weight: 700; }
+  .match-divider { border: none; border-top: 1px solid #1e1428; margin: 0; }
+  .tbd { padding: 2px 3px; font-size: 6px; color: #221830; }
+  .vote-btn { width: 100%; padding: 14px; background: linear-gradient(135deg, #4a9eff, #1a5aaa); border: none; border-radius: 12px; color: #09080a; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; margin-top: 14px; }
+  .vote-hint { font-size: 10px; color: #6a6478; text-align: center; margin-top: 6px; }
+  #vote-screen { padding: 0 16px; animation: fadeUp 0.3s ease; }
+  .vote-header { text-align: center; margin-bottom: 16px; }
+  .round-label { font-size: 10px; letter-spacing: 3px; color: #4a9eff; text-transform: uppercase; margin-bottom: 3px; }
+  .vote-hint-text { font-size: 11px; color: #8a8298; letter-spacing: 1px; }
+  .card { display: block; width: 100%; margin-bottom: 10px; border-radius: 14px; padding: 16px 18px; cursor: pointer; text-align: left; transition: all 0.25s; position: relative; overflow: hidden; border: 2px solid #22182a; background: #0e0b14; }
+  .card.selected { border-color: #4a9eff !important; background: #1a1020 !important; transform: scale(1.01); }
+  .card-inner { position: relative; z-index: 1; }
+  .card-top { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 8px; }
+  .card-emoji { font-size: 34px; margin-top: 2px; flex-shrink: 0; }
+  .card-meta { font-size: 9px; color: #1a5aaa; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 2px; }
+  .card-name { font-size: 18px; font-weight: 700; color: #d8d2e2; line-height: 1.2; margin-bottom: 2px; transition: color 0.2s; }
+  .card.selected .card-name { color: #ffffff; }
+  .card-from { font-size: 10px; color: #8a8298; font-style: italic; transition: color 0.2s; }
+  .card.selected .card-from { color: #8a8298; }
+  .card-tag { display: inline-block; margin-top: 8px; padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 700; background: #22182a; color: #4a9eff; letter-spacing: 1px; }
+  .card.selected .card-tag { background: #4a9eff; color: #09080a; }
+  .card-stats { margin-top: 8px; font-size: 9px; color: #9a8aa0; letter-spacing: 0.5px; }
+  .card.selected .card-stats { color: #9a8aa0; }
+  .card-fact { font-size: 12px; color: #7e7888; line-height: 1.75; transition: color 0.2s; margin-top: 8px; }
+  .card.selected .card-fact { color: #e8e2f0; }
+  .card-arrow { font-size: 16px; color: #4a9eff; margin-left: auto; flex-shrink: 0; }
+  .card-pct { font-size: 20px; font-weight: 700; color: #4a9eff; margin-top: 10px; }
+  .card-pct span { font-size: 12px; font-weight: 400; color: #3a2850; margin-left: 6px; }
+  .card-pct .check { color: #4a9eff; margin-left: 8px; }
+  .pct-bar { position: absolute; top: 0; left: 0; height: 100%; background: rgba(74,158,255,0.06); transition: width 0.9s cubic-bezier(.4,0,.2,1); z-index: 0; }
+  .commit-box { padding: 14px 18px; background: #0e0b14; border: 1px solid #22182a; border-radius: 12px; text-align: center; animation: fadeUp 0.3s ease; }
+  .commit-hint { font-size: 11px; color: #3a2850; margin-bottom: 10px; font-style: italic; }
+  .commit-btn { padding: 12px 32px; background: linear-gradient(135deg, #4a9eff, #1a5aaa); border: none; border-radius: 10px; color: #09080a; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+  .result-box { padding: 16px 18px; background: #0e0b14; border: 1px solid #22182a; border-radius: 12px; text-align: center; margin-top: 2px; animation: fadeUp 0.3s ease; }
+  .result-majority { font-size: 13px; color: #7ec8a0; font-weight: 700; letter-spacing: 1px; }
+  .result-minority { font-size: 13px; color: #1a5aaa; font-weight: 700; letter-spacing: 1px; }
+  .next-btn { width: 100%; margin-top: 14px; padding: 14px; background: linear-gradient(135deg, #4a9eff, #1a5aaa); border: none; border-radius: 12px; color: #09080a; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+  #champion-screen { text-align: center; padding: 36px 24px; animation: fadeUp 0.5s ease; }
+  .champ-emoji { font-size: 76px; margin-bottom: 8px; }
+  .champ-trophy { font-size: 11px; letter-spacing: 4px; color: #4a9eff; text-transform: uppercase; margin-bottom: 8px; }
+  .champ-name { font-size: 26px; font-weight: 700; color: #f0eaf8; margin-bottom: 4px; }
+  .champ-from { font-size: 13px; color: #1a5aaa; font-style: italic; margin-bottom: 4px; }
+  .champ-fact { font-size: 13px; color: #8a7d98; font-style: italic; max-width: 310px; margin: 14px auto 28px; line-height: 1.8; }
+  .reset-btn { padding: 14px 32px; background: linear-gradient(135deg, #4a9eff, #1a5aaa); border: none; border-radius: 12px; color: #09080a; font-size: 14px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  button:active { filter: brightness(0.88); }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div>
+      <a href="index.html" class="title" style="text-decoration:none;cursor:pointer" title="All brackets">VERDICT</a>
+      <div class="subtitle">Who Makes You Laugh Hardest</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="back-btn" id="back-btn" style="display:none" onclick="showBracket()">← Bracket</button>
+      <div class="counter" id="counter">0/31</div>
+    </div>
+  </header>
+  <div id="main"></div>
+</div>
+<script>
+
+const ALL = [{"id": 0, "name": "Michael Scott", "from": "The Office", "emoji": "📎", "div": "Sitcom Legends", "seed": 1, "stats": "", "fact": "The world's worst boss and most desperate-to-be-loved man, who turns every meeting into a cringe masterpiece. Michael Scott is the rare character who's funniest when he's trying hardest and failing — a walking secondhand-embarrassment generator with a heart of gold. That's what she said."}, {"id": 1, "name": "Kramer", "from": "Seinfeld", "emoji": "🚪", "div": "Sitcom Legends", "seed": 2, "stats": "", "fact": "He bursts through the door with no explanation, a new scheme, and zero job, somehow living the best life of anyone on the show. Kramer turned physical comedy — the slides, the spasms, the faces — into an art form. Every entrance is an event."}, {"id": 2, "name": "Barney Stinson", "from": "How I Met Your Mother", "emoji": "👔", "div": "Sitcom Legends", "seed": 3, "stats": "", "fact": "A suit-obsessed serial schemer who treats life like a game with elaborate rules only he knows. Barney's relentless confidence and catchphrase machine made him the breakout of his whole show. Legen — wait for it — dary."}, {"id": 3, "name": "Schmidt", "from": "New Girl", "emoji": "👚", "div": "Sitcom Legends", "seed": 4, "stats": "", "fact": "A try-hard with a douchebag jar, a skincare routine, and zero chill about any of it. Schmidt is insecurity dressed up as arrogance, and the gap between how cool he thinks he is and how he actually behaves is comedy gold. A loaded #4."}, {"id": 4, "name": "Homer Simpson", "from": "The Simpsons", "emoji": "🍩", "div": "Animated Adults", "seed": 1, "stats": "", "fact": "The most famous doofus in television history — lazy, gluttonous, dumb as a post, and somehow deeply lovable across 35 years. Homer turned strangling, donut-craving, and the single word 'D'oh' into the comedy DNA of a planet. The original animated dad."}, {"id": 5, "name": "Peter Griffin", "from": "Family Guy", "emoji": "🍺", "div": "Animated Adults", "seed": 2, "stats": "", "fact": "A man-child whose every bad idea spirals into chaos, famous for absurd cutaway gags and an inexplicable chicken nemesis. Peter is comedy with no brakes — the character who'll do the dumbest possible thing and somehow make it land. Freakin' sweet."}, {"id": 6, "name": "Bugs Bunny", "from": "Looney Tunes", "emoji": "🥕", "div": "Animated Adults", "seed": 3, "stats": "", "fact": "The wise-cracking rabbit who always wins, always stays cool, and always has a carrot and a comeback. Bugs invented the template for the unflappable cartoon trickster — eighty years later still the smoothest operator in animation. What's up, doc?"}, {"id": 7, "name": "Daffy Duck", "from": "Looney Tunes", "emoji": "🦆", "div": "Animated Adults", "seed": 4, "stats": "", "fact": "Greed, ego, and pure unhinged energy in a duck body — the perfect foil whose schemes always backfire spectacularly. Daffy is funniest precisely because he loses, melting down in a spray of feathers every time. You're despicable. A scene-stealing #4."}, {"id": 8, "name": "Ron Burgundy", "from": "Anchorman", "emoji": "📺", "div": "Movie Comedy Icons", "seed": 1, "stats": "", "fact": "A pompous 70s newsman with a jazz flute, a loyal dog, and absolutely no self-awareness. Ron Burgundy is quotable to the point of absurdity, a perfectly-coiffed idiot who'll read anything on the teleprompter. Stay classy."}, {"id": 9, "name": "Austin Powers", "from": "Austin Powers", "emoji": "🕶", "div": "Movie Comedy Icons", "seed": 2, "stats": "", "fact": "A groovy 60s spy frozen and thawed into the 90s, oblivious to how ridiculous he is. Austin Powers spawned more catchphrases per minute than almost any comedy character — a one-man quote factory in crushed velvet. Yeah, baby."}, {"id": 10, "name": "Ace Ventura", "from": "Ace Ventura", "emoji": "🦜", "div": "Movie Comedy Icons", "seed": 3, "stats": "", "fact": "A pet detective with rubber limbs, a talking-from-anywhere act, and absolutely no inside voice. Ace is Jim Carrey at his most physically unhinged — a cartoon character who somehow exists in live action. Alllrighty then."}, {"id": 11, "name": "Buddy the Elf", "from": "Elf", "emoji": "🎄", "div": "Movie Comedy Icons", "seed": 4, "stats": "", "fact": "A human raised by elves who treats the entire world with the wonder of a six-year-old hopped up on maple syrup. Buddy's relentless, innocent joy makes him the warmest comedy character here — the rare funny that also makes you feel good. A holiday #4 that travels far."}, {"id": 12, "name": "SpongeBob", "from": "SpongeBob SquarePants", "emoji": "🧽", "div": "Bikini Bottom", "seed": 1, "stats": "", "fact": "An eternally optimistic sea sponge whose laugh, enthusiasm, and total inability to read a room have made him a global icon for 25 years. SpongeBob is pure childlike joy weaponized into comedy, and his meme afterlife only made him bigger. Are you ready, kids?"}, {"id": 13, "name": "Patrick Star", "from": "SpongeBob SquarePants", "emoji": "🌟", "div": "Bikini Bottom", "seed": 2, "stats": "", "fact": "A pink starfish who lives under a rock, both literally and intellectually, and is somehow the most quotable dummy in cartoon history. Patrick's confident stupidity — 'is mayonnaise an instrument?' — is a bottomless well. The internet's favorite idiot."}, {"id": 14, "name": "Squidward", "from": "SpongeBob SquarePants", "emoji": "🎷", "div": "Bikini Bottom", "seed": 3, "stats": "", "fact": "A miserable, clarinet-playing octopus trapped between two morons he can't escape, whose suffering is the show's secret engine. Squidward is the patron saint of everyone who just wants to be left alone, and his despair is weirdly hilarious. 2v3 against Patrick is a Bikini Bottom war."}, {"id": 15, "name": "Plankton", "from": "SpongeBob SquarePants", "emoji": "🦠", "div": "Bikini Bottom", "seed": 4, "stats": "", "fact": "A one-eyed micro-villain who has spent decades failing to steal a hamburger recipe, with a sarcastic computer wife as his only ally. Plankton's enormous ambition crammed into a tiny evil body is a perfect comic engine. A scheming #4."}, {"id": 16, "name": "Dwight Schrute", "from": "The Office", "emoji": "🥔", "div": "TV Goofballs", "seed": 1, "stats": "", "fact": "A beet-farming, fact-spouting, authority-obsessed weirdo who takes paper sales as seriously as warfare. Dwight is the perfect straight-faced absurdist — utterly sincere about the most ridiculous things. Identity theft is not a joke, Jim."}, {"id": 17, "name": "Phoebe", "from": "Friends", "emoji": "🎸", "div": "TV Goofballs", "seed": 2, "stats": "", "fact": "A free spirit with a guitar, a chaotic past, and a worldview that makes sense only to her. Phoebe is the weird one who's somehow the wisest, singing about smelly cats with total commitment. The quirk that holds the whole group together."}, {"id": 18, "name": "Joey Tribbiani", "from": "Friends", "emoji": "🍕", "div": "TV Goofballs", "seed": 3, "stats": "", "fact": "A lovable, food-protective himbo actor whose simple approach to life made him the most quotable Friend. Joey doesn't share food, doesn't overthink, and delivers one legendary pickup line. How you doin'?"}, {"id": 19, "name": "Moira Rose", "from": "Schitt's Creek", "emoji": "🦚", "div": "TV Goofballs", "seed": 4, "stats": "", "fact": "A faded soap star with an invented accent, a wig wall, and a vocabulary nobody else on Earth uses. Moira is comedy as high theater — every line a dramatic monologue about nothing. A bébé of a #4."}, {"id": 20, "name": "Lloyd Christmas", "from": "Dumb and Dumber", "emoji": "🚕", "div": "Big-Screen Laughs", "seed": 1, "stats": "", "fact": "A chip-toothed optimist whose stupidity is so pure it loops back around to a kind of genius. Lloyd is one half of the dumbest, most committed friendship in comedy, chasing love across the country on hope and zero brain cells. So you're telling me there's a chance."}, {"id": 21, "name": "Mrs. Doubtfire", "from": "Mrs. Doubtfire", "emoji": "🧹", "div": "Big-Screen Laughs", "seed": 2, "stats": "", "fact": "A dad so desperate to see his kids he becomes a Scottish housekeeper, and accidentally a better parent in the process. Robin Williams turned a wig and prosthetics into a tour de force — manic, heartfelt, and unforgettable. Helloooo."}, {"id": 22, "name": "Napoleon Dynamite", "from": "Napoleon Dynamite", "emoji": "💃", "div": "Big-Screen Laughs", "seed": 3, "stats": "", "fact": "A deadpan, tetherball-playing, llama-feeding teen with the flattest delivery and the best dance moves in cinema. Napoleon turned awkward into an art form and quotable into a way of life. Gosh."}, {"id": 23, "name": "Ron Swanson", "from": "Parks and Recreation", "emoji": "🥓", "div": "Big-Screen Laughs", "seed": 4, "stats": "", "fact": "A mustachioed libertarian who loves breakfast meats, hates government, and woodworks in silence. Ron Swanson's gruff one-liners and total emotional minimalism made him a meme legend. A bacon-wrapped #4 that could go all the way."}, {"id": 24, "name": "Shrek", "from": "Shrek", "emoji": "🟢", "div": "Animated Leads", "seed": 1, "stats": "", "fact": "A grumpy ogre who just wants his swamp back and accidentally becomes the most quoted animated hero of his era. Shrek's blend of gross-out gags, fairy-tale parody, and surprising heart launched an empire. Ogres have layers."}, {"id": 25, "name": "Buzz Lightyear", "from": "Toy Story", "emoji": "🚀", "div": "Animated Leads", "seed": 2, "stats": "", "fact": "A delusional space-ranger action figure who doesn't know he's a toy, delivering every line with heroic seriousness. Buzz's gap between how cool he thinks he is and what he actually is powers his best comedy. To infinity and beyond."}, {"id": 26, "name": "Woody", "from": "Toy Story", "emoji": "🤠", "div": "Animated Leads", "seed": 3, "stats": "", "fact": "A pull-string cowboy whose jealousy, panic, and wounded pride make him far funnier than a hero doll should be. Woody's meltdowns — especially opposite Buzz — are the comic engine of the whole franchise. There's a snake in my boot."}, {"id": 27, "name": "Emmet", "from": "The Lego Movie", "emoji": "🧱", "div": "Animated Leads", "seed": 4, "stats": "", "fact": "An aggressively average Lego construction worker who follows the instructions until he accidentally becomes the hero. Emmet's relentless, oblivious positivity is the joke and the heart at once. Everything is awesome. A brick-built #4."}, {"id": 28, "name": "Jack Sparrow", "from": "Pirates of the Caribbean", "emoji": "🏴", "div": "Wild Cards", "seed": 1, "stats": "", "fact": "A pirate who staggers through every scene like he's improvising his own life, somehow always one drunken step ahead. Captain Jack turned a swaggering, slurring mess into one of the most beloved characters in blockbuster history. Why is the rum gone?"}, {"id": 29, "name": "Beetlejuice", "from": "Beetlejuice", "emoji": "🪰", "div": "Wild Cards", "seed": 2, "stats": "", "fact": "A crude, chaotic 'bio-exorcist' ghost who shapeshifts, insults, and schemes his way through the afterlife in a striped suit. Beetlejuice is comedy as pure anarchy — a character so unhinged he only needed to be on screen 17 minutes to steal his own movie."}, {"id": 30, "name": "The Mask", "from": "The Mask", "emoji": "🎭", "div": "Wild Cards", "seed": 3, "stats": "", "fact": "A meek bank clerk who puts on an ancient mask and becomes a green-faced cartoon come to life — zoot suit, googly eyes, and all. The Mask is live-action Looney Tunes, Jim Carrey unleashed into literal animation logic. Ssssmokin'."}, {"id": 31, "name": "Maui", "from": "Moana", "emoji": "🪝", "div": "Wild Cards", "seed": 4, "stats": "", "fact": "A demigod with a magic hook, a living tattoo that narrates his ego, and a song entirely about how great he is. Maui is comedy built on pure swagger, voiced with a wink — the funniest demigod to ever get stranded on an island. You're welcome. A musical #4."}];
+const R1 = [[0, 3], [1, 2], [4, 7], [5, 6], [8, 11], [9, 10], [12, 15], [13, 14], [16, 19], [17, 18], [20, 23], [21, 22], [24, 27], [25, 26], [28, 31], [29, 30]];
+const COUNTS = [16, 8, 4, 2, 1];
+const NR = COUNTS.length, LASTR = NR-1, TOTAL = 31;
+const RLABELS = ["Round of 32", "Round of 16", "Quarterfinal", "Semifinal", "The Final"];
+const COLLABELS = ["R32", "R16", "QF", "SF", "Final"];
+const HEIGHTS = [22, 30, 44, 70, 100];
+const GAPS = [2, 5, 12, 28, 0];
+const DIVNAMES = ["Sitcom Legends", "Animated Adults", "Movie Comedy Icons", "Bikini Bottom", "TV Goofballs", "Big-Screen Laughs", "Animated Leads", "Wild Cards"];
+const ASK_ROOM = ["Quote-it-forever funny or makes-you-cry-laughing funny?", "Which one would be exhausting in real life?", "Funniest single moment you can picture right now?", "Who's funnier than you remembered, who's worse?", "Which pick is a hill you'll die on?"];
+let results = COUNTS.map(n=>Array(n).fill(null));
+let currentVote=null, selected=null, locked=false, askPrompt='';
+
+function getC(r,mi,slot){
+  if(r===0){const idx=R1[mi][slot];return ALL[idx];}
+  const prevMi=mi*2+slot, prevW=results[r-1][prevMi];
+  if(prevW===null)return null;
+  return ALL.find(c=>c.id===prevW);
+}
+function getCurrentRound(){for(let r=0;r<NR;r++){for(let mi=0;mi<COUNTS[r];mi++){if(results[r][mi]===null){const a=getC(r,mi,0),b=getC(r,mi,1);if(a&&b)return r;}}}return LASTR;}
+function getNextActive(){const cr=getCurrentRound();for(let mi=0;mi<COUNTS[cr];mi++){if(results[cr][mi]===null){const a=getC(cr,mi,0),b=getC(cr,mi,1);if(a&&b)return{round:cr,mi};}}return null;}
+function totalVotes(){return results.flat().filter(v=>v!==null).length;}
+function fakeA(a,b){return Math.min(86,Math.max(20,50+(b.id-a.id)%17+(a.id%4)*2));}
+
+function render(){
+  const done=results[LASTR][0]!==null;
+  if(done){const w=ALL.find(c=>c.id===results[LASTR][0]);renderChampion(w);return;}
+  if(currentVote!==null){renderVote();return;}
+  renderBracket();
+}
+
+function renderBracket(){
+  document.getElementById('back-btn').style.display='none';
+  const cr=getCurrentRound(),next=getNextActive();
+  let html='<div class="core-q">Who makes you laugh the hardest?</div>';
+  html+='<div class="bracket-cols">';
+  for(let r=0;r<NR;r++){
+    const count=COUNTS[r],maxH=HEIGHTS[r],gap=GAPS[r];
+    html+='<div class="bracket-col"><div class="col-label" style="color:'+(r===cr?'#4a9eff':'#2e2040')+'">'+COLLABELS[r]+'</div><div class="col-matches" style="gap:'+gap+'px">';
+    for(let mi=0;mi<count;mi++){
+      const a=getC(r,mi,0),b=getC(r,mi,1),winner=results[r][mi];
+      const active=r===cr&&winner===null&&a&&b,done=winner!==null;
+      const cls=active?'active':done?'done':'empty';
+      const onclick=(active||done)?'onclick="startVote('+r+','+mi+')"':'';
+      html+='<div class="match-cell '+cls+'" style="max-height:'+maxH+'px;'+(!active&&!done?'border:1px solid #14101c':'')+'" '+onclick+'>';
+      [a,b].forEach((c,si)=>{
+        if(!c){html+='<div class="tbd">&mdash;</div>';return;}
+        const isW=winner===c.id,isL=done&&!isW;
+        const nm=c.name.split(' ').slice(0,r===0?2:3).join(' ');
+        html+=(si===1?'<hr class="match-divider">':'')+'<div class="match-row '+(isW?'winner':isL?'loser':'')+'"><span class="em">'+c.emoji+'</span><span class="nm">'+nm+'</span></div>';
+      });
+      html+='</div>';
+    }
+    html+='</div></div>';
+  }
+  html+='</div>';
+  if(next)html+='<div style="padding:14px 16px 0"><button class="vote-btn" onclick="startVote('+next.round+','+next.mi+')">Vote Next Matchup &rarr;</button><div class="vote-hint">Tap any highlighted match to vote</div></div>';
+  document.getElementById('main').innerHTML=html;
+}
+
+function startVote(round,mi){currentVote={round,mi};selected=null;locked=false;const w=results[round][mi];if(w!==null){const a=getC(round,mi,0);selected=(a&&a.id===w)?'a':'b';}render();}
+
+function renderVote(){
+  document.getElementById('back-btn').style.display='block';
+  const o=currentVote,round=o.round,mi=o.mi,a=getC(round,mi,0),b=getC(round,mi,1);
+  if(!a||!b){showBracket();return;}
+  const pA=fakeA(a,b),pB=100-pA,majority=selected?(selected==='a'?pA:pB)>=50:false;
+  const hint=!selected?"— Who's funnier? —":locked?"— Verdict locked! —":"— Tap to switch. Button to commit. —";
+  let html='<div id="vote-screen"><div class="vote-header"><div class="round-label">'+RLABELS[round]+'</div><div class="vote-hint-text">'+hint+'</div></div>';
+  [{side:'a',c:a,pct:pA},{side:'b',c:b,pct:pB}].forEach(function(o){
+    const side=o.side,c=o.c,pct=o.pct,isSel=selected===side;
+    html+='<div class="card'+(isSel?' selected':'')+'" onclick="selectCard(\''+side+'\')">';
+    if(locked&&isSel)html+='<div class="pct-bar" style="width:'+pct+'%"></div>';
+    html+='<div class="card-inner"><div class="card-top"><div class="card-emoji">'+c.emoji+'</div><div style="flex:1;min-width:0"><div class="card-meta">'+c.div+' · '+c.from+'</div><div class="card-name">'+c.name+'</div></div>'+(isSel&&!locked?'<div class="card-arrow">◀</div>':'')+'</div>';
+    html+='<div class="card-tag">'+(c.seed===1?'#1 SEED':c.seed===2?'#2 SEED':c.seed===3?'#3 SEED':'#4 SEED')+'</div>';
+    if(c.stats)html+='<div class="card-stats">📊 '+c.stats+'</div>';
+    html+='<div class="card-fact">'+c.fact+'</div>';
+    if(locked&&isSel)html+='<div class="card-pct">'+pct+'%<span>voted this character</span><span class="check">✓</span></div>';
+    html+='</div></div>';
+  });
+  if(selected&&!locked)html+='<div class="commit-box"><div class="commit-hint">Still deciding? Tap the other card to compare.</div><button class="commit-btn" onclick="commitVote()">Lock In Verdict &rarr;</button></div>';
+  if(locked){
+    html+='<div class="result-box"><div class="'+(majority?'result-majority':'result-minority')+'">'+(majority?'✓ With the majority':'🔥 Against the crowd')+'</div><div class="ask-room" style="margin-top:14px;padding-top:14px;border-top:1px dashed #3a2850"><div style="font-size:9px;letter-spacing:3px;color:#1a5aaa;text-transform:uppercase;margin-bottom:6px">Ask the Room</div><div style="font-size:15px;color:#e8d8f0;font-style:italic;line-height:1.4">'+askPrompt+'</div></div></div><button class="next-btn" onclick="advance()">Vote Next Matchup &rarr;</button>';
+  }
+  html+='</div>';
+  document.getElementById('main').innerHTML=html;
+}
+
+function selectCard(side){if(locked)return;selected=side;renderVote();}
+function commitVote(){
+  if(!selected||locked)return;
+  locked=true;
+  askPrompt=ASK_ROOM[Math.floor(Math.random()*ASK_ROOM.length)];
+  const o=currentVote,round=o.round,mi=o.mi,a=getC(round,mi,0),b=getC(round,mi,1);
+  results[round][mi]=selected==='a'?a.id:b.id;
+  renderVote();
+  document.getElementById('counter').textContent=totalVotes()+'/'+TOTAL;
+}
+function advance(){currentVote=null;locked=false;selected=null;render();}
+function showBracket(){currentVote=null;selected=null;locked=false;render();}
+function renderChampion(c){
+  document.getElementById('back-btn').style.display='none';
+  document.getElementById('main').innerHTML='<div id="champion-screen"><div style="font-size:44px;margin-bottom:6px">🏆</div><div class="champ-emoji">'+c.emoji+'</div><div class="champ-trophy">Comedy GOAT</div><div class="champ-name">'+c.name+'</div><div class="champ-from">'+c.from+'</div><div style="display:inline-block;margin:10px 0 6px;padding:4px 16px;border-radius:20px;background:#4a9eff;color:#09080a;font-size:11px;font-weight:700;letter-spacing:1px">YOUR VERDICT</div><div class="champ-fact">'+c.fact+'</div><button class="reset-btn" onclick="resetGame()">Run It Back</button><div style="margin-top:20px"><a href="index.html" style="color:#6a6478;font-size:12px;letter-spacing:2px;text-transform:uppercase;text-decoration:none;font-family:Georgia,serif">← All Brackets</a></div></div>';
+}
+function resetGame(){results=COUNTS.map(n=>Array(n).fill(null));currentVote=null;selected=null;locked=false;render();}
+render();
+
+</script>
+</body>
+</html>

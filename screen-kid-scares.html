@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VERDICT — Kid-Level Scares</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #09080a; color: #f0eaf8; font-family: Georgia, 'Times New Roman', serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
+  #app { width: 100%; max-width: 560px; min-height: 100vh; display: flex; flex-direction: column; }
+  header { padding: 16px 20px 12px; border-bottom: 1px solid #22182a; display: flex; align-items: center; justify-content: space-between; background: #0e0b14; }
+  .title { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; color: #e8b830; }
+  .subtitle { font-size: 9px; color: #d04428; letter-spacing: 2px; text-transform: uppercase; margin-top: 2px; }
+  .counter { font-size: 10px; color: #2e2040; background: #14101c; border: 1px solid #22182a; border-radius: 16px; padding: 4px 10px; }
+  .back-btn { background: transparent; border: 1px solid #22182a; border-radius: 8px; padding: 5px 10px; color: #3a2850; font-size: 11px; cursor: pointer; font-family: Georgia, serif; }
+  #main { flex: 1; padding: 14px 0; }
+  .core-q { text-align: center; font-size: 12px; color: #e8b830; font-style: italic; padding: 4px 20px 0; line-height: 1.4; }
+  .bracket-cols { display: flex; gap: 3px; padding: 0 10px; }
+  .bracket-col { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+  .col-label { font-size: 7px; letter-spacing: 1.5px; text-transform: uppercase; text-align: center; margin-bottom: 5px; }
+  .col-matches { display: flex; flex-direction: column; justify-content: space-around; height: 380px; }
+  .match-cell { border-radius: 5px; overflow: hidden; cursor: default; flex: 1; transition: border-color 0.2s; }
+  .match-cell.active { border: 1px solid #e8b830 !important; background: #14101c !important; cursor: pointer; }
+  .match-cell.done { border: 1px solid #2e1e2a !important; background: #0e0b14 !important; cursor: pointer; }
+  .match-cell.empty { border: 1px solid #14101c; background: #09080a; }
+  .match-row { display: flex; align-items: center; gap: 2px; padding: 2px 3px; transition: opacity 0.3s; }
+  .match-row.loser { opacity: 0.22; }
+  .match-row.winner { background: rgba(232,184,48,0.12); }
+  .match-row .em { font-size: 8px; }
+  .match-row .nm { font-size: 7px; color: #3a2850; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 400; }
+  .match-row.winner .nm { color: #e8b830; font-weight: 700; }
+  .match-divider { border: none; border-top: 1px solid #1e1428; margin: 0; }
+  .tbd { padding: 2px 3px; font-size: 6px; color: #221830; }
+  .vote-btn { width: 100%; padding: 14px; background: linear-gradient(135deg, #e8b830, #d04428); border: none; border-radius: 12px; color: #09080a; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; margin-top: 14px; }
+  .vote-hint { font-size: 10px; color: #6a6478; text-align: center; margin-top: 6px; }
+  #vote-screen { padding: 0 16px; animation: fadeUp 0.3s ease; }
+  .vote-header { text-align: center; margin-bottom: 16px; }
+  .round-label { font-size: 10px; letter-spacing: 3px; color: #e8b830; text-transform: uppercase; margin-bottom: 3px; }
+  .vote-hint-text { font-size: 11px; color: #8a8298; letter-spacing: 1px; }
+  .card { display: block; width: 100%; margin-bottom: 10px; border-radius: 14px; padding: 16px 18px; cursor: pointer; text-align: left; transition: all 0.25s; position: relative; overflow: hidden; border: 2px solid #22182a; background: #0e0b14; }
+  .card.selected { border-color: #e8b830 !important; background: #1a1020 !important; transform: scale(1.01); }
+  .card-inner { position: relative; z-index: 1; }
+  .card-top { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 8px; }
+  .card-emoji { font-size: 34px; margin-top: 2px; flex-shrink: 0; }
+  .card-meta { font-size: 9px; color: #d04428; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 2px; }
+  .card-name { font-size: 18px; font-weight: 700; color: #d8d2e2; line-height: 1.2; margin-bottom: 2px; transition: color 0.2s; }
+  .card.selected .card-name { color: #ffffff; }
+  .card-from { font-size: 10px; color: #8a8298; font-style: italic; transition: color 0.2s; }
+  .card.selected .card-from { color: #8a8298; }
+  .card-tag { display: inline-block; margin-top: 8px; padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 700; background: #22182a; color: #e8b830; letter-spacing: 1px; }
+  .card.selected .card-tag { background: #e8b830; color: #09080a; }
+  .card-stats { margin-top: 8px; font-size: 9px; color: #9a8aa0; letter-spacing: 0.5px; }
+  .card.selected .card-stats { color: #9a8aa0; }
+  .card-fact { font-size: 12px; color: #7e7888; line-height: 1.75; transition: color 0.2s; margin-top: 8px; }
+  .card.selected .card-fact { color: #e8e2f0; }
+  .card-arrow { font-size: 16px; color: #e8b830; margin-left: auto; flex-shrink: 0; }
+  .card-pct { font-size: 20px; font-weight: 700; color: #e8b830; margin-top: 10px; }
+  .card-pct span { font-size: 12px; font-weight: 400; color: #3a2850; margin-left: 6px; }
+  .card-pct .check { color: #e8b830; margin-left: 8px; }
+  .pct-bar { position: absolute; top: 0; left: 0; height: 100%; background: rgba(232,184,48,0.06); transition: width 0.9s cubic-bezier(.4,0,.2,1); z-index: 0; }
+  .commit-box { padding: 14px 18px; background: #0e0b14; border: 1px solid #22182a; border-radius: 12px; text-align: center; animation: fadeUp 0.3s ease; }
+  .commit-hint { font-size: 11px; color: #3a2850; margin-bottom: 10px; font-style: italic; }
+  .commit-btn { padding: 12px 32px; background: linear-gradient(135deg, #e8b830, #d04428); border: none; border-radius: 10px; color: #09080a; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+  .result-box { padding: 16px 18px; background: #0e0b14; border: 1px solid #22182a; border-radius: 12px; text-align: center; margin-top: 2px; animation: fadeUp 0.3s ease; }
+  .result-majority { font-size: 13px; color: #7ec8a0; font-weight: 700; letter-spacing: 1px; }
+  .result-minority { font-size: 13px; color: #d04428; font-weight: 700; letter-spacing: 1px; }
+  .next-btn { width: 100%; margin-top: 14px; padding: 14px; background: linear-gradient(135deg, #e8b830, #d04428); border: none; border-radius: 12px; color: #09080a; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+  #champion-screen { text-align: center; padding: 36px 24px; animation: fadeUp 0.5s ease; }
+  .champ-emoji { font-size: 76px; margin-bottom: 8px; }
+  .champ-trophy { font-size: 11px; letter-spacing: 4px; color: #e8b830; text-transform: uppercase; margin-bottom: 8px; }
+  .champ-name { font-size: 26px; font-weight: 700; color: #f0eaf8; margin-bottom: 4px; }
+  .champ-from { font-size: 13px; color: #d04428; font-style: italic; margin-bottom: 4px; }
+  .champ-fact { font-size: 13px; color: #8a7d98; font-style: italic; max-width: 310px; margin: 14px auto 28px; line-height: 1.8; }
+  .reset-btn { padding: 14px 32px; background: linear-gradient(135deg, #e8b830, #d04428); border: none; border-radius: 12px; color: #09080a; font-size: 14px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  button:active { filter: brightness(0.88); }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div>
+      <a href="index.html" class="title" style="text-decoration:none;cursor:pointer" title="All brackets">VERDICT</a>
+      <div class="subtitle">What Scared You As A Kid</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="back-btn" id="back-btn" style="display:none" onclick="showBracket()">← Bracket</button>
+      <div class="counter" id="counter">0/15</div>
+    </div>
+  </header>
+  <div id="main"></div>
+</div>
+<script>
+
+const ALL = [{"id": 0, "name": "Chernabog", "from": "Fantasia (1940)", "emoji": "🌑", "div": "Disney Nightmares", "seed": 1, "stats": "", "fact": "A giant winged demon who rises from a mountaintop to summon ghosts and fire in the 'Night on Bald Mountain' finale. Chernabog is the most genuinely terrifying thing Disney ever animated — a literal devil in a movie kids were brought to for the dancing hippos. Pure nightmare."}, {"id": 1, "name": "Monstro", "from": "Pinocchio (1940)", "emoji": "🐋", "div": "Disney Nightmares", "seed": 2, "stats": "", "fact": "An enormous, rage-filled whale who swallows ships whole and chases a wooden boy across the sea with his jaws wide open. Monstro is the original 'oh no' creature — the reason a generation was scared of the ocean. The escape scene is still heart-pounding."}, {"id": 2, "name": "The Horned King", "from": "The Black Cauldron (1985)", "emoji": "💀", "div": "Disney Nightmares", "seed": 3, "stats": "", "fact": "A skeletal, glowing-eyed sorcerer who raises an army of the undead in Disney's darkest, most disturbing film. The Horned King was so frightening the movie nearly sank the studio — a villain straight out of a horror movie wearing a Disney logo. 2v3 is a fright-off."}, {"id": 3, "name": "Oogie Boogie", "from": "The Nightmare Before Christmas", "emoji": "🪱", "div": "Disney Nightmares", "seed": 4, "stats": "", "fact": "A burlap sack stuffed with bugs who gambles with his victims' lives in a green-lit casino of horrors. Oogie Boogie is the creepy-crawly nightmare — the thing under the bed given a song and a sing-song voice. A skin-crawling #4."}, {"id": 4, "name": "Pleasure Island", "from": "Pinocchio (1940)", "emoji": "🐂", "div": "Tunnels & Transformations", "seed": 1, "stats": "", "fact": "The amusement park where bad boys are turned into donkeys and sold off, screaming, never to be human again. Pleasure Island is the most quietly horrifying sequence in any kids' movie — a boy braying for his mother as he transforms. It still lands like a gut punch."}, {"id": 5, "name": "The Boat Tunnel", "from": "Willy Wonka (1971)", "emoji": "🚢", "div": "Tunnels & Transformations", "seed": 2, "stats": "", "fact": "A serene chocolate-river ride that suddenly becomes a strobing nightmare of horrifying images while Wonka recites an escalating, screaming poem. The tunnel scene is the reason a candy movie traumatized millions. There's no earthly way of knowing."}, {"id": 6, "name": "The Wheelers", "from": "Return to Oz (1985)", "emoji": "🛼", "div": "Tunnels & Transformations", "seed": 3, "stats": "", "fact": "Cackling creatures with wheels for hands and feet who screech around corners chasing Dorothy through a ruined Oz. Return to Oz is famously the darkest kids' movie ever greenlit, and the Wheelers are its signature nightmare. Pure unfiltered dread."}, {"id": 7, "name": "Large Marge", "from": "Pee-wee's Big Adventure (1985)", "emoji": "🚛", "div": "Tunnels & Transformations", "seed": 4, "stats": "", "fact": "A friendly truck-driving ghost who tells a story and then, for one frame, turns into a claymation horror with bulging eyes. Large Marge is the original jump-scare a million kids weren't ready for. A single second of pure terror. A sneaky #4."}, {"id": 8, "name": "The Child Catcher", "from": "Chitty Chitty Bang Bang (1968)", "emoji": "🍭", "div": "Witches & Catchers", "seed": 1, "stats": "", "fact": "A long-nosed villain who lures children with candy and a cheerful song, then cages them in the back of his wagon. The Child Catcher is routinely voted the scariest character in family-film history — a predator dressed in colors, hunting kids. Genuinely upsetting decades later."}, {"id": 9, "name": "Wicked Witch of the West", "from": "The Wizard of Oz (1939)", "emoji": "🧹", "div": "Witches & Catchers", "seed": 2, "stats": "", "fact": "A green-skinned, cackling witch with an army of flying monkeys and a personal vendetta against a little girl. The Wicked Witch terrified audiences in 1939 and never stopped — the original screen nightmare. I'll get you, my pretty."}, {"id": 10, "name": "The Grand High Witch", "from": "The Witches (1990)", "emoji": "🦷", "div": "Witches & Catchers", "seed": 3, "stats": "", "fact": "A glamorous woman who peels off her human face to reveal a hideous, purple-eyed monster plotting to turn every child into a mouse. The Witches gave a generation a fear of strangers' smiles. The unmasking is the stuff of pure nightmares."}, {"id": 11, "name": "Flying Monkeys", "from": "The Wizard of Oz (1939)", "emoji": "🐒", "div": "Witches & Catchers", "seed": 4, "stats": "", "fact": "Shrieking winged monkeys that swarm out of the sky to snatch Dorothy and tear the Scarecrow apart. The flying monkeys are the witch's airborne nightmare fuel — the reason kids hid behind the couch. A swarming #4."}, {"id": 12, "name": "The Other Mother", "from": "Coraline (2009)", "emoji": "🧵", "div": "Stop-Motion & Modern", "seed": 1, "stats": "", "fact": "A 'mother' with buttons for eyes who offers a perfect world, then reveals herself as a spidery monster who wants to sew buttons into a child's eyes forever. The Beldam is modern animation's scariest villain — a nightmare aimed precisely at kids. Don't say yes."}, {"id": 13, "name": "The Skeksis", "from": "The Dark Crystal (1982)", "emoji": "🦴", "div": "Stop-Motion & Modern", "seed": 2, "stats": "", "fact": "Vulture-like creatures who drain the life from innocents to stay alive, decaying and screeching in a rotting castle. The Skeksis are pure puppet horror — proof that no CGI is needed to give a child nightmares. Grotesque in the most memorable way."}, {"id": 14, "name": "ParaNorman", "from": "ParaNorman (2012)", "emoji": "🧟", "div": "Stop-Motion & Modern", "seed": 3, "stats": "", "fact": "A boy who sees dead people faces down a witch's curse and a mob of rotting zombies in a town that hates him. ParaNorman sneaks real horror imagery and a genuinely dark message into a kids' movie. Scarier and sadder than it had any right to be."}, {"id": 15, "name": "Monster House", "from": "Monster House (2006)", "emoji": "🏚", "div": "Stop-Motion & Modern", "seed": 4, "stats": "", "fact": "A house that is alive — it breathes, it eats kids, its windows are eyes and its door is a mouth full of teeth. Monster House turned the one place you're supposed to feel safe into a predator. A devouring #4 that haunted sleepovers."}];
+const R1 = [[0, 3], [1, 2], [4, 7], [5, 6], [8, 11], [9, 10], [12, 15], [13, 14]];
+const COUNTS = [8, 4, 2, 1];
+const NR = COUNTS.length, LASTR = NR-1, TOTAL = 15;
+const RLABELS = ["Round of 16", "Quarterfinal", "Semifinal", "The Final"];
+const COLLABELS = ["R16", "QF", "SF", "Final"];
+const HEIGHTS = [30, 46, 74, 120];
+const GAPS = [6, 18, 44, 0];
+const DIVNAMES = ["Disney Nightmares", "Tunnels & Transformations", "Witches & Catchers", "Stop-Motion & Modern"];
+const ASK_ROOM = ["Which one still gets you a little, even now?", "Scariest in the moment vs. scariest to think about later?", "Which did you fast-forward as a kid?", "Did your parents not realize how dark this was?", "Which one would you NOT show a little kid today?"];
+let results = COUNTS.map(n=>Array(n).fill(null));
+let currentVote=null, selected=null, locked=false, askPrompt='';
+
+function getC(r,mi,slot){
+  if(r===0){const idx=R1[mi][slot];return ALL[idx];}
+  const prevMi=mi*2+slot, prevW=results[r-1][prevMi];
+  if(prevW===null)return null;
+  return ALL.find(c=>c.id===prevW);
+}
+function getCurrentRound(){for(let r=0;r<NR;r++){for(let mi=0;mi<COUNTS[r];mi++){if(results[r][mi]===null){const a=getC(r,mi,0),b=getC(r,mi,1);if(a&&b)return r;}}}return LASTR;}
+function getNextActive(){const cr=getCurrentRound();for(let mi=0;mi<COUNTS[cr];mi++){if(results[cr][mi]===null){const a=getC(cr,mi,0),b=getC(cr,mi,1);if(a&&b)return{round:cr,mi};}}return null;}
+function totalVotes(){return results.flat().filter(v=>v!==null).length;}
+function fakeA(a,b){return Math.min(86,Math.max(20,50+(b.id-a.id)%17+(a.id%4)*2));}
+
+function render(){
+  const done=results[LASTR][0]!==null;
+  if(done){const w=ALL.find(c=>c.id===results[LASTR][0]);renderChampion(w);return;}
+  if(currentVote!==null){renderVote();return;}
+  renderBracket();
+}
+
+function renderBracket(){
+  document.getElementById('back-btn').style.display='none';
+  const cr=getCurrentRound(),next=getNextActive();
+  let html='<div class="core-q">Which one scared you the most as a kid?</div>';
+  html+='<div class="bracket-cols">';
+  for(let r=0;r<NR;r++){
+    const count=COUNTS[r],maxH=HEIGHTS[r],gap=GAPS[r];
+    html+='<div class="bracket-col"><div class="col-label" style="color:'+(r===cr?'#e8b830':'#2e2040')+'">'+COLLABELS[r]+'</div><div class="col-matches" style="gap:'+gap+'px">';
+    for(let mi=0;mi<count;mi++){
+      const a=getC(r,mi,0),b=getC(r,mi,1),winner=results[r][mi];
+      const active=r===cr&&winner===null&&a&&b,done=winner!==null;
+      const cls=active?'active':done?'done':'empty';
+      const onclick=(active||done)?'onclick="startVote('+r+','+mi+')"':'';
+      html+='<div class="match-cell '+cls+'" style="max-height:'+maxH+'px;'+(!active&&!done?'border:1px solid #14101c':'')+'" '+onclick+'>';
+      [a,b].forEach((c,si)=>{
+        if(!c){html+='<div class="tbd">&mdash;</div>';return;}
+        const isW=winner===c.id,isL=done&&!isW;
+        const nm=c.name.split(' ').slice(0,r===0?2:3).join(' ');
+        html+=(si===1?'<hr class="match-divider">':'')+'<div class="match-row '+(isW?'winner':isL?'loser':'')+'"><span class="em">'+c.emoji+'</span><span class="nm">'+nm+'</span></div>';
+      });
+      html+='</div>';
+    }
+    html+='</div></div>';
+  }
+  html+='</div>';
+  if(next)html+='<div style="padding:14px 16px 0"><button class="vote-btn" onclick="startVote('+next.round+','+next.mi+')">Vote Next Matchup &rarr;</button><div class="vote-hint">Tap any highlighted match to vote</div></div>';
+  document.getElementById('main').innerHTML=html;
+}
+
+function startVote(round,mi){currentVote={round,mi};selected=null;locked=false;const w=results[round][mi];if(w!==null){const a=getC(round,mi,0);selected=(a&&a.id===w)?'a':'b';}render();}
+
+function renderVote(){
+  document.getElementById('back-btn').style.display='block';
+  const o=currentVote,round=o.round,mi=o.mi,a=getC(round,mi,0),b=getC(round,mi,1);
+  if(!a||!b){showBracket();return;}
+  const pA=fakeA(a,b),pB=100-pA,majority=selected?(selected==='a'?pA:pB)>=50:false;
+  const hint=!selected?"— Which scared you more? —":locked?"— Verdict locked! —":"— Tap to switch. Button to commit. —";
+  let html='<div id="vote-screen"><div class="vote-header"><div class="round-label">'+RLABELS[round]+'</div><div class="vote-hint-text">'+hint+'</div></div>';
+  [{side:'a',c:a,pct:pA},{side:'b',c:b,pct:pB}].forEach(function(o){
+    const side=o.side,c=o.c,pct=o.pct,isSel=selected===side;
+    html+='<div class="card'+(isSel?' selected':'')+'" onclick="selectCard(\''+side+'\')">';
+    if(locked&&isSel)html+='<div class="pct-bar" style="width:'+pct+'%"></div>';
+    html+='<div class="card-inner"><div class="card-top"><div class="card-emoji">'+c.emoji+'</div><div style="flex:1;min-width:0"><div class="card-meta">'+c.div+' · '+c.from+'</div><div class="card-name">'+c.name+'</div></div>'+(isSel&&!locked?'<div class="card-arrow">◀</div>':'')+'</div>';
+    html+='<div class="card-tag">'+(c.seed===1?'#1 SEED':c.seed===2?'#2 SEED':c.seed===3?'#3 SEED':'#4 SEED')+'</div>';
+    if(c.stats)html+='<div class="card-stats">📊 '+c.stats+'</div>';
+    html+='<div class="card-fact">'+c.fact+'</div>';
+    if(locked&&isSel)html+='<div class="card-pct">'+pct+'%<span>voted this moment</span><span class="check">✓</span></div>';
+    html+='</div></div>';
+  });
+  if(selected&&!locked)html+='<div class="commit-box"><div class="commit-hint">Still deciding? Tap the other card to compare.</div><button class="commit-btn" onclick="commitVote()">Lock In Verdict &rarr;</button></div>';
+  if(locked){
+    html+='<div class="result-box"><div class="'+(majority?'result-majority':'result-minority')+'">'+(majority?'✓ With the majority':'🔥 Against the crowd')+'</div><div class="ask-room" style="margin-top:14px;padding-top:14px;border-top:1px dashed #3a2850"><div style="font-size:9px;letter-spacing:3px;color:#d04428;text-transform:uppercase;margin-bottom:6px">Ask the Room</div><div style="font-size:15px;color:#e8d8f0;font-style:italic;line-height:1.4">'+askPrompt+'</div></div></div><button class="next-btn" onclick="advance()">Vote Next Matchup &rarr;</button>';
+  }
+  html+='</div>';
+  document.getElementById('main').innerHTML=html;
+}
+
+function selectCard(side){if(locked)return;selected=side;renderVote();}
+function commitVote(){
+  if(!selected||locked)return;
+  locked=true;
+  askPrompt=ASK_ROOM[Math.floor(Math.random()*ASK_ROOM.length)];
+  const o=currentVote,round=o.round,mi=o.mi,a=getC(round,mi,0),b=getC(round,mi,1);
+  results[round][mi]=selected==='a'?a.id:b.id;
+  renderVote();
+  document.getElementById('counter').textContent=totalVotes()+'/'+TOTAL;
+}
+function advance(){currentVote=null;locked=false;selected=null;render();}
+function showBracket(){currentVote=null;selected=null;locked=false;render();}
+function renderChampion(c){
+  document.getElementById('back-btn').style.display='none';
+  document.getElementById('main').innerHTML='<div id="champion-screen"><div style="font-size:44px;margin-bottom:6px">🏆</div><div class="champ-emoji">'+c.emoji+'</div><div class="champ-trophy">Childhood Nightmare Fuel</div><div class="champ-name">'+c.name+'</div><div class="champ-from">'+c.from+'</div><div style="display:inline-block;margin:10px 0 6px;padding:4px 16px;border-radius:20px;background:#e8b830;color:#09080a;font-size:11px;font-weight:700;letter-spacing:1px">YOUR VERDICT</div><div class="champ-fact">'+c.fact+'</div><button class="reset-btn" onclick="resetGame()">Run It Back</button><div style="margin-top:20px"><a href="index.html" style="color:#6a6478;font-size:12px;letter-spacing:2px;text-transform:uppercase;text-decoration:none;font-family:Georgia,serif">← All Brackets</a></div></div>';
+}
+function resetGame(){results=COUNTS.map(n=>Array(n).fill(null));currentVote=null;selected=null;locked=false;render();}
+render();
+
+</script>
+</body>
+</html>

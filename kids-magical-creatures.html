@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VERDICT — Magical Creatures</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #09080a; color: #f0eaf8; font-family: Georgia, 'Times New Roman', serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
+  #app { width: 100%; max-width: 560px; min-height: 100vh; display: flex; flex-direction: column; }
+  header { padding: 16px 20px 12px; border-bottom: 1px solid #22182a; display: flex; align-items: center; justify-content: space-between; background: #0e0b14; }
+  .title { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; color: #e8354a; }
+  .subtitle { font-size: 9px; color: #a01828; letter-spacing: 2px; text-transform: uppercase; margin-top: 2px; }
+  .counter { font-size: 10px; color: #2e2040; background: #14101c; border: 1px solid #22182a; border-radius: 16px; padding: 4px 10px; }
+  .back-btn { background: transparent; border: 1px solid #22182a; border-radius: 8px; padding: 5px 10px; color: #3a2850; font-size: 11px; cursor: pointer; font-family: Georgia, serif; }
+  #main { flex: 1; padding: 14px 0; }
+  .core-q { text-align: center; font-size: 12px; color: #e8354a; font-style: italic; padding: 4px 20px 0; line-height: 1.4; }
+  .bracket-cols { display: flex; gap: 3px; padding: 0 10px; }
+  .bracket-col { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+  .col-label { font-size: 7px; letter-spacing: 1.5px; text-transform: uppercase; text-align: center; margin-bottom: 5px; }
+  .col-matches { display: flex; flex-direction: column; justify-content: space-around; height: 380px; }
+  .match-cell { border-radius: 5px; overflow: hidden; cursor: default; flex: 1; transition: border-color 0.2s; }
+  .match-cell.active { border: 1px solid #e8354a !important; background: #14101c !important; cursor: pointer; }
+  .match-cell.done { border: 1px solid #2e1e2a !important; background: #0e0b14 !important; cursor: pointer; }
+  .match-cell.empty { border: 1px solid #14101c; background: #09080a; }
+  .match-row { display: flex; align-items: center; gap: 2px; padding: 2px 3px; transition: opacity 0.3s; }
+  .match-row.loser { opacity: 0.22; }
+  .match-row.winner { background: rgba(232,53,74,0.12); }
+  .match-row .em { font-size: 8px; }
+  .match-row .nm { font-size: 7px; color: #3a2850; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 400; }
+  .match-row.winner .nm { color: #e8354a; font-weight: 700; }
+  .match-divider { border: none; border-top: 1px solid #1e1428; margin: 0; }
+  .tbd { padding: 2px 3px; font-size: 6px; color: #221830; }
+  .vote-btn { width: 100%; padding: 14px; background: linear-gradient(135deg, #e8354a, #a01828); border: none; border-radius: 12px; color: #09080a; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; margin-top: 14px; }
+  .vote-hint { font-size: 10px; color: #6a6478; text-align: center; margin-top: 6px; }
+  #vote-screen { padding: 0 16px; animation: fadeUp 0.3s ease; }
+  .vote-header { text-align: center; margin-bottom: 16px; }
+  .round-label { font-size: 10px; letter-spacing: 3px; color: #e8354a; text-transform: uppercase; margin-bottom: 3px; }
+  .vote-hint-text { font-size: 11px; color: #8a8298; letter-spacing: 1px; }
+  .card { display: block; width: 100%; margin-bottom: 10px; border-radius: 14px; padding: 16px 18px; cursor: pointer; text-align: left; transition: all 0.25s; position: relative; overflow: hidden; border: 2px solid #22182a; background: #0e0b14; }
+  .card.selected { border-color: #e8354a !important; background: #1a1020 !important; transform: scale(1.01); }
+  .card-inner { position: relative; z-index: 1; }
+  .card-top { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 8px; }
+  .card-emoji { font-size: 34px; margin-top: 2px; flex-shrink: 0; }
+  .card-meta { font-size: 9px; color: #a01828; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 2px; }
+  .card-name { font-size: 18px; font-weight: 700; color: #d8d2e2; line-height: 1.2; margin-bottom: 2px; transition: color 0.2s; }
+  .card.selected .card-name { color: #ffffff; }
+  .card-from { font-size: 10px; color: #8a8298; font-style: italic; transition: color 0.2s; }
+  .card.selected .card-from { color: #8a8298; }
+  .card-tag { display: inline-block; margin-top: 8px; padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 700; background: #22182a; color: #e8354a; letter-spacing: 1px; }
+  .card.selected .card-tag { background: #e8354a; color: #09080a; }
+  .card-stats { margin-top: 8px; font-size: 9px; color: #9a8aa0; letter-spacing: 0.5px; }
+  .card.selected .card-stats { color: #9a8aa0; }
+  .card-fact { font-size: 12px; color: #7e7888; line-height: 1.75; transition: color 0.2s; margin-top: 8px; }
+  .card.selected .card-fact { color: #e8e2f0; }
+  .card-arrow { font-size: 16px; color: #e8354a; margin-left: auto; flex-shrink: 0; }
+  .card-pct { font-size: 20px; font-weight: 700; color: #e8354a; margin-top: 10px; }
+  .card-pct span { font-size: 12px; font-weight: 400; color: #3a2850; margin-left: 6px; }
+  .card-pct .check { color: #e8354a; margin-left: 8px; }
+  .pct-bar { position: absolute; top: 0; left: 0; height: 100%; background: rgba(232,53,74,0.06); transition: width 0.9s cubic-bezier(.4,0,.2,1); z-index: 0; }
+  .commit-box { padding: 14px 18px; background: #0e0b14; border: 1px solid #22182a; border-radius: 12px; text-align: center; animation: fadeUp 0.3s ease; }
+  .commit-hint { font-size: 11px; color: #3a2850; margin-bottom: 10px; font-style: italic; }
+  .commit-btn { padding: 12px 32px; background: linear-gradient(135deg, #e8354a, #a01828); border: none; border-radius: 10px; color: #09080a; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+  .result-box { padding: 16px 18px; background: #0e0b14; border: 1px solid #22182a; border-radius: 12px; text-align: center; margin-top: 2px; animation: fadeUp 0.3s ease; }
+  .result-majority { font-size: 13px; color: #7ec8a0; font-weight: 700; letter-spacing: 1px; }
+  .result-minority { font-size: 13px; color: #a01828; font-weight: 700; letter-spacing: 1px; }
+  .next-btn { width: 100%; margin-top: 14px; padding: 14px; background: linear-gradient(135deg, #e8354a, #a01828); border: none; border-radius: 12px; color: #09080a; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+  #champion-screen { text-align: center; padding: 36px 24px; animation: fadeUp 0.5s ease; }
+  .champ-emoji { font-size: 76px; margin-bottom: 8px; }
+  .champ-trophy { font-size: 11px; letter-spacing: 4px; color: #e8354a; text-transform: uppercase; margin-bottom: 8px; }
+  .champ-name { font-size: 26px; font-weight: 700; color: #f0eaf8; margin-bottom: 4px; }
+  .champ-from { font-size: 13px; color: #a01828; font-style: italic; margin-bottom: 4px; }
+  .champ-fact { font-size: 13px; color: #8a7d98; font-style: italic; max-width: 310px; margin: 14px auto 28px; line-height: 1.8; }
+  .reset-btn { padding: 14px 32px; background: linear-gradient(135deg, #e8354a, #a01828); border: none; border-radius: 12px; color: #09080a; font-size: 14px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  button:active { filter: brightness(0.88); }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div>
+      <a href="index.html" class="title" style="text-decoration:none;cursor:pointer" title="All brackets">VERDICT</a>
+      <div class="subtitle">Which One By Your Side</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="back-btn" id="back-btn" style="display:none" onclick="showBracket()">← Bracket</button>
+      <div class="counter" id="counter">0/31</div>
+    </div>
+  </header>
+  <div id="main"></div>
+</div>
+<script>
+
+const ALL = [{"id": 0, "name": "Buckbeak", "from": "Harry Potter", "emoji": "🪶", "div": "Wizarding World", "seed": 1, "stats": "", "fact": "Half-eagle, half-horse, and all attitude — Buckbeak will only respect you if you bow first and mean it. He breaks Harry out of trouble on a moonlit flight and later crashes a wedding-sized escape, proving the proudest creature in the wizarding world is also the most loyal once you earn it."}, {"id": 1, "name": "Fawkes", "from": "Harry Potter", "emoji": "🔥", "div": "Wizarding World", "seed": 2, "stats": "", "fact": "A phoenix who bursts into flame and is reborn from his own ashes, whose tears heal any wound. Fawkes shows up in the Chamber of Secrets to do what no human can — blind a basilisk, carry four people out on his tail, and cry the cure for a deadly bite. Loyalty made of fire."}, {"id": 2, "name": "Dobby", "from": "Harry Potter", "emoji": "🧝", "div": "Wizarding World", "seed": 3, "stats": "", "fact": "A house-elf who frees himself, defies a dark wizard, and loves Harry with a fierceness that's almost painful to watch. Dobby has more courage in his tiny frame than half the grown wizards in the series, and he proves it in the most heartbreaking way possible. A free elf."}, {"id": 3, "name": "Basilisk", "from": "Harry Potter", "emoji": "🐍", "div": "Wizarding World", "seed": 4, "stats": "", "fact": "A fifty-foot serpent whose stare kills instantly and whose venom can destroy a piece of a dark lord's soul. The Basilisk is the scariest thing a twelve-year-old has ever fought with a sword, and it lurks in pipes beneath a school full of children. A monstrous #4."}, {"id": 4, "name": "Smaug", "from": "The Hobbit", "emoji": "🐉", "div": "Dragons", "seed": 1, "stats": "", "fact": "A dragon the size of a cathedral sleeping on a mountain of stolen gold, with a voice like silk over a furnace. Smaug is the gold standard for movie dragons — vain, brilliant, and utterly terrifying when those eyes open. There is no creature here you'd less want to wake."}, {"id": 5, "name": "Sisu", "from": "Raya and the Last Dragon", "emoji": "🐲", "div": "Dragons", "seed": 2, "stats": "", "fact": "The last dragon, who'd rather trust people than fight them and somehow makes that a superpower. Sisu is the rare dragon built on goofy warmth instead of menace — she'd lose a staring contest with Smaug but win the whole room. Proof a dragon can be the most lovable thing on the board."}, {"id": 6, "name": "Falkor", "from": "The NeverEnding Story", "emoji": "🍀", "div": "Dragons", "seed": 3, "stats": "", "fact": "A luckdragon with the face of a friendly dog and the body of a flying river, who believes everything will work out and is usually right. Falkor is the most comforting creature here — the one you'd want to fly above the clouds with when the world is falling apart."}, {"id": 7, "name": "Ender Dragon", "from": "Minecraft", "emoji": "🟣", "div": "Dragons", "seed": 4, "stats": "", "fact": "The final boss of the most-played game on Earth — a black dragon circling a void-world that millions of kids have flown out to fight. The Ender Dragon is the modern dragon a whole generation actually battled themselves, controller in hand. A #4 with a billion grudges."}, {"id": 8, "name": "Kraken", "from": "Greek myth / Pirates", "emoji": "🐙", "div": "Greek Myth", "seed": 1, "stats": "", "fact": "A colossal sea monster with tentacles that can drag an entire warship under in seconds. Release the Kraken — the line alone became a meme, but the creature behind it is pure oceanic nightmare, the reason sailors feared the deep. Bigger than anything else in the water here."}, {"id": 9, "name": "Griffin", "from": "Mythology", "emoji": "🦅", "div": "Greek Myth", "seed": 2, "stats": "", "fact": "Eagle in front, lion behind — the guardian beast that combined the king of birds with the king of beasts into one heraldic powerhouse. The griffin has decorated castle walls and shields for centuries because it reads instantly as noble, fierce, and not to be messed with."}, {"id": 10, "name": "Cerberus", "from": "Greek myth", "emoji": "🐺", "div": "Greek Myth", "seed": 3, "stats": "", "fact": "The three-headed dog that guards the gates of the underworld so nobody gets out. Cerberus is the original good-boy-gone-terrifying — a hound so fearsome that taming him was literally the final labor of Hercules. Three times the bark, infinite times the bite."}, {"id": 11, "name": "Minotaur", "from": "Greek myth", "emoji": "🐂", "div": "Greek Myth", "seed": 4, "stats": "", "fact": "Half man, half bull, stalking the heart of a labyrinth built specifically to contain him. The Minotaur is the monster at the center of the maze — the thing you hope you never meet because by the time you do, you're already lost. A claustrophobic nightmare."}, {"id": 12, "name": "Grogu", "from": "The Mandalorian", "emoji": "👶", "div": "Tiny & Beloved", "seed": 1, "stats": "", "fact": "Fifty years old, the size of a toddler, and strong enough in the Force to lift a charging rhino-beast with his mind. Grogu — Baby Yoda to the world — broke the internet on sight and became the most-wanted creature in the galaxy on pure adorability. Wants the soup."}, {"id": 13, "name": "Gizmo", "from": "Gremlins", "emoji": "🐾", "div": "Tiny & Beloved", "seed": 2, "stats": "", "fact": "A mogwai so cute it hurts — big ears, big eyes, sings in a tiny voice. The catch is the rules: don't feed him after midnight, don't get him wet, or he spawns the nightmares that wreck the whole town. Gizmo is the rare creature whose cuteness comes with a warning label."}, {"id": 14, "name": "Niffler", "from": "Fantastic Beasts", "emoji": "💰", "div": "Tiny & Beloved", "seed": 3, "stats": "", "fact": "A platypus-looking treasure goblin with a bottomless pouch and an addiction to anything shiny. The Niffler will rob a bank vault, a jewelry store, and your pockets, then look at you with total innocence. The most delightful little thief in the wizarding world."}, {"id": 15, "name": "Baby Groot", "from": "Guardians of the Galaxy", "emoji": "🌱", "div": "Tiny & Beloved", "seed": 4, "stats": "", "fact": "A walking, dancing twig who can only say his own name and somehow conveys an entire emotional range with it. Baby Groot regrows from a single splinter and steals every scene he's in by being the most precious thing in a movie full of weirdos. I am Groot."}, {"id": 16, "name": "Aslan", "from": "The Chronicles of Narnia", "emoji": "🦁", "div": "Narnia & Middle-earth", "seed": 1, "stats": "", "fact": "A great lion who sacrifices himself and comes back stronger, whose roar can change the seasons. Aslan isn't just a creature — he's the soul of an entire world, gentle as a house cat and dangerous as a god. The deepest, most powerful presence in the whole bracket."}, {"id": 17, "name": "Balrog", "from": "The Lord of the Rings", "emoji": "👹", "div": "Narnia & Middle-earth", "seed": 2, "stats": "", "fact": "A demon of shadow and flame so terrible that a wizard had to die to stop it. You shall not pass — the Balrog is the creature that earned the single most quoted stand in fantasy film, a wall of fire on a crumbling bridge. Nothing here is scarier to face head-on."}, {"id": 18, "name": "Treebeard", "from": "The Lord of the Rings", "emoji": "🌳", "div": "Narnia & Middle-earth", "seed": 3, "stats": "", "fact": "An Ent — a tree that walks, talks very slowly, and remembers everything since the world was young. Treebeard is the oldest living thing in Middle-earth, and when the forest finally decides to fight, he's the reason an entire fortress falls. Patience as a superpower."}, {"id": 19, "name": "Reepicheep", "from": "The Chronicles of Narnia", "emoji": "🐭", "div": "Narnia & Middle-earth", "seed": 4, "stats": "", "fact": "A talking mouse with a tiny sword and the biggest sense of honor in Narnia, who'd duel a creature ten times his size without blinking. Reepicheep proves courage has nothing to do with size — the bravest heart in the world can fit in a mouse. A pint-sized #4 with no fear."}, {"id": 20, "name": "Dementor", "from": "Harry Potter", "emoji": "💀", "div": "Giant & Terrifying", "seed": 1, "stats": "", "fact": "A cloaked wraith that floats toward you and sucks every happy memory out of your body, leaving only your worst ones. Dementors don't bite or claw — they drain hope itself, which is so much worse. The scariest thing about them is that you can't fight them with strength, only joy."}, {"id": 21, "name": "Shelob", "from": "The Lord of the Rings", "emoji": "🕷", "div": "Giant & Terrifying", "seed": 2, "stats": "", "fact": "An ancient spider the size of a house, lurking in a black tunnel, who wraps her prey in silk to eat later. Shelob is the reason an entire generation can't look at cobwebs the same way — the creature that nearly ends the whole quest in the dark. Pure crawling dread."}, {"id": 22, "name": "Aragog", "from": "Harry Potter", "emoji": "🕸", "div": "Giant & Terrifying", "seed": 3, "stats": "", "fact": "A car-sized talking spider with a nest full of equally large children, all of whom are very hungry. Aragog is friendly to exactly one person and considers everyone else dinner, which makes the trip into his forest one of the most stressful scenes in the series. Follow the spiders — don't."}, {"id": 23, "name": "Cave Troll", "from": "The Lord of the Rings", "emoji": "🪨", "div": "Giant & Terrifying", "seed": 4, "stats": "", "fact": "A lumbering mountain of muscle swinging a hammer big enough to flatten a room, too dumb to reason with and too strong to ignore. The Cave Troll is the brute-force nightmare — the thing that turns a quiet tomb into a fight for your life in seconds. A bruising #4."}, {"id": 24, "name": "Yoshi", "from": "Super Mario", "emoji": "🥚", "div": "Mounts & Companions", "seed": 1, "stats": "", "fact": "A friendly dinosaur who lets you ride on his back, eats enemies with a flick of his tongue, and flutter-jumps you across gaps you'd never clear alone. Yoshi is the best mount in gaming — the loyal steed who'll famously sacrifice himself to save you. The goodest dino."}, {"id": 25, "name": "Appa", "from": "Avatar: The Last Airbender", "emoji": "🦬", "div": "Mounts & Companions", "seed": 2, "stats": "", "fact": "A six-legged flying bison the size of a bus, gentle as a giant puppy, who carries an entire team across the world. Appa is the heart of the group — the creature whose kidnapping is so upsetting it powers a whole arc. Yip yip. The coziest way to fly."}, {"id": 26, "name": "Catbus", "from": "My Neighbor Totoro", "emoji": "🚌", "div": "Mounts & Companions", "seed": 3, "stats": "", "fact": "A grinning cat the size of a bus, with glowing eyes for headlights and a dozen legs that run across the treetops. The Catbus is pure dream-logic made adorable — a creature that only makes sense to a child, which is exactly why kids adore it. Destination glows on its forehead."}, {"id": 27, "name": "Hedwig", "from": "Harry Potter", "emoji": "🦉", "div": "Mounts & Companions", "seed": 4, "stats": "", "fact": "A snowy owl who delivers mail across the country, judges Harry's choices, and is the first real friend he ever owns. Hedwig is the quiet companion of the whole series — and the moment she's gone is the moment everyone realizes the war just got real. A beloved #4."}, {"id": 28, "name": "Unicorn", "from": "Mythology", "emoji": "🦄", "div": "Enchanted Beings", "seed": 1, "stats": "", "fact": "A pure white horse with a single spiral horn whose blood can keep you alive and whose presence means innocence itself. The unicorn is the most universally beloved magical creature on Earth — the one every kid drew in the margins, the symbol of magic in its gentlest form."}, {"id": 29, "name": "Centaur", "from": "Mythology / Narnia", "emoji": "🏹", "div": "Enchanted Beings", "seed": 2, "stats": "", "fact": "Half human, half horse, wise as a scholar and deadly with a bow. Centaurs read the stars, guard the forests, and answer to no one — the proud, untamed intellectuals of the magical world. Cross one at your peril; befriend one and you've got a galloping library."}, {"id": 30, "name": "Everest", "from": "Abominable", "emoji": "🏔", "div": "Enchanted Beings", "seed": 3, "stats": "", "fact": "A young yeti with magical, nature-bending powers and a hum that makes blueberries grow to the size of houses. Everest just wants to get home to the top of the world, and the kids who help him discover the gentlest giant imaginable. A fuzzy, recent surprise."}, {"id": 31, "name": "Haku", "from": "Spirited Away", "emoji": "💧", "div": "Enchanted Beings", "seed": 4, "stats": "", "fact": "A river spirit who takes the form of a sleek white dragon, guiding a lost girl through a dangerous spirit world. Haku is grace and mystery in dragon form — a creature whose true name, once remembered, sets him free. One of the most beautiful dragons ever drawn. A stacked-division #4."}];
+const R1 = [[0, 3], [1, 2], [4, 7], [5, 6], [8, 11], [9, 10], [12, 15], [13, 14], [16, 19], [17, 18], [20, 23], [21, 22], [24, 27], [25, 26], [28, 31], [29, 30]];
+const COUNTS = [16, 8, 4, 2, 1];
+const NR = COUNTS.length, LASTR = NR-1, TOTAL = 31;
+const RLABELS = ["Round of 32", "Round of 16", "Quarterfinal", "Semifinal", "The Final"];
+const COLLABELS = ["R32", "R16", "QF", "SF", "Final"];
+const HEIGHTS = [22, 30, 44, 70, 100];
+const GAPS = [2, 5, 12, 28, 0];
+const DIVNAMES = ["Wizarding World", "Dragons", "Greek Myth", "Tiny & Beloved", "Narnia & Middle-earth", "Giant & Terrifying", "Mounts & Companions", "Enchanted Beings"];
+const ASK_ROOM = ["Which one would you actually want as a pet?", "Coolest vs. most powerful — same answer?", "Which creature would protect you, and which would eat you?", "Childhood favorite or genuine best?", "Which franchise got robbed here?"];
+let results = COUNTS.map(n=>Array(n).fill(null));
+let currentVote=null, selected=null, locked=false, askPrompt='';
+
+function getC(r,mi,slot){
+  if(r===0){const idx=R1[mi][slot];return ALL[idx];}
+  const prevMi=mi*2+slot, prevW=results[r-1][prevMi];
+  if(prevW===null)return null;
+  return ALL.find(c=>c.id===prevW);
+}
+function getCurrentRound(){for(let r=0;r<NR;r++){for(let mi=0;mi<COUNTS[r];mi++){if(results[r][mi]===null){const a=getC(r,mi,0),b=getC(r,mi,1);if(a&&b)return r;}}}return LASTR;}
+function getNextActive(){const cr=getCurrentRound();for(let mi=0;mi<COUNTS[cr];mi++){if(results[cr][mi]===null){const a=getC(cr,mi,0),b=getC(cr,mi,1);if(a&&b)return{round:cr,mi};}}return null;}
+function totalVotes(){return results.flat().filter(v=>v!==null).length;}
+function fakeA(a,b){return Math.min(86,Math.max(20,50+(b.id-a.id)%17+(a.id%4)*2));}
+
+function render(){
+  const done=results[LASTR][0]!==null;
+  if(done){const w=ALL.find(c=>c.id===results[LASTR][0]);renderChampion(w);return;}
+  if(currentVote!==null){renderVote();return;}
+  renderBracket();
+}
+
+function renderBracket(){
+  document.getElementById('back-btn').style.display='none';
+  const cr=getCurrentRound(),next=getNextActive();
+  let html='<div class="core-q">Which magical creature would you want by your side?</div>';
+  html+='<div class="bracket-cols">';
+  for(let r=0;r<NR;r++){
+    const count=COUNTS[r],maxH=HEIGHTS[r],gap=GAPS[r];
+    html+='<div class="bracket-col"><div class="col-label" style="color:'+(r===cr?'#e8354a':'#2e2040')+'">'+COLLABELS[r]+'</div><div class="col-matches" style="gap:'+gap+'px">';
+    for(let mi=0;mi<count;mi++){
+      const a=getC(r,mi,0),b=getC(r,mi,1),winner=results[r][mi];
+      const active=r===cr&&winner===null&&a&&b,done=winner!==null;
+      const cls=active?'active':done?'done':'empty';
+      const onclick=(active||done)?'onclick="startVote('+r+','+mi+')"':'';
+      html+='<div class="match-cell '+cls+'" style="max-height:'+maxH+'px;'+(!active&&!done?'border:1px solid #14101c':'')+'" '+onclick+'>';
+      [a,b].forEach((c,si)=>{
+        if(!c){html+='<div class="tbd">&mdash;</div>';return;}
+        const isW=winner===c.id,isL=done&&!isW;
+        const nm=c.name.split(' ').slice(0,r===0?2:3).join(' ');
+        html+=(si===1?'<hr class="match-divider">':'')+'<div class="match-row '+(isW?'winner':isL?'loser':'')+'"><span class="em">'+c.emoji+'</span><span class="nm">'+nm+'</span></div>';
+      });
+      html+='</div>';
+    }
+    html+='</div></div>';
+  }
+  html+='</div>';
+  if(next)html+='<div style="padding:14px 16px 0"><button class="vote-btn" onclick="startVote('+next.round+','+next.mi+')">Vote Next Matchup &rarr;</button><div class="vote-hint">Tap any highlighted match to vote</div></div>';
+  document.getElementById('main').innerHTML=html;
+}
+
+function startVote(round,mi){currentVote={round,mi};selected=null;locked=false;const w=results[round][mi];if(w!==null){const a=getC(round,mi,0);selected=(a&&a.id===w)?'a':'b';}render();}
+
+function renderVote(){
+  document.getElementById('back-btn').style.display='block';
+  const o=currentVote,round=o.round,mi=o.mi,a=getC(round,mi,0),b=getC(round,mi,1);
+  if(!a||!b){showBracket();return;}
+  const pA=fakeA(a,b),pB=100-pA,majority=selected?(selected==='a'?pA:pB)>=50:false;
+  const hint=!selected?"— Which creature wins? —":locked?"— Verdict locked! —":"— Tap to switch. Button to commit. —";
+  let html='<div id="vote-screen"><div class="vote-header"><div class="round-label">'+RLABELS[round]+'</div><div class="vote-hint-text">'+hint+'</div></div>';
+  [{side:'a',c:a,pct:pA},{side:'b',c:b,pct:pB}].forEach(function(o){
+    const side=o.side,c=o.c,pct=o.pct,isSel=selected===side;
+    html+='<div class="card'+(isSel?' selected':'')+'" onclick="selectCard(\''+side+'\')">';
+    if(locked&&isSel)html+='<div class="pct-bar" style="width:'+pct+'%"></div>';
+    html+='<div class="card-inner"><div class="card-top"><div class="card-emoji">'+c.emoji+'</div><div style="flex:1;min-width:0"><div class="card-meta">'+c.div+' · '+c.from+'</div><div class="card-name">'+c.name+'</div></div>'+(isSel&&!locked?'<div class="card-arrow">◀</div>':'')+'</div>';
+    html+='<div class="card-tag">'+(c.seed===1?'#1 SEED':c.seed===2?'#2 SEED':c.seed===3?'#3 SEED':'#4 SEED')+'</div>';
+    if(c.stats)html+='<div class="card-stats">📊 '+c.stats+'</div>';
+    html+='<div class="card-fact">'+c.fact+'</div>';
+    if(locked&&isSel)html+='<div class="card-pct">'+pct+'%<span>voted this creature</span><span class="check">✓</span></div>';
+    html+='</div></div>';
+  });
+  if(selected&&!locked)html+='<div class="commit-box"><div class="commit-hint">Still deciding? Tap the other card to compare.</div><button class="commit-btn" onclick="commitVote()">Lock In Verdict &rarr;</button></div>';
+  if(locked){
+    html+='<div class="result-box"><div class="'+(majority?'result-majority':'result-minority')+'">'+(majority?'✓ With the majority':'🔥 Against the crowd')+'</div><div class="ask-room" style="margin-top:14px;padding-top:14px;border-top:1px dashed #3a2850"><div style="font-size:9px;letter-spacing:3px;color:#a01828;text-transform:uppercase;margin-bottom:6px">Ask the Room</div><div style="font-size:15px;color:#e8d8f0;font-style:italic;line-height:1.4">'+askPrompt+'</div></div></div><button class="next-btn" onclick="advance()">Vote Next Matchup &rarr;</button>';
+  }
+  html+='</div>';
+  document.getElementById('main').innerHTML=html;
+}
+
+function selectCard(side){if(locked)return;selected=side;renderVote();}
+function commitVote(){
+  if(!selected||locked)return;
+  locked=true;
+  askPrompt=ASK_ROOM[Math.floor(Math.random()*ASK_ROOM.length)];
+  const o=currentVote,round=o.round,mi=o.mi,a=getC(round,mi,0),b=getC(round,mi,1);
+  results[round][mi]=selected==='a'?a.id:b.id;
+  renderVote();
+  document.getElementById('counter').textContent=totalVotes()+'/'+TOTAL;
+}
+function advance(){currentVote=null;locked=false;selected=null;render();}
+function showBracket(){currentVote=null;selected=null;locked=false;render();}
+function renderChampion(c){
+  document.getElementById('back-btn').style.display='none';
+  document.getElementById('main').innerHTML='<div id="champion-screen"><div style="font-size:44px;margin-bottom:6px">🏆</div><div class="champ-emoji">'+c.emoji+'</div><div class="champ-trophy">The Greatest Creature</div><div class="champ-name">'+c.name+'</div><div class="champ-from">'+c.from+'</div><div style="display:inline-block;margin:10px 0 6px;padding:4px 16px;border-radius:20px;background:#e8354a;color:#09080a;font-size:11px;font-weight:700;letter-spacing:1px">YOUR VERDICT</div><div class="champ-fact">'+c.fact+'</div><button class="reset-btn" onclick="resetGame()">Run It Back</button><div style="margin-top:20px"><a href="index.html" style="color:#6a6478;font-size:12px;letter-spacing:2px;text-transform:uppercase;text-decoration:none;font-family:Georgia,serif">← All Brackets</a></div></div>';
+}
+function resetGame(){results=COUNTS.map(n=>Array(n).fill(null));currentVote=null;selected=null;locked=false;render();}
+render();
+
+</script>
+</body>
+</html>
