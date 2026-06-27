@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VERDICT — Superhero Teams</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #09080a; color: #f0eaf8; font-family: Georgia, 'Times New Roman', serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
+  #app { width: 100%; max-width: 560px; min-height: 100vh; display: flex; flex-direction: column; }
+  header { padding: 16px 20px 12px; border-bottom: 1px solid #22182a; display: flex; align-items: center; justify-content: space-between; background: #0e0b14; }
+  .title { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; color: #4a9eff; }
+  .subtitle { font-size: 9px; color: #1a5aaa; letter-spacing: 2px; text-transform: uppercase; margin-top: 2px; }
+  .counter { font-size: 10px; color: #2e2040; background: #14101c; border: 1px solid #22182a; border-radius: 16px; padding: 4px 10px; }
+  .back-btn { background: transparent; border: 1px solid #22182a; border-radius: 8px; padding: 5px 10px; color: #3a2850; font-size: 11px; cursor: pointer; font-family: Georgia, serif; }
+  #main { flex: 1; padding: 14px 0; }
+  .core-q { text-align: center; font-size: 12px; color: #4a9eff; font-style: italic; padding: 4px 20px 0; line-height: 1.4; }
+  .bracket-cols { display: flex; gap: 3px; padding: 0 10px; }
+  .bracket-col { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+  .col-label { font-size: 7px; letter-spacing: 1.5px; text-transform: uppercase; text-align: center; margin-bottom: 5px; }
+  .col-matches { display: flex; flex-direction: column; justify-content: space-around; height: 380px; }
+  .match-cell { border-radius: 5px; overflow: hidden; cursor: default; flex: 1; transition: border-color 0.2s; }
+  .match-cell.active { border: 1px solid #4a9eff !important; background: #14101c !important; cursor: pointer; }
+  .match-cell.done { border: 1px solid #2e1e2a !important; background: #0e0b14 !important; cursor: pointer; }
+  .match-cell.empty { border: 1px solid #14101c; background: #09080a; }
+  .match-row { display: flex; align-items: center; gap: 2px; padding: 2px 3px; transition: opacity 0.3s; }
+  .match-row.loser { opacity: 0.22; }
+  .match-row.winner { background: rgba(74,158,255,0.12); }
+  .match-row .em { font-size: 8px; }
+  .match-row .nm { font-size: 7px; color: #3a2850; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 400; }
+  .match-row.winner .nm { color: #4a9eff; font-weight: 700; }
+  .match-divider { border: none; border-top: 1px solid #1e1428; margin: 0; }
+  .tbd { padding: 2px 3px; font-size: 6px; color: #221830; }
+  .vote-btn { width: 100%; padding: 14px; background: linear-gradient(135deg, #4a9eff, #1a5aaa); border: none; border-radius: 12px; color: #09080a; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; margin-top: 14px; }
+  .vote-hint { font-size: 10px; color: #6a6478; text-align: center; margin-top: 6px; }
+  #vote-screen { padding: 0 16px; animation: fadeUp 0.3s ease; }
+  .vote-header { text-align: center; margin-bottom: 16px; }
+  .round-label { font-size: 10px; letter-spacing: 3px; color: #4a9eff; text-transform: uppercase; margin-bottom: 3px; }
+  .vote-hint-text { font-size: 11px; color: #8a8298; letter-spacing: 1px; }
+  .card { display: block; width: 100%; margin-bottom: 10px; border-radius: 14px; padding: 16px 18px; cursor: pointer; text-align: left; transition: all 0.25s; position: relative; overflow: hidden; border: 2px solid #22182a; background: #0e0b14; }
+  .card.selected { border-color: #4a9eff !important; background: #1a1020 !important; transform: scale(1.01); }
+  .card-inner { position: relative; z-index: 1; }
+  .card-top { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 8px; }
+  .card-emoji { font-size: 34px; margin-top: 2px; flex-shrink: 0; }
+  .card-meta { font-size: 9px; color: #1a5aaa; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 2px; }
+  .card-name { font-size: 18px; font-weight: 700; color: #d8d2e2; line-height: 1.2; margin-bottom: 2px; transition: color 0.2s; }
+  .card.selected .card-name { color: #ffffff; }
+  .card-from { font-size: 10px; color: #8a8298; font-style: italic; transition: color 0.2s; }
+  .card.selected .card-from { color: #8a8298; }
+  .card-tag { display: inline-block; margin-top: 8px; padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 700; background: #22182a; color: #4a9eff; letter-spacing: 1px; }
+  .card.selected .card-tag { background: #4a9eff; color: #09080a; }
+  .card-stats { margin-top: 8px; font-size: 9px; color: #9a8aa0; letter-spacing: 0.5px; }
+  .card.selected .card-stats { color: #9a8aa0; }
+  .card-fact { font-size: 12px; color: #7e7888; line-height: 1.75; transition: color 0.2s; margin-top: 8px; }
+  .card.selected .card-fact { color: #e8e2f0; }
+  .card-arrow { font-size: 16px; color: #4a9eff; margin-left: auto; flex-shrink: 0; }
+  .card-pct { font-size: 20px; font-weight: 700; color: #4a9eff; margin-top: 10px; }
+  .card-pct span { font-size: 12px; font-weight: 400; color: #3a2850; margin-left: 6px; }
+  .card-pct .check { color: #4a9eff; margin-left: 8px; }
+  .pct-bar { position: absolute; top: 0; left: 0; height: 100%; background: rgba(74,158,255,0.06); transition: width 0.9s cubic-bezier(.4,0,.2,1); z-index: 0; }
+  .commit-box { padding: 14px 18px; background: #0e0b14; border: 1px solid #22182a; border-radius: 12px; text-align: center; animation: fadeUp 0.3s ease; }
+  .commit-hint { font-size: 11px; color: #3a2850; margin-bottom: 10px; font-style: italic; }
+  .commit-btn { padding: 12px 32px; background: linear-gradient(135deg, #4a9eff, #1a5aaa); border: none; border-radius: 10px; color: #09080a; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+  .result-box { padding: 16px 18px; background: #0e0b14; border: 1px solid #22182a; border-radius: 12px; text-align: center; margin-top: 2px; animation: fadeUp 0.3s ease; }
+  .result-majority { font-size: 13px; color: #7ec8a0; font-weight: 700; letter-spacing: 1px; }
+  .result-minority { font-size: 13px; color: #1a5aaa; font-weight: 700; letter-spacing: 1px; }
+  .next-btn { width: 100%; margin-top: 14px; padding: 14px; background: linear-gradient(135deg, #4a9eff, #1a5aaa); border: none; border-radius: 12px; color: #09080a; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+  #champion-screen { text-align: center; padding: 36px 24px; animation: fadeUp 0.5s ease; }
+  .champ-emoji { font-size: 76px; margin-bottom: 8px; }
+  .champ-trophy { font-size: 11px; letter-spacing: 4px; color: #4a9eff; text-transform: uppercase; margin-bottom: 8px; }
+  .champ-name { font-size: 26px; font-weight: 700; color: #f0eaf8; margin-bottom: 4px; }
+  .champ-from { font-size: 13px; color: #1a5aaa; font-style: italic; margin-bottom: 4px; }
+  .champ-fact { font-size: 13px; color: #8a7d98; font-style: italic; max-width: 310px; margin: 14px auto 28px; line-height: 1.8; }
+  .reset-btn { padding: 14px 32px; background: linear-gradient(135deg, #4a9eff, #1a5aaa); border: none; border-radius: 12px; color: #09080a; font-size: 14px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  button:active { filter: brightness(0.88); }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div>
+      <a href="index.html" class="title" style="text-decoration:none;cursor:pointer" title="All brackets">VERDICT</a>
+      <div class="subtitle">Which Roster Reigns</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="back-btn" id="back-btn" style="display:none" onclick="showBracket()">← Bracket</button>
+      <div class="counter" id="counter">0/15</div>
+    </div>
+  </header>
+  <div id="main"></div>
+</div>
+<script>
+
+const ALL = [{"id": 0, "name": "The Avengers", "from": "Marvel", "emoji": "🛡", "div": "Marvel", "seed": 1, "stats": "", "fact": "Earth's Mightiest Heroes — a god, a super-soldier, a billionaire in a suit, and a green rage monster who somehow learn to fight as one. The Avengers became the most famous super-team on the planet when the MCU built a decade toward their assembly. The default answer, and hard to beat."}, {"id": 1, "name": "Guardians of the Galaxy", "from": "Marvel", "emoji": "🚀", "div": "Marvel", "seed": 2, "stats": "", "fact": "A talking raccoon, a living tree, a green assassin, and a clueless space cowboy who bicker their way into saving the universe. The Guardians are the funniest, most lovable dysfunctional family in comics. Proof the best team chemistry beats the biggest powers."}, {"id": 2, "name": "X-Men", "from": "Marvel", "emoji": "❌", "div": "Marvel", "seed": 3, "stats": "", "fact": "Mutants feared and hated by the world they protect, led by a telepath in a wheelchair and a man with claws who won't die. The X-Men are arguably the greatest team in comic history, carrying decades of stories about prejudice and found family. Seeded #3 here is a genuine crime."}, {"id": 3, "name": "Fantastic Four", "from": "Marvel", "emoji": "🔥", "div": "Marvel", "seed": 4, "stats": "", "fact": "Marvel's first family — a stretchy genius, an invisible woman, a human torch, and a rocky strongman who are scientists first and heroes second. The Fantastic Four launched the entire Marvel universe in 1961. A foundational #4 that started it all."}, {"id": 4, "name": "Justice League", "from": "DC", "emoji": "⚡", "div": "DC", "seed": 1, "stats": "", "fact": "The pantheon — Superman, Batman, Wonder Woman, the Flash, and more, the most powerful roster ever assembled. The Justice League is DC's answer to a god-tier team where nearly every member could headline alone. Raw power unmatched in this bracket."}, {"id": 5, "name": "Teen Titans", "from": "DC", "emoji": "🗼", "div": "DC", "seed": 2, "stats": "", "fact": "The sidekicks step out of the shadows — Robin, Starfire, Cyborg, Raven, and Beast Boy, a team that's equal parts found family and chaos. The Teen Titans, especially in animation, became a beloved generation-defining crew. Heart and humor in equal measure."}, {"id": 6, "name": "Suicide Squad", "from": "DC", "emoji": "💀", "div": "DC", "seed": 3, "stats": "", "fact": "Villains drafted for missions so dangerous they're expected to die, with bombs in their necks to keep them honest. Task Force X is the anti-team — the bad guys forced to be the good guys. The most unpredictable roster on the board."}, {"id": 7, "name": "Watchmen", "from": "DC", "emoji": "⌚", "div": "DC", "seed": 4, "stats": "", "fact": "Broken, morally gray vigilantes in a world where superheroes ruined more than they saved. Watchmen deconstructed the entire idea of the super-team and is considered one of the greatest comics ever written. A heavy, brilliant #4."}, {"id": 8, "name": "The Incredibles", "from": "Pixar", "emoji": "🦸", "div": "Animated & Family", "seed": 1, "stats": "", "fact": "A super-family forced back into action who discover their real power is teamwork. The Incredibles isn't just a great animated team — it's one of the best superhero stories ever filmed, period. A legitimate contender to win this whole thing."}, {"id": 9, "name": "Big Hero 6", "from": "Marvel / Disney", "emoji": "🤖", "div": "Animated & Family", "seed": 2, "stats": "", "fact": "A boy genius, a healthcare robot, and a crew of nerdy friends turn their inventions into a superhero team. Big Hero 6 blends Marvel roots with Disney heart and gave us Baymax. A lovable, underrated #2."}, {"id": 10, "name": "Ninja Turtles", "from": "TMNT", "emoji": "🐢", "div": "Animated & Family", "seed": 3, "stats": "", "fact": "Four pizza-loving mutant turtles trained in ninjutsu by a rat sensei in the sewers of New York. The TMNT are the ultimate found-family team and a merchandising empire that's never died. Cowabunga."}, {"id": 11, "name": "Power Rangers", "from": "Power Rangers", "emoji": "🦖", "div": "Animated & Family", "seed": 4, "stats": "", "fact": "Teenagers with attitude who morph into color-coded heroes and pilot giant robot dinosaurs. The Power Rangers turned 'combine into a giant Megazord' into every kid's dream. A nostalgic #4 with serious staying power."}, {"id": 12, "name": "Ghostbusters", "from": "Ghostbusters", "emoji": "👻", "div": "Wild Cards", "seed": 1, "stats": "", "fact": "Four scientists with proton packs who go into business busting ghosts in New York City. The Ghostbusters aren't superheroes exactly — they're better, a team of regular nerds who built their own powers. Who you gonna call?"}, {"id": 13, "name": "Sailor Guardians", "from": "Sailor Moon", "emoji": "🌙", "div": "Wild Cards", "seed": 2, "stats": "", "fact": "A team of magical schoolgirls who transform to defend the world, led by a crybaby with a heart of gold. The Sailor Guardians basically created the magical-girl team template for the world. Powerful, iconic, and seeded to surprise."}, {"id": 14, "name": "Men in Black", "from": "Men in Black", "emoji": "🕶", "div": "Wild Cards", "seed": 3, "stats": "", "fact": "A secret agency in black suits policing alien life on Earth, armed with neuralyzers and very big guns. The MIB are the coolest two-person team in the bracket — deadpan, stylish, and quietly saving the planet. The last suit you'll ever wear."}, {"id": 15, "name": "The Defenders", "from": "Marvel", "emoji": "🥋", "div": "Wild Cards", "seed": 4, "stats": "", "fact": "Street-level heroes — a blind lawyer, a bulletproof man, a private eye, and an immortal fist — who team up to protect one city block at a time. The Defenders are the grounded, gritty counterweight to the cosmic teams. A scrappy #4."}];
+const R1 = [[0, 3], [1, 2], [4, 7], [5, 6], [8, 11], [9, 10], [12, 15], [13, 14]];
+const COUNTS = [8, 4, 2, 1];
+const NR = COUNTS.length, LASTR = NR-1, TOTAL = 15;
+const RLABELS = ["Round of 16", "Quarterfinal", "Semifinal", "The Final"];
+const COLLABELS = ["R16", "QF", "SF", "Final"];
+const HEIGHTS = [30, 46, 74, 120];
+const GAPS = [6, 18, 44, 0];
+const DIVNAMES = ["Marvel", "DC", "Animated & Family", "Wild Cards"];
+const ASK_ROOM = ["Which team would actually win in a fight?", "Best roster vs. best chemistry — same team?", "Which team would you want to join?", "Comics purist pick or movie pick?", "Which lineup got robbed by the seeding?"];
+let results = COUNTS.map(n=>Array(n).fill(null));
+let currentVote=null, selected=null, locked=false, askPrompt='';
+
+function getC(r,mi,slot){
+  if(r===0){const idx=R1[mi][slot];return ALL[idx];}
+  const prevMi=mi*2+slot, prevW=results[r-1][prevMi];
+  if(prevW===null)return null;
+  return ALL.find(c=>c.id===prevW);
+}
+function getCurrentRound(){for(let r=0;r<NR;r++){for(let mi=0;mi<COUNTS[r];mi++){if(results[r][mi]===null){const a=getC(r,mi,0),b=getC(r,mi,1);if(a&&b)return r;}}}return LASTR;}
+function getNextActive(){const cr=getCurrentRound();for(let mi=0;mi<COUNTS[cr];mi++){if(results[cr][mi]===null){const a=getC(cr,mi,0),b=getC(cr,mi,1);if(a&&b)return{round:cr,mi};}}return null;}
+function totalVotes(){return results.flat().filter(v=>v!==null).length;}
+function fakeA(a,b){return Math.min(86,Math.max(20,50+(b.id-a.id)%17+(a.id%4)*2));}
+
+function render(){
+  const done=results[LASTR][0]!==null;
+  if(done){const w=ALL.find(c=>c.id===results[LASTR][0]);renderChampion(w);return;}
+  if(currentVote!==null){renderVote();return;}
+  renderBracket();
+}
+
+function renderBracket(){
+  document.getElementById('back-btn').style.display='none';
+  const cr=getCurrentRound(),next=getNextActive();
+  let html='<div class="core-q">Which super-team is the greatest?</div>';
+  html+='<div class="bracket-cols">';
+  for(let r=0;r<NR;r++){
+    const count=COUNTS[r],maxH=HEIGHTS[r],gap=GAPS[r];
+    html+='<div class="bracket-col"><div class="col-label" style="color:'+(r===cr?'#4a9eff':'#2e2040')+'">'+COLLABELS[r]+'</div><div class="col-matches" style="gap:'+gap+'px">';
+    for(let mi=0;mi<count;mi++){
+      const a=getC(r,mi,0),b=getC(r,mi,1),winner=results[r][mi];
+      const active=r===cr&&winner===null&&a&&b,done=winner!==null;
+      const cls=active?'active':done?'done':'empty';
+      const onclick=(active||done)?'onclick="startVote('+r+','+mi+')"':'';
+      html+='<div class="match-cell '+cls+'" style="max-height:'+maxH+'px;'+(!active&&!done?'border:1px solid #14101c':'')+'" '+onclick+'>';
+      [a,b].forEach((c,si)=>{
+        if(!c){html+='<div class="tbd">&mdash;</div>';return;}
+        const isW=winner===c.id,isL=done&&!isW;
+        const nm=c.name.split(' ').slice(0,r===0?2:3).join(' ');
+        html+=(si===1?'<hr class="match-divider">':'')+'<div class="match-row '+(isW?'winner':isL?'loser':'')+'"><span class="em">'+c.emoji+'</span><span class="nm">'+nm+'</span></div>';
+      });
+      html+='</div>';
+    }
+    html+='</div></div>';
+  }
+  html+='</div>';
+  if(next)html+='<div style="padding:14px 16px 0"><button class="vote-btn" onclick="startVote('+next.round+','+next.mi+')">Vote Next Matchup &rarr;</button><div class="vote-hint">Tap any highlighted match to vote</div></div>';
+  document.getElementById('main').innerHTML=html;
+}
+
+function startVote(round,mi){currentVote={round,mi};selected=null;locked=false;const w=results[round][mi];if(w!==null){const a=getC(round,mi,0);selected=(a&&a.id===w)?'a':'b';}render();}
+
+function renderVote(){
+  document.getElementById('back-btn').style.display='block';
+  const o=currentVote,round=o.round,mi=o.mi,a=getC(round,mi,0),b=getC(round,mi,1);
+  if(!a||!b){showBracket();return;}
+  const pA=fakeA(a,b),pB=100-pA,majority=selected?(selected==='a'?pA:pB)>=50:false;
+  const hint=!selected?"— Which team wins? —":locked?"— Verdict locked! —":"— Tap to switch. Button to commit. —";
+  let html='<div id="vote-screen"><div class="vote-header"><div class="round-label">'+RLABELS[round]+'</div><div class="vote-hint-text">'+hint+'</div></div>';
+  [{side:'a',c:a,pct:pA},{side:'b',c:b,pct:pB}].forEach(function(o){
+    const side=o.side,c=o.c,pct=o.pct,isSel=selected===side;
+    html+='<div class="card'+(isSel?' selected':'')+'" onclick="selectCard(\''+side+'\')">';
+    if(locked&&isSel)html+='<div class="pct-bar" style="width:'+pct+'%"></div>';
+    html+='<div class="card-inner"><div class="card-top"><div class="card-emoji">'+c.emoji+'</div><div style="flex:1;min-width:0"><div class="card-meta">'+c.div+' · '+c.from+'</div><div class="card-name">'+c.name+'</div></div>'+(isSel&&!locked?'<div class="card-arrow">◀</div>':'')+'</div>';
+    html+='<div class="card-tag">'+(c.seed===1?'#1 SEED':c.seed===2?'#2 SEED':c.seed===3?'#3 SEED':'#4 SEED')+'</div>';
+    if(c.stats)html+='<div class="card-stats">📊 '+c.stats+'</div>';
+    html+='<div class="card-fact">'+c.fact+'</div>';
+    if(locked&&isSel)html+='<div class="card-pct">'+pct+'%<span>voted this team</span><span class="check">✓</span></div>';
+    html+='</div></div>';
+  });
+  if(selected&&!locked)html+='<div class="commit-box"><div class="commit-hint">Still deciding? Tap the other card to compare.</div><button class="commit-btn" onclick="commitVote()">Lock In Verdict &rarr;</button></div>';
+  if(locked){
+    html+='<div class="result-box"><div class="'+(majority?'result-majority':'result-minority')+'">'+(majority?'✓ With the majority':'🔥 Against the crowd')+'</div><div class="ask-room" style="margin-top:14px;padding-top:14px;border-top:1px dashed #3a2850"><div style="font-size:9px;letter-spacing:3px;color:#1a5aaa;text-transform:uppercase;margin-bottom:6px">Ask the Room</div><div style="font-size:15px;color:#e8d8f0;font-style:italic;line-height:1.4">'+askPrompt+'</div></div></div><button class="next-btn" onclick="advance()">Vote Next Matchup &rarr;</button>';
+  }
+  html+='</div>';
+  document.getElementById('main').innerHTML=html;
+}
+
+function selectCard(side){if(locked)return;selected=side;renderVote();}
+function commitVote(){
+  if(!selected||locked)return;
+  locked=true;
+  askPrompt=ASK_ROOM[Math.floor(Math.random()*ASK_ROOM.length)];
+  const o=currentVote,round=o.round,mi=o.mi,a=getC(round,mi,0),b=getC(round,mi,1);
+  results[round][mi]=selected==='a'?a.id:b.id;
+  renderVote();
+  document.getElementById('counter').textContent=totalVotes()+'/'+TOTAL;
+}
+function advance(){currentVote=null;locked=false;selected=null;render();}
+function showBracket(){currentVote=null;selected=null;locked=false;render();}
+function renderChampion(c){
+  document.getElementById('back-btn').style.display='none';
+  document.getElementById('main').innerHTML='<div id="champion-screen"><div style="font-size:44px;margin-bottom:6px">🏆</div><div class="champ-emoji">'+c.emoji+'</div><div class="champ-trophy">The Ultimate Team</div><div class="champ-name">'+c.name+'</div><div class="champ-from">'+c.from+'</div><div style="display:inline-block;margin:10px 0 6px;padding:4px 16px;border-radius:20px;background:#4a9eff;color:#09080a;font-size:11px;font-weight:700;letter-spacing:1px">YOUR VERDICT</div><div class="champ-fact">'+c.fact+'</div><button class="reset-btn" onclick="resetGame()">Run It Back</button><div style="margin-top:20px"><a href="index.html" style="color:#6a6478;font-size:12px;letter-spacing:2px;text-transform:uppercase;text-decoration:none;font-family:Georgia,serif">← All Brackets</a></div></div>';
+}
+function resetGame(){results=COUNTS.map(n=>Array(n).fill(null));currentVote=null;selected=null;locked=false;render();}
+render();
+
+</script>
+</body>
+</html>

@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VERDICT — Holiday Movies</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #09080a; color: #f0eaf8; font-family: Georgia, 'Times New Roman', serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
+  #app { width: 100%; max-width: 560px; min-height: 100vh; display: flex; flex-direction: column; }
+  header { padding: 16px 20px 12px; border-bottom: 1px solid #22182a; display: flex; align-items: center; justify-content: space-between; background: #0e0b14; }
+  .title { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; color: #e8354a; }
+  .subtitle { font-size: 9px; color: #a01828; letter-spacing: 2px; text-transform: uppercase; margin-top: 2px; }
+  .counter { font-size: 10px; color: #2e2040; background: #14101c; border: 1px solid #22182a; border-radius: 16px; padding: 4px 10px; }
+  .back-btn { background: transparent; border: 1px solid #22182a; border-radius: 8px; padding: 5px 10px; color: #3a2850; font-size: 11px; cursor: pointer; font-family: Georgia, serif; }
+  #main { flex: 1; padding: 14px 0; }
+  .core-q { text-align: center; font-size: 12px; color: #e8354a; font-style: italic; padding: 4px 20px 0; line-height: 1.4; }
+  .bracket-cols { display: flex; gap: 3px; padding: 0 10px; }
+  .bracket-col { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+  .col-label { font-size: 7px; letter-spacing: 1.5px; text-transform: uppercase; text-align: center; margin-bottom: 5px; }
+  .col-matches { display: flex; flex-direction: column; justify-content: space-around; height: 380px; }
+  .match-cell { border-radius: 5px; overflow: hidden; cursor: default; flex: 1; transition: border-color 0.2s; }
+  .match-cell.active { border: 1px solid #e8354a !important; background: #14101c !important; cursor: pointer; }
+  .match-cell.done { border: 1px solid #2e1e2a !important; background: #0e0b14 !important; cursor: pointer; }
+  .match-cell.empty { border: 1px solid #14101c; background: #09080a; }
+  .match-row { display: flex; align-items: center; gap: 2px; padding: 2px 3px; transition: opacity 0.3s; }
+  .match-row.loser { opacity: 0.22; }
+  .match-row.winner { background: rgba(232,53,74,0.12); }
+  .match-row .em { font-size: 8px; }
+  .match-row .nm { font-size: 7px; color: #3a2850; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 400; }
+  .match-row.winner .nm { color: #e8354a; font-weight: 700; }
+  .match-divider { border: none; border-top: 1px solid #1e1428; margin: 0; }
+  .tbd { padding: 2px 3px; font-size: 6px; color: #221830; }
+  .vote-btn { width: 100%; padding: 14px; background: linear-gradient(135deg, #e8354a, #a01828); border: none; border-radius: 12px; color: #09080a; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; margin-top: 14px; }
+  .vote-hint { font-size: 10px; color: #6a6478; text-align: center; margin-top: 6px; }
+  #vote-screen { padding: 0 16px; animation: fadeUp 0.3s ease; }
+  .vote-header { text-align: center; margin-bottom: 16px; }
+  .round-label { font-size: 10px; letter-spacing: 3px; color: #e8354a; text-transform: uppercase; margin-bottom: 3px; }
+  .vote-hint-text { font-size: 11px; color: #8a8298; letter-spacing: 1px; }
+  .card { display: block; width: 100%; margin-bottom: 10px; border-radius: 14px; padding: 16px 18px; cursor: pointer; text-align: left; transition: all 0.25s; position: relative; overflow: hidden; border: 2px solid #22182a; background: #0e0b14; }
+  .card.selected { border-color: #e8354a !important; background: #1a1020 !important; transform: scale(1.01); }
+  .card-inner { position: relative; z-index: 1; }
+  .card-top { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 8px; }
+  .card-emoji { font-size: 34px; margin-top: 2px; flex-shrink: 0; }
+  .card-meta { font-size: 9px; color: #a01828; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 2px; }
+  .card-name { font-size: 18px; font-weight: 700; color: #d8d2e2; line-height: 1.2; margin-bottom: 2px; transition: color 0.2s; }
+  .card.selected .card-name { color: #ffffff; }
+  .card-from { font-size: 10px; color: #8a8298; font-style: italic; transition: color 0.2s; }
+  .card.selected .card-from { color: #8a8298; }
+  .card-tag { display: inline-block; margin-top: 8px; padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 700; background: #22182a; color: #e8354a; letter-spacing: 1px; }
+  .card.selected .card-tag { background: #e8354a; color: #09080a; }
+  .card-stats { margin-top: 8px; font-size: 9px; color: #9a8aa0; letter-spacing: 0.5px; }
+  .card.selected .card-stats { color: #9a8aa0; }
+  .card-fact { font-size: 12px; color: #7e7888; line-height: 1.75; transition: color 0.2s; margin-top: 8px; }
+  .card.selected .card-fact { color: #e8e2f0; }
+  .card-arrow { font-size: 16px; color: #e8354a; margin-left: auto; flex-shrink: 0; }
+  .card-pct { font-size: 20px; font-weight: 700; color: #e8354a; margin-top: 10px; }
+  .card-pct span { font-size: 12px; font-weight: 400; color: #3a2850; margin-left: 6px; }
+  .card-pct .check { color: #e8354a; margin-left: 8px; }
+  .pct-bar { position: absolute; top: 0; left: 0; height: 100%; background: rgba(232,53,74,0.06); transition: width 0.9s cubic-bezier(.4,0,.2,1); z-index: 0; }
+  .commit-box { padding: 14px 18px; background: #0e0b14; border: 1px solid #22182a; border-radius: 12px; text-align: center; animation: fadeUp 0.3s ease; }
+  .commit-hint { font-size: 11px; color: #3a2850; margin-bottom: 10px; font-style: italic; }
+  .commit-btn { padding: 12px 32px; background: linear-gradient(135deg, #e8354a, #a01828); border: none; border-radius: 10px; color: #09080a; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+  .result-box { padding: 16px 18px; background: #0e0b14; border: 1px solid #22182a; border-radius: 12px; text-align: center; margin-top: 2px; animation: fadeUp 0.3s ease; }
+  .result-majority { font-size: 13px; color: #7ec8a0; font-weight: 700; letter-spacing: 1px; }
+  .result-minority { font-size: 13px; color: #a01828; font-weight: 700; letter-spacing: 1px; }
+  .next-btn { width: 100%; margin-top: 14px; padding: 14px; background: linear-gradient(135deg, #e8354a, #a01828); border: none; border-radius: 12px; color: #09080a; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+  #champion-screen { text-align: center; padding: 36px 24px; animation: fadeUp 0.5s ease; }
+  .champ-emoji { font-size: 76px; margin-bottom: 8px; }
+  .champ-trophy { font-size: 11px; letter-spacing: 4px; color: #e8354a; text-transform: uppercase; margin-bottom: 8px; }
+  .champ-name { font-size: 26px; font-weight: 700; color: #f0eaf8; margin-bottom: 4px; }
+  .champ-from { font-size: 13px; color: #a01828; font-style: italic; margin-bottom: 4px; }
+  .champ-fact { font-size: 13px; color: #8a7d98; font-style: italic; max-width: 310px; margin: 14px auto 28px; line-height: 1.8; }
+  .reset-btn { padding: 14px 32px; background: linear-gradient(135deg, #e8354a, #a01828); border: none; border-radius: 12px; color: #09080a; font-size: 14px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  button:active { filter: brightness(0.88); }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div>
+      <a href="index.html" class="title" style="text-decoration:none;cursor:pointer" title="All brackets">VERDICT</a>
+      <div class="subtitle">The Greatest Of The Season</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="back-btn" id="back-btn" style="display:none" onclick="showBracket()">← Bracket</button>
+      <div class="counter" id="counter">0/31</div>
+    </div>
+  </header>
+  <div id="main"></div>
+</div>
+<script>
+
+const ALL = [{"id": 0, "name": "Home Alone", "from": "1990", "emoji": "🏠", "div": "Heavy Hitters", "seed": 1, "stats": "", "fact": "An eight-year-old defends his house from two burglars with paint cans, BB guns, and a blowtorch. Home Alone is the highest-grossing holiday comedy of all time and a December staple in millions of homes. Keep the change, ya filthy animal."}, {"id": 1, "name": "Elf", "from": "2003", "emoji": "🎄", "div": "Heavy Hitters", "seed": 2, "stats": "", "fact": "A human raised by elves travels to New York to find his dad, treating the whole world with toddler-level wonder. Elf is the rare modern Christmas movie that became an instant perennial classic on pure sweetness and Will Ferrell. Buddy's joy is contagious."}, {"id": 2, "name": "A Christmas Story", "from": "1983", "emoji": "🕶", "div": "Heavy Hitters", "seed": 3, "stats": "", "fact": "A kid's single-minded quest for a BB gun, narrated with adult hindsight, in 1940s Indiana. A Christmas Story runs on a 24-hour loop every December for a reason — it's the most quotable holiday movie ever. You'll shoot your eye out."}, {"id": 3, "name": "The Polar Express", "from": "2004", "emoji": "🚆", "div": "Heavy Hitters", "seed": 4, "stats": "", "fact": "A doubting boy boards a magical train to the North Pole on Christmas Eve. The Polar Express pioneered motion-capture animation and became a beloved (if slightly eerie) modern classic about belief. A big-hearted #4."}, {"id": 4, "name": "The Nightmare Before Christmas", "from": "1993", "emoji": "🎃", "div": "Animated Classics", "seed": 1, "stats": "", "fact": "The Pumpkin King of Halloween Town discovers Christmas and decides to take it over. Nightmare is the ultimate two-holiday movie, a stop-motion masterpiece people fight about all year. Is it Halloween or Christmas? Yes."}, {"id": 5, "name": "How the Grinch Stole Christmas", "from": "1966", "emoji": "💚", "div": "Animated Classics", "seed": 2, "stats": "", "fact": "A green grouch tries to steal Christmas from the relentlessly cheerful Whos and learns it can't be stopped. The original animated Grinch is 26 perfect minutes and the definitive version for many. His heart grows three sizes."}, {"id": 6, "name": "Rudolph the Red-Nosed Reindeer", "from": "1964", "emoji": "🦌", "div": "Animated Classics", "seed": 3, "stats": "", "fact": "A misfit reindeer's glowing nose goes from shameful to heroic on the foggiest Christmas Eve ever. Rudolph is the oldest and most beloved holiday stop-motion special on TV. An Island of Misfit Toys and all."}, {"id": 7, "name": "Frosty the Snowman", "from": "1969", "emoji": "⛄", "div": "Animated Classics", "seed": 4, "stats": "", "fact": "A magic hat brings a snowman to life for one glorious, melting day. Frosty is a simple, warm staple that's aired every December for over fifty years. Happy birthday! A cozy #4."}, {"id": 8, "name": "The Santa Clause", "from": "1994", "emoji": "🎅", "div": "Santa & Magic", "seed": 1, "stats": "", "fact": "A regular dad accidentally causes Santa to fall off his roof and is magically contractually obligated to replace him. The Santa Clause is the definitive 90s Santa-origin comedy and spawned a whole franchise. A holiday-magic heavyweight."}, {"id": 9, "name": "Miracle on 34th Street", "from": "1947", "emoji": "🏬", "div": "Santa & Magic", "seed": 2, "stats": "", "fact": "A department-store Santa claims to be the real thing and has to prove it in court. Miracle on 34th Street is the classic that asks you to believe, and generations have. A timeless #2."}, {"id": 10, "name": "The Christmas Chronicles", "from": "2018", "emoji": "🛷", "div": "Santa & Magic", "seed": 3, "stats": "", "fact": "Two kids accidentally crash Santa's sleigh and have to save Christmas with a surprisingly cool Kurt Russell Santa. The Christmas Chronicles is the streaming era's big family-Santa hit. A modern crowd-pleaser."}, {"id": 11, "name": "Arthur Christmas", "from": "2011", "emoji": "🎁", "div": "Santa & Magic", "seed": 4, "stats": "", "fact": "Santa's clumsy son races to deliver one forgotten present before sunrise. Arthur Christmas is a criminally underrated gem that reimagines the North Pole as a high-tech operation. A delightful #4 that deserves the upset."}, {"id": 12, "name": "It's a Wonderful Life", "from": "1946", "emoji": "👼", "div": "Grown-Up Classics", "seed": 1, "stats": "", "fact": "A despairing man is shown by an angel how much poorer the world would be without him. It's a Wonderful Life is routinely called the greatest Christmas movie ever made, full stop. Every time a bell rings. A contender to win it all."}, {"id": 13, "name": "Christmas Vacation", "from": "1989", "emoji": "💡", "div": "Grown-Up Classics", "seed": 2, "stats": "", "fact": "Clark Griswold's quest for the perfect family Christmas spirals into electrical-fire, exploding-sewer chaos. National Lampoon's Christmas Vacation is the funniest holiday movie for a huge swath of grown-ups. The hap-hap-happiest."}, {"id": 14, "name": "White Christmas", "from": "1954", "emoji": "❄", "div": "Grown-Up Classics", "seed": 3, "stats": "", "fact": "Two song-and-dance men stage a show to save an inn run by their old general, set to Irving Berlin classics. White Christmas is the lush, old-Hollywood musical that defined the season's sound. A grand #3."}, {"id": 15, "name": "Scrooged", "from": "1988", "emoji": "👻", "div": "Grown-Up Classics", "seed": 4, "stats": "", "fact": "A cynical TV executive gets the full three-ghosts treatment in a dark, funny modern Christmas Carol. Scrooged is Bill Murray at his most acidic and the best non-traditional Dickens riff. A sharp-edged #4."}, {"id": 16, "name": "Die Hard", "from": "1988", "emoji": "💥", "div": "The Great Debate", "seed": 1, "stats": "", "fact": "A cop in the wrong place takes on terrorists in an LA high-rise on Christmas Eve. Die Hard is the most argued-about 'Christmas movie' in existence, which earns it the #1 seed in the division about exactly that fight. Yippee-ki-yay."}, {"id": 17, "name": "Gremlins", "from": "1984", "emoji": "👺", "div": "The Great Debate", "seed": 2, "stats": "", "fact": "A cute Christmas pet spawns a horde of scaly monsters that tear a small town apart. Gremlins is the Christmas-horror-comedy that traumatized and delighted a generation. Don't feed them after midnight."}, {"id": 18, "name": "Trading Places", "from": "1983", "emoji": "💰", "div": "The Great Debate", "seed": 3, "stats": "", "fact": "A rich broker and a street hustler swap lives in a holiday-set bet between two cruel old men. Trading Places is a razor-sharp comedy that just happens to climax at Christmas and New Year's. A debatable, brilliant #3."}, {"id": 19, "name": "Jingle All the Way", "from": "1996", "emoji": "🧸", "div": "The Great Debate", "seed": 4, "stats": "", "fact": "A dad goes to war with every other parent to land an impossible-to-find action figure on Christmas Eve. Jingle All the Way is peak-90s consumerist chaos with Arnold Schwarzenegger. A guilty-pleasure #4."}, {"id": 20, "name": "The Muppet Christmas Carol", "from": "1992", "emoji": "🐸", "div": "Carols & Cartoons", "seed": 1, "stats": "", "fact": "Kermit and the gang stage Dickens with Michael Caine playing it completely straight as Scrooge. The Muppet Christmas Carol is, for many, the single best Carol adaptation ever — funny and genuinely moving. A beloved #1."}, {"id": 21, "name": "A Charlie Brown Christmas", "from": "1965", "emoji": "🎄", "div": "Carols & Cartoons", "seed": 2, "stats": "", "fact": "Charlie Brown searches for the real meaning of Christmas amid a sad little tree and a jazz soundtrack. The Peanuts special is a quiet, soulful classic that's aired every year since 1965. Gets more beloved with age."}, {"id": 22, "name": "Klaus", "from": "2019", "emoji": "✉", "div": "Carols & Cartoons", "seed": 3, "stats": "", "fact": "A selfish postman and a reclusive toymaker accidentally invent the entire Santa legend. Klaus is a gorgeously hand-animated origin story that became an instant modern favorite. A stunning #3."}, {"id": 23, "name": "The Grinch", "from": "2018", "emoji": "💚", "div": "Carols & Cartoons", "seed": 4, "stats": "", "fact": "Illumination's bright, fast take on the green grump, with Benedict Cumberbatch voicing him. The 2018 Grinch is the version today's kids grew up on. A glossy #4 in a stacked division."}, {"id": 24, "name": "Love Actually", "from": "2003", "emoji": "❤", "div": "Rom-Com Christmas", "seed": 1, "stats": "", "fact": "A tangle of London love stories all crashing together in the weeks before Christmas. Love Actually is the definitive holiday rom-com, equal parts beloved and argued-about. A divisive but dominant #1."}, {"id": 25, "name": "The Holiday", "from": "2006", "emoji": "🏡", "div": "Rom-Com Christmas", "seed": 2, "stats": "", "fact": "Two heartbroken women swap houses across the Atlantic for Christmas and find unexpected love. The Holiday is a cozy, comfort-food classic of the genre. A warm #2."}, {"id": 26, "name": "Last Christmas", "from": "2019", "emoji": "🎶", "div": "Rom-Com Christmas", "seed": 3, "stats": "", "fact": "A mess of a woman working as a Christmas-shop elf meets a mysterious man, set to George Michael's music. Last Christmas swings for a big twist and a bigger heart. A modern #3."}, {"id": 27, "name": "Four Christmases", "from": "2008", "emoji": "👪", "div": "Rom-Com Christmas", "seed": 4, "stats": "", "fact": "A couple who avoids family is forced to visit all four divorced parents in one disastrous day. Four Christmases is broad, chaotic holiday comedy. A messy, fun #4."}, {"id": 28, "name": "Home Alone 2", "from": "1992", "emoji": "🗽", "div": "Family Comedy", "seed": 1, "stats": "", "fact": "Kevin gets lost in New York this time, with a fancier hotel and even nastier traps for the same two crooks. Home Alone 2 is the rare sequel nearly as beloved as the original. Lost in New York, found in everyone's rotation."}, {"id": 29, "name": "Fred Claus", "from": "2007", "emoji": "🎄", "div": "Family Comedy", "seed": 2, "stats": "", "fact": "Santa's bitter, screwup older brother comes to the North Pole and nearly ruins Christmas. Fred Claus is a goofy, big-cast comedy with a sweet core. A serviceable #2."}, {"id": 30, "name": "Noelle", "from": "2019", "emoji": "🔔", "div": "Family Comedy", "seed": 3, "stats": "", "fact": "Santa's daughter sets out to find her brother and discovers she might be the better Claus. Noelle is a light Disney+ family charmer. A gentle #3."}, {"id": 31, "name": "Deck the Halls", "from": "2006", "emoji": "🏠", "div": "Family Comedy", "seed": 4, "stats": "", "fact": "Two neighbors wage war to have the most over-the-top Christmas lights on the block. Deck the Halls is pure silly holiday slapstick. A goofy #4 to close out the bracket."}];
+const R1 = [[0, 3], [1, 2], [4, 7], [5, 6], [8, 11], [9, 10], [12, 15], [13, 14], [16, 19], [17, 18], [20, 23], [21, 22], [24, 27], [25, 26], [28, 31], [29, 30]];
+const COUNTS = [16, 8, 4, 2, 1];
+const NR = COUNTS.length, LASTR = NR-1, TOTAL = 31;
+const RLABELS = ["Round of 32", "Round of 16", "Quarterfinal", "Semifinal", "The Final"];
+const COLLABELS = ["R32", "R16", "QF", "SF", "Final"];
+const HEIGHTS = [22, 30, 44, 70, 100];
+const GAPS = [2, 5, 12, 28, 0];
+const DIVNAMES = ["Heavy Hitters", "Animated Classics", "Santa & Magic", "Grown-Up Classics", "The Great Debate", "Carols & Cartoons", "Rom-Com Christmas", "Family Comedy"];
+const ASK_ROOM = ["Annual rewatch or one-and-done?", "Which one does your family fight over?", "Funniest holiday movie vs. most heartwarming?", "Is the #1 seed actually your favorite?", "Which one is NOT a Christmas movie, fight me?"];
+let results = COUNTS.map(n=>Array(n).fill(null));
+let currentVote=null, selected=null, locked=false, askPrompt='';
+
+function getC(r,mi,slot){
+  if(r===0){const idx=R1[mi][slot];return ALL[idx];}
+  const prevMi=mi*2+slot, prevW=results[r-1][prevMi];
+  if(prevW===null)return null;
+  return ALL.find(c=>c.id===prevW);
+}
+function getCurrentRound(){for(let r=0;r<NR;r++){for(let mi=0;mi<COUNTS[r];mi++){if(results[r][mi]===null){const a=getC(r,mi,0),b=getC(r,mi,1);if(a&&b)return r;}}}return LASTR;}
+function getNextActive(){const cr=getCurrentRound();for(let mi=0;mi<COUNTS[cr];mi++){if(results[cr][mi]===null){const a=getC(cr,mi,0),b=getC(cr,mi,1);if(a&&b)return{round:cr,mi};}}return null;}
+function totalVotes(){return results.flat().filter(v=>v!==null).length;}
+function fakeA(a,b){return Math.min(86,Math.max(20,50+(b.id-a.id)%17+(a.id%4)*2));}
+
+function render(){
+  const done=results[LASTR][0]!==null;
+  if(done){const w=ALL.find(c=>c.id===results[LASTR][0]);renderChampion(w);return;}
+  if(currentVote!==null){renderVote();return;}
+  renderBracket();
+}
+
+function renderBracket(){
+  document.getElementById('back-btn').style.display='none';
+  const cr=getCurrentRound(),next=getNextActive();
+  let html='<div class="core-q">Which holiday movie is the greatest?</div>';
+  html+='<div class="bracket-cols">';
+  for(let r=0;r<NR;r++){
+    const count=COUNTS[r],maxH=HEIGHTS[r],gap=GAPS[r];
+    html+='<div class="bracket-col"><div class="col-label" style="color:'+(r===cr?'#e8354a':'#2e2040')+'">'+COLLABELS[r]+'</div><div class="col-matches" style="gap:'+gap+'px">';
+    for(let mi=0;mi<count;mi++){
+      const a=getC(r,mi,0),b=getC(r,mi,1),winner=results[r][mi];
+      const active=r===cr&&winner===null&&a&&b,done=winner!==null;
+      const cls=active?'active':done?'done':'empty';
+      const onclick=(active||done)?'onclick="startVote('+r+','+mi+')"':'';
+      html+='<div class="match-cell '+cls+'" style="max-height:'+maxH+'px;'+(!active&&!done?'border:1px solid #14101c':'')+'" '+onclick+'>';
+      [a,b].forEach((c,si)=>{
+        if(!c){html+='<div class="tbd">&mdash;</div>';return;}
+        const isW=winner===c.id,isL=done&&!isW;
+        const nm=c.name.split(' ').slice(0,r===0?2:3).join(' ');
+        html+=(si===1?'<hr class="match-divider">':'')+'<div class="match-row '+(isW?'winner':isL?'loser':'')+'"><span class="em">'+c.emoji+'</span><span class="nm">'+nm+'</span></div>';
+      });
+      html+='</div>';
+    }
+    html+='</div></div>';
+  }
+  html+='</div>';
+  if(next)html+='<div style="padding:14px 16px 0"><button class="vote-btn" onclick="startVote('+next.round+','+next.mi+')">Vote Next Matchup &rarr;</button><div class="vote-hint">Tap any highlighted match to vote</div></div>';
+  document.getElementById('main').innerHTML=html;
+}
+
+function startVote(round,mi){currentVote={round,mi};selected=null;locked=false;const w=results[round][mi];if(w!==null){const a=getC(round,mi,0);selected=(a&&a.id===w)?'a':'b';}render();}
+
+function renderVote(){
+  document.getElementById('back-btn').style.display='block';
+  const o=currentVote,round=o.round,mi=o.mi,a=getC(round,mi,0),b=getC(round,mi,1);
+  if(!a||!b){showBracket();return;}
+  const pA=fakeA(a,b),pB=100-pA,majority=selected?(selected==='a'?pA:pB)>=50:false;
+  const hint=!selected?"— Which holiday film wins? —":locked?"— Verdict locked! —":"— Tap to switch. Button to commit. —";
+  let html='<div id="vote-screen"><div class="vote-header"><div class="round-label">'+RLABELS[round]+'</div><div class="vote-hint-text">'+hint+'</div></div>';
+  [{side:'a',c:a,pct:pA},{side:'b',c:b,pct:pB}].forEach(function(o){
+    const side=o.side,c=o.c,pct=o.pct,isSel=selected===side;
+    html+='<div class="card'+(isSel?' selected':'')+'" onclick="selectCard(\''+side+'\')">';
+    if(locked&&isSel)html+='<div class="pct-bar" style="width:'+pct+'%"></div>';
+    html+='<div class="card-inner"><div class="card-top"><div class="card-emoji">'+c.emoji+'</div><div style="flex:1;min-width:0"><div class="card-meta">'+c.div+' · '+c.from+'</div><div class="card-name">'+c.name+'</div></div>'+(isSel&&!locked?'<div class="card-arrow">◀</div>':'')+'</div>';
+    html+='<div class="card-tag">'+(c.seed===1?'#1 SEED':c.seed===2?'#2 SEED':c.seed===3?'#3 SEED':'#4 SEED')+'</div>';
+    if(c.stats)html+='<div class="card-stats">📊 '+c.stats+'</div>';
+    html+='<div class="card-fact">'+c.fact+'</div>';
+    if(locked&&isSel)html+='<div class="card-pct">'+pct+'%<span>voted this movie</span><span class="check">✓</span></div>';
+    html+='</div></div>';
+  });
+  if(selected&&!locked)html+='<div class="commit-box"><div class="commit-hint">Still deciding? Tap the other card to compare.</div><button class="commit-btn" onclick="commitVote()">Lock In Verdict &rarr;</button></div>';
+  if(locked){
+    html+='<div class="result-box"><div class="'+(majority?'result-majority':'result-minority')+'">'+(majority?'✓ With the majority':'🔥 Against the crowd')+'</div><div class="ask-room" style="margin-top:14px;padding-top:14px;border-top:1px dashed #3a2850"><div style="font-size:9px;letter-spacing:3px;color:#a01828;text-transform:uppercase;margin-bottom:6px">Ask the Room</div><div style="font-size:15px;color:#e8d8f0;font-style:italic;line-height:1.4">'+askPrompt+'</div></div></div><button class="next-btn" onclick="advance()">Vote Next Matchup &rarr;</button>';
+  }
+  html+='</div>';
+  document.getElementById('main').innerHTML=html;
+}
+
+function selectCard(side){if(locked)return;selected=side;renderVote();}
+function commitVote(){
+  if(!selected||locked)return;
+  locked=true;
+  askPrompt=ASK_ROOM[Math.floor(Math.random()*ASK_ROOM.length)];
+  const o=currentVote,round=o.round,mi=o.mi,a=getC(round,mi,0),b=getC(round,mi,1);
+  results[round][mi]=selected==='a'?a.id:b.id;
+  renderVote();
+  document.getElementById('counter').textContent=totalVotes()+'/'+TOTAL;
+}
+function advance(){currentVote=null;locked=false;selected=null;render();}
+function showBracket(){currentVote=null;selected=null;locked=false;render();}
+function renderChampion(c){
+  document.getElementById('back-btn').style.display='none';
+  document.getElementById('main').innerHTML='<div id="champion-screen"><div style="font-size:44px;margin-bottom:6px">🏆</div><div class="champ-emoji">'+c.emoji+'</div><div class="champ-trophy">King Of The Season</div><div class="champ-name">'+c.name+'</div><div class="champ-from">'+c.from+'</div><div style="display:inline-block;margin:10px 0 6px;padding:4px 16px;border-radius:20px;background:#e8354a;color:#09080a;font-size:11px;font-weight:700;letter-spacing:1px">YOUR VERDICT</div><div class="champ-fact">'+c.fact+'</div><button class="reset-btn" onclick="resetGame()">Run It Back</button><div style="margin-top:20px"><a href="index.html" style="color:#6a6478;font-size:12px;letter-spacing:2px;text-transform:uppercase;text-decoration:none;font-family:Georgia,serif">← All Brackets</a></div></div>';
+}
+function resetGame(){results=COUNTS.map(n=>Array(n).fill(null));currentVote=null;selected=null;locked=false;render();}
+render();
+
+</script>
+</body>
+</html>

@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VERDICT — DreamWorks Movies</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #09080a; color: #f0eaf8; font-family: Georgia, 'Times New Roman', serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
+  #app { width: 100%; max-width: 560px; min-height: 100vh; display: flex; flex-direction: column; }
+  header { padding: 16px 20px 12px; border-bottom: 1px solid #22182a; display: flex; align-items: center; justify-content: space-between; background: #0e0b14; }
+  .title { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; color: #a8d83a; }
+  .subtitle { font-size: 9px; color: #6a9018; letter-spacing: 2px; text-transform: uppercase; margin-top: 2px; }
+  .counter { font-size: 10px; color: #2e2040; background: #14101c; border: 1px solid #22182a; border-radius: 16px; padding: 4px 10px; }
+  .back-btn { background: transparent; border: 1px solid #22182a; border-radius: 8px; padding: 5px 10px; color: #3a2850; font-size: 11px; cursor: pointer; font-family: Georgia, serif; }
+  #main { flex: 1; padding: 14px 0; }
+  .core-q { text-align: center; font-size: 12px; color: #a8d83a; font-style: italic; padding: 4px 20px 0; line-height: 1.4; }
+  .bracket-cols { display: flex; gap: 3px; padding: 0 10px; }
+  .bracket-col { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+  .col-label { font-size: 7px; letter-spacing: 1.5px; text-transform: uppercase; text-align: center; margin-bottom: 5px; }
+  .col-matches { display: flex; flex-direction: column; justify-content: space-around; height: 380px; }
+  .match-cell { border-radius: 5px; overflow: hidden; cursor: default; flex: 1; transition: border-color 0.2s; }
+  .match-cell.active { border: 1px solid #a8d83a !important; background: #14101c !important; cursor: pointer; }
+  .match-cell.done { border: 1px solid #2e1e2a !important; background: #0e0b14 !important; cursor: pointer; }
+  .match-cell.empty { border: 1px solid #14101c; background: #09080a; }
+  .match-row { display: flex; align-items: center; gap: 2px; padding: 2px 3px; transition: opacity 0.3s; }
+  .match-row.loser { opacity: 0.22; }
+  .match-row.winner { background: rgba(168,216,58,0.12); }
+  .match-row .em { font-size: 8px; }
+  .match-row .nm { font-size: 7px; color: #3a2850; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 400; }
+  .match-row.winner .nm { color: #a8d83a; font-weight: 700; }
+  .match-divider { border: none; border-top: 1px solid #1e1428; margin: 0; }
+  .tbd { padding: 2px 3px; font-size: 6px; color: #221830; }
+  .vote-btn { width: 100%; padding: 14px; background: linear-gradient(135deg, #a8d83a, #6a9018); border: none; border-radius: 12px; color: #09080a; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; margin-top: 14px; }
+  .vote-hint { font-size: 10px; color: #6a6478; text-align: center; margin-top: 6px; }
+  #vote-screen { padding: 0 16px; animation: fadeUp 0.3s ease; }
+  .vote-header { text-align: center; margin-bottom: 16px; }
+  .round-label { font-size: 10px; letter-spacing: 3px; color: #a8d83a; text-transform: uppercase; margin-bottom: 3px; }
+  .vote-hint-text { font-size: 11px; color: #8a8298; letter-spacing: 1px; }
+  .card { display: block; width: 100%; margin-bottom: 10px; border-radius: 14px; padding: 16px 18px; cursor: pointer; text-align: left; transition: all 0.25s; position: relative; overflow: hidden; border: 2px solid #22182a; background: #0e0b14; }
+  .card.selected { border-color: #a8d83a !important; background: #1a1020 !important; transform: scale(1.01); }
+  .card-inner { position: relative; z-index: 1; }
+  .card-top { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 8px; }
+  .card-emoji { font-size: 34px; margin-top: 2px; flex-shrink: 0; }
+  .card-meta { font-size: 9px; color: #6a9018; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 2px; }
+  .card-name { font-size: 18px; font-weight: 700; color: #d8d2e2; line-height: 1.2; margin-bottom: 2px; transition: color 0.2s; }
+  .card.selected .card-name { color: #ffffff; }
+  .card-from { font-size: 10px; color: #8a8298; font-style: italic; transition: color 0.2s; }
+  .card.selected .card-from { color: #8a8298; }
+  .card-tag { display: inline-block; margin-top: 8px; padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 700; background: #22182a; color: #a8d83a; letter-spacing: 1px; }
+  .card.selected .card-tag { background: #a8d83a; color: #09080a; }
+  .card-stats { margin-top: 8px; font-size: 9px; color: #9a8aa0; letter-spacing: 0.5px; }
+  .card.selected .card-stats { color: #9a8aa0; }
+  .card-fact { font-size: 12px; color: #7e7888; line-height: 1.75; transition: color 0.2s; margin-top: 8px; }
+  .card.selected .card-fact { color: #e8e2f0; }
+  .card-arrow { font-size: 16px; color: #a8d83a; margin-left: auto; flex-shrink: 0; }
+  .card-pct { font-size: 20px; font-weight: 700; color: #a8d83a; margin-top: 10px; }
+  .card-pct span { font-size: 12px; font-weight: 400; color: #3a2850; margin-left: 6px; }
+  .card-pct .check { color: #a8d83a; margin-left: 8px; }
+  .pct-bar { position: absolute; top: 0; left: 0; height: 100%; background: rgba(168,216,58,0.06); transition: width 0.9s cubic-bezier(.4,0,.2,1); z-index: 0; }
+  .commit-box { padding: 14px 18px; background: #0e0b14; border: 1px solid #22182a; border-radius: 12px; text-align: center; animation: fadeUp 0.3s ease; }
+  .commit-hint { font-size: 11px; color: #3a2850; margin-bottom: 10px; font-style: italic; }
+  .commit-btn { padding: 12px 32px; background: linear-gradient(135deg, #a8d83a, #6a9018); border: none; border-radius: 10px; color: #09080a; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+  .result-box { padding: 16px 18px; background: #0e0b14; border: 1px solid #22182a; border-radius: 12px; text-align: center; margin-top: 2px; animation: fadeUp 0.3s ease; }
+  .result-majority { font-size: 13px; color: #7ec8a0; font-weight: 700; letter-spacing: 1px; }
+  .result-minority { font-size: 13px; color: #6a9018; font-weight: 700; letter-spacing: 1px; }
+  .next-btn { width: 100%; margin-top: 14px; padding: 14px; background: linear-gradient(135deg, #a8d83a, #6a9018); border: none; border-radius: 12px; color: #09080a; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+  #champion-screen { text-align: center; padding: 36px 24px; animation: fadeUp 0.5s ease; }
+  .champ-emoji { font-size: 76px; margin-bottom: 8px; }
+  .champ-trophy { font-size: 11px; letter-spacing: 4px; color: #a8d83a; text-transform: uppercase; margin-bottom: 8px; }
+  .champ-name { font-size: 26px; font-weight: 700; color: #f0eaf8; margin-bottom: 4px; }
+  .champ-from { font-size: 13px; color: #6a9018; font-style: italic; margin-bottom: 4px; }
+  .champ-fact { font-size: 13px; color: #8a7d98; font-style: italic; max-width: 310px; margin: 14px auto 28px; line-height: 1.8; }
+  .reset-btn { padding: 14px 32px; background: linear-gradient(135deg, #a8d83a, #6a9018); border: none; border-radius: 12px; color: #09080a; font-size: 14px; font-weight: 700; cursor: pointer; letter-spacing: 1px; font-family: Georgia, serif; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  button:active { filter: brightness(0.88); }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div>
+      <a href="index.html" class="title" style="text-decoration:none;cursor:pointer" title="All brackets">VERDICT</a>
+      <div class="subtitle">Which One Is The Greatest</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="back-btn" id="back-btn" style="display:none" onclick="showBracket()">← Bracket</button>
+      <div class="counter" id="counter">0/31</div>
+    </div>
+  </header>
+  <div id="main"></div>
+</div>
+<script>
+
+const ALL = [{"id": 0, "name": "Shrek 2", "from": "2004", "emoji": "👑", "div": "Shrek's Swamp", "seed": 1, "stats": "", "fact": "The rare sequel that outdoes the original in every way — funnier, bigger, and home to Puss in Boots' debut. Shrek 2 was the highest-grossing film of its year and is, by most counts, the peak of the whole franchise. A fairy-tale parody firing on every cylinder."}, {"id": 1, "name": "Shrek", "from": "2001", "emoji": "🟢", "div": "Shrek's Swamp", "seed": 2, "stats": "", "fact": "The ogre that put DreamWorks on the map, won the first-ever Best Animated Feature Oscar, and gleefully torched every Disney fairy-tale cliche. Shrek is crude, sweet, and genuinely revolutionary for its moment. Ogres have layers."}, {"id": 2, "name": "Shrek the Third", "from": "2007", "emoji": "🏰", "div": "Shrek's Swamp", "seed": 3, "stats": "", "fact": "Shrek faces fatherhood and a teenage King Arthur in a sequel that's lesser but still landed huge with audiences. The Third is the franchise's weakest of the originals, which makes its #3 seed a fair fight. A divisive entry that people still quote."}, {"id": 3, "name": "Shrek Forever After", "from": "2010", "emoji": "📜", "div": "Shrek's Swamp", "seed": 4, "stats": "", "fact": "A burned-out Shrek signs a deal that erases his own existence in a surprisingly heartfelt It's-a-Wonderful-Life riff. Forever After was a stronger send-off than the third film and a fitting close to the saga. A better #4 than its reputation suggests."}, {"id": 4, "name": "How to Train Your Dragon", "from": "2010", "emoji": "🐉", "div": "Dragon Riders", "seed": 1, "stats": "", "fact": "A Viking boy befriends the dragon he was meant to kill and changes his entire world. Widely considered DreamWorks' finest film, with a flight sequence and a score that rival anything in animation. A real candidate to win the whole bracket."}, {"id": 5, "name": "How to Train Your Dragon 2", "from": "2014", "emoji": "🐲", "div": "Dragon Riders", "seed": 2, "stats": "", "fact": "A bigger, darker sequel that ages its hero five years and isn't afraid to break your heart. HTTYD2 expanded the world and deepened the stakes, proving the first film's magic was no accident. One of the best animated sequels ever."}, {"id": 6, "name": "The Hidden World", "from": "2019", "emoji": "🌋", "div": "Dragon Riders", "seed": 3, "stats": "", "fact": "The trilogy closer where Hiccup and Toothless must finally say goodbye for the dragons' sake. The Hidden World gave the saga a gorgeous, tearful ending that respected everyone who grew up with it. A worthy #3 in a stacked division."}, {"id": 7, "name": "Abominable", "from": "2019", "emoji": "🏔", "div": "Dragon Riders", "seed": 4, "stats": "", "fact": "A girl helps a magical yeti journey home across China, with nature-bending powers and a hummed melody. Abominable is a sweet, underseen adventure with stunning landscapes. A long-shot #4 that deserves more eyes."}, {"id": 8, "name": "Kung Fu Panda", "from": "2008", "emoji": "🐼", "div": "Panda Dojo", "seed": 1, "stats": "", "fact": "A clumsy noodle-shop panda becomes the chosen Dragon Warrior and learns the secret is believing he's special. Kung Fu Panda has jaw-dropping fight choreography and a genuinely moving message under the comedy. Skadoosh."}, {"id": 9, "name": "Kung Fu Panda 2", "from": "2011", "emoji": "🧧", "div": "Panda Dojo", "seed": 2, "stats": "", "fact": "Po confronts his tragic origin and a peacock with a cannon in a sequel many consider better than the first. KFP2 deepened Po's story without losing the laughs, and its villain is one of DreamWorks' best. A heavyweight #2."}, {"id": 10, "name": "Kung Fu Panda 3", "from": "2016", "emoji": "☯", "div": "Panda Dojo", "seed": 3, "stats": "", "fact": "Po meets his birth father and trains a village of pandas to fight a spirit-world warlord. KFP3 is the gorgeous, slightly lighter third chapter that still delivers spectacle and heart. A solid #3."}, {"id": 11, "name": "Kung Fu Panda 4", "from": "2024", "emoji": "🥟", "div": "Panda Dojo", "seed": 4, "stats": "", "fact": "Po searches for a successor while facing a shapeshifting sorceress in the franchise's latest outing. KFP4 split fans but still charmed a new generation. A #4 in a full-franchise civil war — only one panda survives the division."}, {"id": 12, "name": "The Prince of Egypt", "from": "1998", "emoji": "🌊", "div": "Heart & Soul", "seed": 1, "stats": "", "fact": "A breathtaking retelling of Moses, with hand-drawn spectacle and a score that earned an Oscar. The Prince of Egypt is the most critically acclaimed traditionally-animated film DreamWorks ever made — grand, serious, and unforgettable. The parting of the sea still stuns."}, {"id": 13, "name": "The Wild Robot", "from": "2024", "emoji": "🌱", "div": "Heart & Soul", "seed": 2, "stats": "", "fact": "A shipwrecked robot learns to survive on a wild island and ends up raising an orphaned gosling. The Wild Robot is a gorgeous, emotional 2024 hit that critics adored and many called an instant classic. A #2 that could absolutely run the table."}, {"id": 14, "name": "Megamind", "from": "2010", "emoji": "👽", "div": "Heart & Soul", "seed": 3, "stats": "", "fact": "A supervillain finally defeats his nemesis, gets bored, and accidentally becomes the hero. Megamind is the smartest comedy in the DreamWorks library and a sneaky-great superhero satire. A cult favorite seeded right where the upsets live."}, {"id": 15, "name": "Chicken Run", "from": "2000", "emoji": "🐔", "div": "Heart & Soul", "seed": 4, "stats": "", "fact": "Claymation hens plot a Great Escape from a pie-making farm in Aardman's first feature with DreamWorks. Chicken Run is wildly inventive, funny, and remains the highest-grossing stop-motion film ever. A clucking #4 with real bite."}, {"id": 16, "name": "Puss in Boots: The Last Wish", "from": "2022", "emoji": "🐈", "div": "Puss & Trolls", "seed": 1, "stats": "", "fact": "Puss burns through eight of his nine lives and faces down a terrifying wolf who is literally Death. The Last Wish stunned everyone with a bold new art style and surprising emotional depth — a late-era DreamWorks masterpiece. The best film in this division by a mile."}, {"id": 17, "name": "Puss in Boots", "from": "2011", "emoji": "👟", "div": "Puss & Trolls", "seed": 2, "stats": "", "fact": "The Shrek scene-stealer gets his own swashbuckling origin story with giant kitten eyes and a sword. The original Puss is a fun, stylish spin-off that set up a far greater sequel. A charming #2."}, {"id": 18, "name": "Trolls", "from": "2016", "emoji": "🌈", "div": "Puss & Trolls", "seed": 3, "stats": "", "fact": "A relentlessly upbeat troll and a grumpy survivalist team up to rescue their friends, set to a pop soundtrack. Trolls became a merchandising juggernaut on pure colorful joy. A bright, bouncy #3."}, {"id": 19, "name": "Trolls World Tour", "from": "2020", "emoji": "🎵", "div": "Puss & Trolls", "seed": 4, "stats": "", "fact": "The trolls discover other musical kingdoms and a rock queen bent on uniting them all under one genre. World Tour is best remembered for shaking up movie releasing, but it's a candy-colored blast. A poppy #4."}, {"id": 20, "name": "Madagascar", "from": "2005", "emoji": "🦁", "div": "Madagascar & Co", "seed": 1, "stats": "", "fact": "Four pampered zoo animals get shipped to the wild and have to figure out how to actually be animals. Madagascar is a fast, silly hit that spawned a franchise and the scene-stealing penguins. I like to move it, move it."}, {"id": 21, "name": "Madagascar 2", "from": "2008", "emoji": "🦒", "div": "Madagascar & Co", "seed": 2, "stats": "", "fact": "The crew crash-lands in Africa and Alex finally meets the family he was taken from as a cub. Escape 2 Africa is a bigger, funnier sequel many prefer to the original. A strong #2."}, {"id": 22, "name": "Madagascar 3", "from": "2012", "emoji": "🎪", "div": "Madagascar & Co", "seed": 3, "stats": "", "fact": "The animals join a European circus to get home and put on the most psychedelic show in DreamWorks history. Madagascar 3 is the franchise's most visually wild entry. Afro Circus and all, a worthy #3."}, {"id": 23, "name": "Over the Hedge", "from": "2006", "emoji": "🦔", "div": "Madagascar & Co", "seed": 4, "stats": "", "fact": "A scheming raccoon recruits suburban critters to raid human pantries and learns what family means. Over the Hedge is a sharp, underrated comedy about consumerism with a great voice cast. A sneaky-good #4."}, {"id": 24, "name": "Antz", "from": "1998", "emoji": "🐜", "div": "Bugs & Beasts", "seed": 1, "stats": "", "fact": "A neurotic worker ant fights for individuality in a rigid colony, voiced with Woody Allen energy. Antz was DreamWorks' very first CG film, beating A Bug's Life to theaters by weeks. A foundational, surprisingly grown-up #1."}, {"id": 25, "name": "Monsters vs. Aliens", "from": "2009", "emoji": "👽", "div": "Bugs & Beasts", "seed": 2, "stats": "", "fact": "A bride zapped into a giant joins a team of monsters to fight an alien invasion. Monsters vs. Aliens is a goofy, affectionate love letter to old sci-fi B-movies. A fun, forgotten #2."}, {"id": 26, "name": "Shark Tale", "from": "2004", "emoji": "🦈", "div": "Bugs & Beasts", "seed": 3, "stats": "", "fact": "A small fish fakes being a shark-slayer to get famous in an underwater mob story. Shark Tale is the division's punching bag, but it was a big hit with a stacked cast. A divisive #3 that starts fights."}, {"id": 27, "name": "Bee Movie", "from": "2007", "emoji": "🐝", "div": "Bugs & Beasts", "seed": 4, "stats": "", "fact": "A bee sues the human race for stealing honey, in a film that became a legendary internet meme. Bee Movie is objectively strange and beloved for exactly that reason. Ya like jazz? A meme-powered #4."}, {"id": 28, "name": "The Bad Guys", "from": "2022", "emoji": "🐺", "div": "The Crew", "seed": 1, "stats": "", "fact": "A crew of animal criminals tries to go good, in a slick heist movie with a killer comic-book art style. The Bad Guys is one of DreamWorks' freshest recent hits, fast and genuinely cool. A stylish #1."}, {"id": 29, "name": "The Croods", "from": "2013", "emoji": "🪨", "div": "The Crew", "seed": 2, "stats": "", "fact": "A caveman family ventures out of their cave and into a dangerous, colorful prehistoric world. The Croods is a warm, inventive adventure about a dad learning to let go. A sturdy #2."}, {"id": 30, "name": "The Boss Baby", "from": "2017", "emoji": "👶", "div": "The Crew", "seed": 3, "stats": "", "fact": "A suit-wearing infant on a corporate mission disrupts a family in a high-concept comedy. The Boss Baby was a surprise smash that spawned a whole franchise. A polarizing #3."}, {"id": 31, "name": "The Croods: A New Age", "from": "2020", "emoji": "🥚", "div": "The Crew", "seed": 4, "stats": "", "fact": "The Croods meet a more 'evolved' family and clash over how to live in a wilder sequel. A New Age is bigger and brighter than the first. A scrappy #4 to close the bracket."}];
+const R1 = [[0, 3], [1, 2], [4, 7], [5, 6], [8, 11], [9, 10], [12, 15], [13, 14], [16, 19], [17, 18], [20, 23], [21, 22], [24, 27], [25, 26], [28, 31], [29, 30]];
+const COUNTS = [16, 8, 4, 2, 1];
+const NR = COUNTS.length, LASTR = NR-1, TOTAL = 31;
+const RLABELS = ["Round of 32", "Round of 16", "Quarterfinal", "Semifinal", "The Final"];
+const COLLABELS = ["R32", "R16", "QF", "SF", "Final"];
+const HEIGHTS = [22, 30, 44, 70, 100];
+const GAPS = [2, 5, 12, 28, 0];
+const DIVNAMES = ["Shrek's Swamp", "Dragon Riders", "Panda Dojo", "Heart & Soul", "Puss & Trolls", "Madagascar & Co", "Bugs & Beasts", "The Crew"];
+const ASK_ROOM = ["Which franchise should've won the whole thing?", "Best sequel here vs. best original?", "Which one is better than people admit?", "Childhood favorite or actual best film?", "Which DreamWorks movie aged the worst?"];
+let results = COUNTS.map(n=>Array(n).fill(null));
+let currentVote=null, selected=null, locked=false, askPrompt='';
+
+function getC(r,mi,slot){
+  if(r===0){const idx=R1[mi][slot];return ALL[idx];}
+  const prevMi=mi*2+slot, prevW=results[r-1][prevMi];
+  if(prevW===null)return null;
+  return ALL.find(c=>c.id===prevW);
+}
+function getCurrentRound(){for(let r=0;r<NR;r++){for(let mi=0;mi<COUNTS[r];mi++){if(results[r][mi]===null){const a=getC(r,mi,0),b=getC(r,mi,1);if(a&&b)return r;}}}return LASTR;}
+function getNextActive(){const cr=getCurrentRound();for(let mi=0;mi<COUNTS[cr];mi++){if(results[cr][mi]===null){const a=getC(cr,mi,0),b=getC(cr,mi,1);if(a&&b)return{round:cr,mi};}}return null;}
+function totalVotes(){return results.flat().filter(v=>v!==null).length;}
+function fakeA(a,b){return Math.min(86,Math.max(20,50+(b.id-a.id)%17+(a.id%4)*2));}
+
+function render(){
+  const done=results[LASTR][0]!==null;
+  if(done){const w=ALL.find(c=>c.id===results[LASTR][0]);renderChampion(w);return;}
+  if(currentVote!==null){renderVote();return;}
+  renderBracket();
+}
+
+function renderBracket(){
+  document.getElementById('back-btn').style.display='none';
+  const cr=getCurrentRound(),next=getNextActive();
+  let html='<div class="core-q">Which DreamWorks movie is the greatest?</div>';
+  html+='<div class="bracket-cols">';
+  for(let r=0;r<NR;r++){
+    const count=COUNTS[r],maxH=HEIGHTS[r],gap=GAPS[r];
+    html+='<div class="bracket-col"><div class="col-label" style="color:'+(r===cr?'#a8d83a':'#2e2040')+'">'+COLLABELS[r]+'</div><div class="col-matches" style="gap:'+gap+'px">';
+    for(let mi=0;mi<count;mi++){
+      const a=getC(r,mi,0),b=getC(r,mi,1),winner=results[r][mi];
+      const active=r===cr&&winner===null&&a&&b,done=winner!==null;
+      const cls=active?'active':done?'done':'empty';
+      const onclick=(active||done)?'onclick="startVote('+r+','+mi+')"':'';
+      html+='<div class="match-cell '+cls+'" style="max-height:'+maxH+'px;'+(!active&&!done?'border:1px solid #14101c':'')+'" '+onclick+'>';
+      [a,b].forEach((c,si)=>{
+        if(!c){html+='<div class="tbd">&mdash;</div>';return;}
+        const isW=winner===c.id,isL=done&&!isW;
+        const nm=c.name.split(' ').slice(0,r===0?2:3).join(' ');
+        html+=(si===1?'<hr class="match-divider">':'')+'<div class="match-row '+(isW?'winner':isL?'loser':'')+'"><span class="em">'+c.emoji+'</span><span class="nm">'+nm+'</span></div>';
+      });
+      html+='</div>';
+    }
+    html+='</div></div>';
+  }
+  html+='</div>';
+  if(next)html+='<div style="padding:14px 16px 0"><button class="vote-btn" onclick="startVote('+next.round+','+next.mi+')">Vote Next Matchup &rarr;</button><div class="vote-hint">Tap any highlighted match to vote</div></div>';
+  document.getElementById('main').innerHTML=html;
+}
+
+function startVote(round,mi){currentVote={round,mi};selected=null;locked=false;const w=results[round][mi];if(w!==null){const a=getC(round,mi,0);selected=(a&&a.id===w)?'a':'b';}render();}
+
+function renderVote(){
+  document.getElementById('back-btn').style.display='block';
+  const o=currentVote,round=o.round,mi=o.mi,a=getC(round,mi,0),b=getC(round,mi,1);
+  if(!a||!b){showBracket();return;}
+  const pA=fakeA(a,b),pB=100-pA,majority=selected?(selected==='a'?pA:pB)>=50:false;
+  const hint=!selected?"— Which DreamWorks film wins? —":locked?"— Verdict locked! —":"— Tap to switch. Button to commit. —";
+  let html='<div id="vote-screen"><div class="vote-header"><div class="round-label">'+RLABELS[round]+'</div><div class="vote-hint-text">'+hint+'</div></div>';
+  [{side:'a',c:a,pct:pA},{side:'b',c:b,pct:pB}].forEach(function(o){
+    const side=o.side,c=o.c,pct=o.pct,isSel=selected===side;
+    html+='<div class="card'+(isSel?' selected':'')+'" onclick="selectCard(\''+side+'\')">';
+    if(locked&&isSel)html+='<div class="pct-bar" style="width:'+pct+'%"></div>';
+    html+='<div class="card-inner"><div class="card-top"><div class="card-emoji">'+c.emoji+'</div><div style="flex:1;min-width:0"><div class="card-meta">'+c.div+' · '+c.from+'</div><div class="card-name">'+c.name+'</div></div>'+(isSel&&!locked?'<div class="card-arrow">◀</div>':'')+'</div>';
+    html+='<div class="card-tag">'+(c.seed===1?'#1 SEED':c.seed===2?'#2 SEED':c.seed===3?'#3 SEED':'#4 SEED')+'</div>';
+    if(c.stats)html+='<div class="card-stats">📊 '+c.stats+'</div>';
+    html+='<div class="card-fact">'+c.fact+'</div>';
+    if(locked&&isSel)html+='<div class="card-pct">'+pct+'%<span>voted this movie</span><span class="check">✓</span></div>';
+    html+='</div></div>';
+  });
+  if(selected&&!locked)html+='<div class="commit-box"><div class="commit-hint">Still deciding? Tap the other card to compare.</div><button class="commit-btn" onclick="commitVote()">Lock In Verdict &rarr;</button></div>';
+  if(locked){
+    html+='<div class="result-box"><div class="'+(majority?'result-majority':'result-minority')+'">'+(majority?'✓ With the majority':'🔥 Against the crowd')+'</div><div class="ask-room" style="margin-top:14px;padding-top:14px;border-top:1px dashed #3a2850"><div style="font-size:9px;letter-spacing:3px;color:#6a9018;text-transform:uppercase;margin-bottom:6px">Ask the Room</div><div style="font-size:15px;color:#e8d8f0;font-style:italic;line-height:1.4">'+askPrompt+'</div></div></div><button class="next-btn" onclick="advance()">Vote Next Matchup &rarr;</button>';
+  }
+  html+='</div>';
+  document.getElementById('main').innerHTML=html;
+}
+
+function selectCard(side){if(locked)return;selected=side;renderVote();}
+function commitVote(){
+  if(!selected||locked)return;
+  locked=true;
+  askPrompt=ASK_ROOM[Math.floor(Math.random()*ASK_ROOM.length)];
+  const o=currentVote,round=o.round,mi=o.mi,a=getC(round,mi,0),b=getC(round,mi,1);
+  results[round][mi]=selected==='a'?a.id:b.id;
+  renderVote();
+  document.getElementById('counter').textContent=totalVotes()+'/'+TOTAL;
+}
+function advance(){currentVote=null;locked=false;selected=null;render();}
+function showBracket(){currentVote=null;selected=null;locked=false;render();}
+function renderChampion(c){
+  document.getElementById('back-btn').style.display='none';
+  document.getElementById('main').innerHTML='<div id="champion-screen"><div style="font-size:44px;margin-bottom:6px">🏆</div><div class="champ-emoji">'+c.emoji+'</div><div class="champ-trophy">The DreamWorks Crown</div><div class="champ-name">'+c.name+'</div><div class="champ-from">'+c.from+'</div><div style="display:inline-block;margin:10px 0 6px;padding:4px 16px;border-radius:20px;background:#a8d83a;color:#09080a;font-size:11px;font-weight:700;letter-spacing:1px">YOUR VERDICT</div><div class="champ-fact">'+c.fact+'</div><button class="reset-btn" onclick="resetGame()">Run It Back</button><div style="margin-top:20px"><a href="index.html" style="color:#6a6478;font-size:12px;letter-spacing:2px;text-transform:uppercase;text-decoration:none;font-family:Georgia,serif">← All Brackets</a></div></div>';
+}
+function resetGame(){results=COUNTS.map(n=>Array(n).fill(null));currentVote=null;selected=null;locked=false;render();}
+render();
+
+</script>
+</body>
+</html>
