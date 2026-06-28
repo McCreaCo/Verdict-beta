@@ -116,6 +116,78 @@ function getNextActive(){const cr=getCurrentRound();for(let mi=0;mi<COUNTS[cr];m
 function totalVotes(){return results.flat().filter(v=>v!==null).length;}
 function fakeA(a,b){return Math.min(86,Math.max(20,50+(b.id-a.id)%17+(a.id%4)*2));}
 
+// ─── VERDICT TELEMETRY (pilot) ─────────────────────────────────────────
+// Fire-and-forget behavioral capture. Never awaited, never allowed to break
+// the vote or UI. If the backend hiccups, the bracket keeps working.
+const V = (function(){
+  const BASE = "https://142-93-76-150.sslip.io/api/verdict";
+  const BRACKET_ID = "screen-funniest-characters";
+  const VOTE_THRESHOLD = 8;
+  let sessionId = null;
+  let res = {};            // "round:mi" -> {total_votes, pct_a, pct_b}
+  let cur = null;          // per-matchup tracking
+  let completedFired = false;
+  function safePost(path, body, keepalive){
+    try{ fetch(BASE+path,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body),keepalive:!!keepalive}).catch(function(){}); }catch(e){}
+  }
+  function startSession(){
+    try{ fetch(BASE+"/session/start",{method:"POST",headers:{"Content-Type":"application/json"},body:"{}"})
+      .then(function(r){return r.json();}).then(function(d){ if(d&&d.session_id) sessionId=d.session_id; }).catch(function(){}); }catch(e){}
+  }
+  function loadResults(){
+    try{ fetch(BASE+"/bracket/"+BRACKET_ID+"/results")
+      .then(function(r){return r.json();}).then(function(d){ if(d&&d.matchups){ d.matchups.forEach(function(m){ res[m.round+":"+m.matchup_index]=m; }); } }).catch(function(){}); }catch(e){}
+  }
+  function basePayload(round,mi,extra){
+    var p = {session_id:sessionId, bracket_id:BRACKET_ID, round:round, matchup_index:mi, timestamp:new Date().toISOString()};
+    if(extra){ for(var k in extra) p[k]=extra[k]; }
+    return p;
+  }
+  function ev(type,round,mi,extra){ var e=extra||{}; e.event_type=type; safePost("/event", basePayload(round,mi,e)); }
+  function enter(round,mi,fresh){
+    cur = {round:round, mi:mi, startTs:Date.now(), tapsA:0, tapsB:0, selectTs:null, fired:false, last:null};
+    if(fresh) ev("matchup_start", round, mi, {choice:null, card_taps_a:0, card_taps_b:0});
+  }
+  function select(side){
+    if(!cur) return;
+    if(side==='a') cur.tapsA++; else cur.tapsB++;     // count every tap
+    if(side===cur.last) return;                       // re-tap of same card: not a new selection
+    if(!cur.selectTs) cur.selectTs = Date.now();
+    var type = cur.fired ? "selection_switched" : "selection_made";
+    cur.fired = true; cur.last = side;
+    ev(type, cur.round, cur.mi, {choice:side, dwell_time_ms:Date.now()-cur.startTs, card_taps_a:cur.tapsA, card_taps_b:cur.tapsB});
+  }
+  function voteRetry(payload, retries){
+    try{
+      fetch(BASE+"/vote",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload),keepalive:true})
+        .then(function(r){ if(!r.ok && retries>0) voteRetry(payload, retries-1); })
+        .catch(function(){ if(retries>0) voteRetry(payload, retries-1); });
+    }catch(e){ }
+  }
+  function lock(side, winnerId){
+    if(!cur) return;
+    var now = Date.now();
+    var payload = basePayload(cur.round, cur.mi, {
+      event_type:"vote_locked", choice:side, winner_id:winnerId,
+      dwell_time_ms: now-cur.startTs, card_taps_a:cur.tapsA, card_taps_b:cur.tapsB,
+      hesitation_ms: cur.selectTs ? (now-cur.selectTs) : 0
+    });
+    safePost("/event", payload, true);   // raw behavior log (fire-and-forget)
+    voteRetry(payload, 1);               // authoritative vote: one silent retry
+  }
+  function complete(winnerId){ if(completedFired) return; completedFired=true; ev("bracket_complete", 0, 0, {choice:null, winner_id:winnerId}); }
+  function pctA(round,mi,a,b){
+    var m = res[round+":"+mi];
+    if(m && typeof m.pct_a==='number' && m.total_votes >= VOTE_THRESHOLD) return Math.round(m.pct_a);
+    return fakeA(a,b);                    // fallback until enough real data for THIS matchup
+  }
+  startSession();
+  loadResults();
+  return {enter:enter, select:select, lock:lock, complete:complete, pctA:pctA};
+})();
+// ───────────────────────────────────────────────────────────────────────
+
+
 function render(){
   const done=results[LASTR][0]!==null;
   if(done){const w=ALL.find(c=>c.id===results[LASTR][0]);renderChampion(w);return;}
@@ -152,13 +224,13 @@ function renderBracket(){
   document.getElementById('main').innerHTML=html;
 }
 
-function startVote(round,mi){currentVote={round,mi};selected=null;locked=false;const w=results[round][mi];if(w!==null){const a=getC(round,mi,0);selected=(a&&a.id===w)?'a':'b';}render();}
+function startVote(round,mi){currentVote={round,mi};selected=null;locked=false;const w=results[round][mi];if(w!==null){const a=getC(round,mi,0);selected=(a&&a.id===w)?'a':'b';}V.enter(round,mi,w===null);render();}
 
 function renderVote(){
   document.getElementById('back-btn').style.display='block';
   const o=currentVote,round=o.round,mi=o.mi,a=getC(round,mi,0),b=getC(round,mi,1);
   if(!a||!b){showBracket();return;}
-  const pA=fakeA(a,b),pB=100-pA,majority=selected?(selected==='a'?pA:pB)>=50:false;
+  const pA=V.pctA(round,mi,a,b),pB=100-pA,majority=selected?(selected==='a'?pA:pB)>=50:false;
   const hint=!selected?"— Who's funnier? —":locked?"— Verdict locked! —":"— Tap to switch. Button to commit. —";
   let html='<div id="vote-screen"><div class="vote-header"><div class="round-label">'+RLABELS[round]+'</div><div class="vote-hint-text">'+hint+'</div></div>';
   [{side:'a',c:a,pct:pA},{side:'b',c:b,pct:pB}].forEach(function(o){
@@ -180,19 +252,22 @@ function renderVote(){
   document.getElementById('main').innerHTML=html;
 }
 
-function selectCard(side){if(locked)return;selected=side;renderVote();}
+function selectCard(side){if(locked)return;V.select(side);selected=side;renderVote();}
 function commitVote(){
   if(!selected||locked)return;
   locked=true;
   askPrompt=ASK_ROOM[Math.floor(Math.random()*ASK_ROOM.length)];
   const o=currentVote,round=o.round,mi=o.mi,a=getC(round,mi,0),b=getC(round,mi,1);
-  results[round][mi]=selected==='a'?a.id:b.id;
+  const _wid=selected==='a'?a.id:b.id;
+  results[round][mi]=_wid;
+  V.lock(selected,_wid);
   renderVote();
   document.getElementById('counter').textContent=totalVotes()+'/'+TOTAL;
 }
 function advance(){currentVote=null;locked=false;selected=null;render();}
 function showBracket(){currentVote=null;selected=null;locked=false;render();}
 function renderChampion(c){
+  V.complete(c.id);
   document.getElementById('back-btn').style.display='none';
   document.getElementById('main').innerHTML='<div id="champion-screen"><div style="font-size:44px;margin-bottom:6px">🏆</div><div class="champ-emoji">'+c.emoji+'</div><div class="champ-trophy">Comedy GOAT</div><div class="champ-name">'+c.name+'</div><div class="champ-from">'+c.from+'</div><div style="display:inline-block;margin:10px 0 6px;padding:4px 16px;border-radius:20px;background:#4a9eff;color:#09080a;font-size:11px;font-weight:700;letter-spacing:1px">YOUR VERDICT</div><div class="champ-fact">'+c.fact+'</div><button class="reset-btn" onclick="resetGame()">Run It Back</button><div style="margin-top:20px"><a href="index.html" style="color:#6a6478;font-size:12px;letter-spacing:2px;text-transform:uppercase;text-decoration:none;font-family:Georgia,serif">← All Brackets</a></div></div>';
 }
